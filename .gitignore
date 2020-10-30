@@ -153,6 +153,20 @@ dmypy.json
 # profiling data
 .prof
 
+### Data ###
+*.csv
+*.dat
+*.efx
+*.gbr
+*.key
+*.pps
+*.ppt
+*.pptx
+*.sdf
+*.tax2010
+*.vcf
+*.xml
+
 ### vscode ###
 .vscode/*
 !.vscode/settings.json
