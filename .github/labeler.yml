@@ -1,11 +1,17 @@
+# Add 'data' label to any change within the 'data' or 'image' folder
 data:
   - any: ['data/**/*', 'image/**/*']
 
+# Add 'test' label to any change within the 'test' folder
 test:
   - test/**/*
 
+# Add 'repo github' label to any change within the root or '.github' folder
 repo github:
   - .github/**/*
+  - ./*
 
+# Add 'workflows' label to any change within the '.github/workflows/' folder or the '.github/labeler.yml'
 workflows:
   - .github/workflows/*
+  - .github/labeler.yml
