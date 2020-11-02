@@ -1,9 +1,6 @@
 ---
-name: Ajout d'un élément au projet
-about: Pour ajouter un élément au projet
-title: ''
-labels: ''
-assignees: ''
+name: Pull request template
+about: Pour normaliser les pull requests
 
 ---
 
@@ -11,7 +8,9 @@ assignees: ''
 
 Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change.
 
-Fixes #\[issue\]
+Fixes #[issue]
+
+@[Person in charge]
 
 ---
 
