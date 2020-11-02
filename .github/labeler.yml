@@ -1,0 +1,11 @@
+data:
+  - any: ['data/**/*', 'image/**/*']
+
+test:
+  - test/**/*
+
+repo github:
+  - .github/**/*
+
+workflows:
+  - .github/workflows/*
