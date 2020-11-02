@@ -1,6 +1,7 @@
 # Add 'data' label to any change within the 'data' or 'image' folder
 data:
-  - any: ['data/**/*', 'image/**/*']
+  - data/**/*
+  - image/**/*
 
 # Add 'test' label to any change within the 'test' folder
 test:
