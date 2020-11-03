@@ -20,9 +20,12 @@ assignees: ''
 
 **Détails de l'élément à ajouter**
 
-- Objectif de l'élément
-- Quelles étapes effectuer
-- Qui doit le faire
+- Objectif de l'élément ?
+  -
+- Quelles étapes effectuer ?
+  -
+- Qui doit le faire ?
+  -
 
 ---
 
