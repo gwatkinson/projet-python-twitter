@@ -9,6 +9,7 @@ assignees: ''
 
 **Concerne quelle partie du projet?**
 
+- [ ] Organisation du GitHub
 - [ ] Liste followers Twitter
 - [ ] Stream API Twitter
 - [ ] Processing des données
