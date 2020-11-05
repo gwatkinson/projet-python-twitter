@@ -10,7 +10,6 @@ assignees: ''
 **Concerne quelle partie du projet?**
 
 - [ ] Organisation du GitHub
-- [ ] Liste followers Twitter
 - [ ] Stream API Twitter
 - [ ] Processing des données
 - [ ] Modélisation des données
@@ -25,7 +24,7 @@ assignees: ''
 - Quelles étapes effectuer ?
   - ...
 - Qui doit le faire ?
-  - ...
+  - @
 
 ---
 
