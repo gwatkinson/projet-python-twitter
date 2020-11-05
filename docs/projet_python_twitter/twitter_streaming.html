@@ -46,23 +46,24 @@ class credentials_class:
         Classe qui garde les clés de l&#39;API et crée une connexion avec.
 
         Args:
-            credentials (dict):
+            credentials :
                 Un dictionnaire qui contient les clés de l&#39;API.
                 Les clés necessaires sont &#39;consumer_key, &#39;consumer_secret&#39;, &#39;access_token&#39; et &#39;bearer_token&#39;.
                 Les valeurs sont des chaines de caractères.
                 Voir &#39;projet_python_twitter/README.md&#39; pour un exemple.
 
             **kwargs: Arguments à passer à `tweepy.API`.
+                Voir [la documentation de tweepy](http://docs.tweepy.org/en/latest/api.html#tweepy-api-twitter-api-wrapper)
 
         Attributes:
             consumer_key (str): Contient l&#39;API Key
             consumer_secret (str): Contient l&#39;API Key Secret
             access_token (str): Contient l&#39;Access Token
             access_token_secret (str): Contient l&#39;Access Token Secret
-            auth (:obj:`tweepy.OAuthHandler`): Contient l&#39;objet auth de `tweepy`
-                Crée par :func:`~twitter_streaming.credentials_class.authenticate`.
-            api (:obj:`tweepy.API`) : Contient l&#39;objet API de `tweepy`
-                Crée par :func:`credentials_class.authenticate`.
+            auth: Contient l&#39;objet auth de `tweepy.OAuthHandler`.
+                Crée par `credentials_class.authenticate`.
+            api: Contient l&#39;objet `tweepy.API`.
+                Crée par `credentials_class.authenticate`.
         &#34;&#34;&#34;
 
         # Vérifie le format de &#39;credentials&#39;
@@ -85,7 +86,7 @@ class credentials_class:
         self.consumer_secret = credentials[&#34;consumer_secret&#34;]
         self.access_token = credentials[&#34;access_token&#34;]
         self.access_token_secret = credentials[&#34;access_token_secret&#34;]
-
+        self.kwargs = kwargs
         # Attributs auth et api
         self.auth, self.api = self.authenticate()
 
@@ -93,13 +94,15 @@ class credentials_class:
         &#34;&#34;&#34;Authentification et connexion à l&#39;API
 
         Returns:
-            (tuple): tuple qui contient :
-                auth (:obj:`tweepy.OAuthHandler`): objet OAuthHandler de `tweepy` qui contient les clés
-                api (:obj:`tweepy.API`) : objet API de `tweepy` qui utilise auth
+            Un tuple qui contient :
+
+                * auth: Objet tweepy.OAuthHandler qui contient les clés
+
+                * api: Objet tweepy.API qui utilise auth
         &#34;&#34;&#34;
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.access_token, self.access_token_secret)
-        api = tweepy.API(auth)
+        api = tweepy.API(auth, self.kwargs)
         return auth, api
 
 
@@ -113,11 +116,11 @@ class SListener(StreamListener):
         Hérite de la classe StreamListener de `tweepy.streaming`.
         Cette classe permet de gérer comment on traite le stream de Tweet.
         Enregistre les tweets au format .json.
-        Les fichiers sont de la forme: `fprefix` + &#39;_&#39; + &#39;YYYYmmdd-HHMMSS&#39; + &#39;.json&#39;
+        Les fichiers sont de la forme: [fprefix]_YYYYmmdd-HHMMSS.json
 
         Args:
-            credentials (:obj:`credentials_class`): 
-                L&#39;objet `credentials_class` qui gère la connexion avec Twitter.
+            credentials: 
+                Instance de `credentials_class` qui gère la connexion avec Twitter.
             fprefix (str, optional): Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
                 Vaut &#34;streamer&#34; par défaut.
             path (str, optional): Dossier où mettre les fichiers.
@@ -131,14 +134,14 @@ class SListener(StreamListener):
                 Vaut False par défaut
         
         Attributes:
-            api (:obj:`tweepy.API`) : Contient l&#39;objet API de `tweepy`.
-                Attribut de `credentials` crée par :func:`credentials_class.authenticate`.
+            api: Contient l&#39;objet `tweepy.API`.
+                Attribut de `credentials` crée par `credentials_class.authenticate`.
             counter (int): Compteur du nombre de tweets dans le fichier actuel.
             max (int): Contient le nombre maximal de tweets par fichier.
             fprefix (str): Contient le préfixe.
             path (str): Contient le chemin du dossier.
             output (str): Contient le chemin du fichier actuel.
-                Au format: `path` + `fprefix` + &#39;_&#39; + &#39;YYYYmmdd-HHMMSS&#39; + &#39;.json&#39;
+                Au format: [path][fprefix]_YYYYmmdd-HHMMSS.json
             verbose (bool): Contient la valeur du booléen `verbose`.
         &#34;&#34;&#34;
         assert isinstance(
@@ -223,10 +226,11 @@ def start_stream(
     Cette fonction lance le stream pour la durée donnée.
     Si time n&#39;est pas définie, il est lancé indéfiniment et il faut l&#39;arrêter manuellement.
 
+    Les arguments `fprefix`, `path` et `verbose` sont passés à la classe `SListener`
     Args:
         liste_mot (list): Liste des mots à tracker.
-        credentials (:obj:`credentials_class`): 
-            L&#39;objet `credentials_class` qui gère la connexion avec Twitter.
+        credentials: 
+            Instance de `credentials_class` qui gère la connexion avec Twitter.
         time (float, optional): Le temps (en heures) que le stream doit-il être lancé.
             Si `time` est omis, le stream sera lancé indéfiniment et il faudra l&#39;arrêter manuellement.
             C&#39;est le cas par défaut.
@@ -319,12 +323,13 @@ if __name__ == &#34;__main__&#34;:
 <div class="desc"><p>Lancement du stream</p>
 <p>Cette fonction lance le stream pour la durée donnée.
 Si time n'est pas définie, il est lancé indéfiniment et il faut l'arrêter manuellement.</p>
+<p>Les arguments <code>fprefix</code>, <code>path</code> et <code>verbose</code> sont passés à la classe <code><a title="projet_python_twitter.twitter_streaming.SListener" href="#projet_python_twitter.twitter_streaming.SListener">SListener</a></code></p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>liste_mot</code></strong> :&ensp;<code>list</code></dt>
 <dd>Liste des mots à tracker.</dd>
-<dt>credentials (:obj:<code><a title="projet_python_twitter.twitter_streaming.credentials_class" href="#projet_python_twitter.twitter_streaming.credentials_class">credentials_class</a></code>):</dt>
-<dt>L'objet <code><a title="projet_python_twitter.twitter_streaming.credentials_class" href="#projet_python_twitter.twitter_streaming.credentials_class">credentials_class</a></code> qui gère la connexion avec Twitter.</dt>
+<dt><strong><code>credentials</code></strong></dt>
+<dd>Instance de <code><a title="projet_python_twitter.twitter_streaming.credentials_class" href="#projet_python_twitter.twitter_streaming.credentials_class">credentials_class</a></code> qui gère la connexion avec Twitter.</dd>
 <dt><strong><code>time</code></strong> :&ensp;<code>float</code>, optional</dt>
 <dd>Le temps (en heures) que le stream doit-il être lancé.
 Si <code>time</code> est omis, le stream sera lancé indéfiniment et il faudra l'arrêter manuellement.
@@ -352,10 +357,11 @@ Vaut False par défaut</dd>
     Cette fonction lance le stream pour la durée donnée.
     Si time n&#39;est pas définie, il est lancé indéfiniment et il faut l&#39;arrêter manuellement.
 
+    Les arguments `fprefix`, `path` et `verbose` sont passés à la classe `SListener`
     Args:
         liste_mot (list): Liste des mots à tracker.
-        credentials (:obj:`credentials_class`): 
-            L&#39;objet `credentials_class` qui gère la connexion avec Twitter.
+        credentials: 
+            Instance de `credentials_class` qui gère la connexion avec Twitter.
         time (float, optional): Le temps (en heures) que le stream doit-il être lancé.
             Si `time` est omis, le stream sera lancé indéfiniment et il faudra l&#39;arrêter manuellement.
             C&#39;est le cas par défaut.
@@ -431,11 +437,11 @@ Vaut False par défaut</dd>
 <p>Hérite de la classe StreamListener de <code>tweepy.streaming</code>.
 Cette classe permet de gérer comment on traite le stream de Tweet.
 Enregistre les tweets au format .json.
-Les fichiers sont de la forme: <code>fprefix</code> + '_' + 'YYYYmmdd-HHMMSS' + '.json'</p>
+Les fichiers sont de la forme: [fprefix]_YYYYmmdd-HHMMSS.json</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt>credentials (:obj:<code><a title="projet_python_twitter.twitter_streaming.credentials_class" href="#projet_python_twitter.twitter_streaming.credentials_class">credentials_class</a></code>):</dt>
-<dt>L'objet <code><a title="projet_python_twitter.twitter_streaming.credentials_class" href="#projet_python_twitter.twitter_streaming.credentials_class">credentials_class</a></code> qui gère la connexion avec Twitter.</dt>
+<dt><strong><code>credentials</code></strong></dt>
+<dd>Instance de <code><a title="projet_python_twitter.twitter_streaming.credentials_class" href="#projet_python_twitter.twitter_streaming.credentials_class">credentials_class</a></code> qui gère la connexion avec Twitter.</dd>
 <dt><strong><code>fprefix</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.
 Vaut "streamer" par défaut.</dd>
@@ -454,8 +460,9 @@ Vaut False par défaut</dd>
 </dl>
 <h2 id="attributes">Attributes</h2>
 <dl>
-<dt>api (:obj:<code>tweepy.API</code>) : Contient l'objet API de <code>tweepy</code>.</dt>
-<dt>Attribut de <code>credentials</code> crée par :func:<code><a title="projet_python_twitter.twitter_streaming.credentials_class.authenticate" href="#projet_python_twitter.twitter_streaming.credentials_class.authenticate">credentials_class.authenticate()</a></code>.</dt>
+<dt><strong><code>api</code></strong></dt>
+<dd>Contient l'objet <code>tweepy.API</code>.
+Attribut de <code>credentials</code> crée par <code><a title="projet_python_twitter.twitter_streaming.credentials_class.authenticate" href="#projet_python_twitter.twitter_streaming.credentials_class.authenticate">credentials_class.authenticate()</a></code>.</dd>
 <dt><strong><code>counter</code></strong> :&ensp;<code>int</code></dt>
 <dd>Compteur du nombre de tweets dans le fichier actuel.</dd>
 <dt><strong><code>max</code></strong> :&ensp;<code>int</code></dt>
@@ -466,7 +473,7 @@ Vaut False par défaut</dd>
 <dd>Contient le chemin du dossier.</dd>
 <dt><strong><code>output</code></strong> :&ensp;<code>str</code></dt>
 <dd>Contient le chemin du fichier actuel.
-Au format: <code>path</code> + <code>fprefix</code> + '_' + 'YYYYmmdd-HHMMSS' + '.json'</dd>
+Au format: [path][fprefix]_YYYYmmdd-HHMMSS.json</dd>
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Contient la valeur du booléen <code>verbose</code>.</dd>
 </dl></div>
@@ -483,11 +490,11 @@ Au format: <code>path</code> + <code>fprefix</code> + '_' + 'YYYYmmdd-HHMMSS' + 
         Hérite de la classe StreamListener de `tweepy.streaming`.
         Cette classe permet de gérer comment on traite le stream de Tweet.
         Enregistre les tweets au format .json.
-        Les fichiers sont de la forme: `fprefix` + &#39;_&#39; + &#39;YYYYmmdd-HHMMSS&#39; + &#39;.json&#39;
+        Les fichiers sont de la forme: [fprefix]_YYYYmmdd-HHMMSS.json
 
         Args:
-            credentials (:obj:`credentials_class`): 
-                L&#39;objet `credentials_class` qui gère la connexion avec Twitter.
+            credentials: 
+                Instance de `credentials_class` qui gère la connexion avec Twitter.
             fprefix (str, optional): Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
                 Vaut &#34;streamer&#34; par défaut.
             path (str, optional): Dossier où mettre les fichiers.
@@ -501,14 +508,14 @@ Au format: <code>path</code> + <code>fprefix</code> + '_' + 'YYYYmmdd-HHMMSS' + 
                 Vaut False par défaut
         
         Attributes:
-            api (:obj:`tweepy.API`) : Contient l&#39;objet API de `tweepy`.
-                Attribut de `credentials` crée par :func:`credentials_class.authenticate`.
+            api: Contient l&#39;objet `tweepy.API`.
+                Attribut de `credentials` crée par `credentials_class.authenticate`.
             counter (int): Compteur du nombre de tweets dans le fichier actuel.
             max (int): Contient le nombre maximal de tweets par fichier.
             fprefix (str): Contient le préfixe.
             path (str): Contient le chemin du dossier.
             output (str): Contient le chemin du fichier actuel.
-                Au format: `path` + `fprefix` + &#39;_&#39; + &#39;YYYYmmdd-HHMMSS&#39; + &#39;.json&#39;
+                Au format: [path][fprefix]_YYYYmmdd-HHMMSS.json
             verbose (bool): Contient la valeur du booléen `verbose`.
         &#34;&#34;&#34;
         assert isinstance(
@@ -714,14 +721,15 @@ the stream data. Return False to stop stream and close connection.</p></div>
 <div class="desc"><p>Credentials class</p>
 <p>Classe qui garde les clés de l'API et crée une connexion avec.</p>
 <h2 id="args">Args</h2>
-<p>credentials (dict):
+<p>credentials :
 Un dictionnaire qui contient les clés de l'API.
 Les clés necessaires sont 'consumer_key, 'consumer_secret', 'access_token' et 'bearer_token'.
 Les valeurs sont des chaines de caractères.
 Voir 'projet_python_twitter/README.md' pour un exemple.</p>
 <dl>
 <dt><strong><code>**kwargs</code></strong></dt>
-<dd>Arguments à passer à <code>tweepy.API</code>.</dd>
+<dd>Arguments à passer à <code>tweepy.API</code>.
+Voir <a href="http://docs.tweepy.org/en/latest/api.html#tweepy-api-twitter-api-wrapper">la documentation de tweepy</a></dd>
 </dl>
 <h2 id="attributes">Attributes</h2>
 <dl>
@@ -733,11 +741,13 @@ Voir 'projet_python_twitter/README.md' pour un exemple.</p>
 <dd>Contient l'Access Token</dd>
 <dt><strong><code>access_token_secret</code></strong> :&ensp;<code>str</code></dt>
 <dd>Contient l'Access Token Secret</dd>
-</dl>
-<p>auth (:obj:<code>tweepy.OAuthHandler</code>): Contient l'objet auth de <code>tweepy</code>
-Crée par :func:<code>~twitter_streaming.credentials_class.authenticate</code>.
-api (:obj:<code>tweepy.API</code>) : Contient l'objet API de <code>tweepy</code>
-Crée par :func:<code><a title="projet_python_twitter.twitter_streaming.credentials_class.authenticate" href="#projet_python_twitter.twitter_streaming.credentials_class.authenticate">credentials_class.authenticate()</a></code>.</p></div>
+<dt><strong><code>auth</code></strong></dt>
+<dd>Contient l'objet auth de <code>tweepy.OAuthHandler</code>.
+Crée par <code><a title="projet_python_twitter.twitter_streaming.credentials_class.authenticate" href="#projet_python_twitter.twitter_streaming.credentials_class.authenticate">credentials_class.authenticate()</a></code>.</dd>
+<dt><strong><code>api</code></strong></dt>
+<dd>Contient l'objet <code>tweepy.API</code>.
+Crée par <code><a title="projet_python_twitter.twitter_streaming.credentials_class.authenticate" href="#projet_python_twitter.twitter_streaming.credentials_class.authenticate">credentials_class.authenticate()</a></code>.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -749,23 +759,24 @@ Crée par :func:<code><a title="projet_python_twitter.twitter_streaming.credenti
         Classe qui garde les clés de l&#39;API et crée une connexion avec.
 
         Args:
-            credentials (dict):
+            credentials :
                 Un dictionnaire qui contient les clés de l&#39;API.
                 Les clés necessaires sont &#39;consumer_key, &#39;consumer_secret&#39;, &#39;access_token&#39; et &#39;bearer_token&#39;.
                 Les valeurs sont des chaines de caractères.
                 Voir &#39;projet_python_twitter/README.md&#39; pour un exemple.
 
             **kwargs: Arguments à passer à `tweepy.API`.
+                Voir [la documentation de tweepy](http://docs.tweepy.org/en/latest/api.html#tweepy-api-twitter-api-wrapper)
 
         Attributes:
             consumer_key (str): Contient l&#39;API Key
             consumer_secret (str): Contient l&#39;API Key Secret
             access_token (str): Contient l&#39;Access Token
             access_token_secret (str): Contient l&#39;Access Token Secret
-            auth (:obj:`tweepy.OAuthHandler`): Contient l&#39;objet auth de `tweepy`
-                Crée par :func:`~twitter_streaming.credentials_class.authenticate`.
-            api (:obj:`tweepy.API`) : Contient l&#39;objet API de `tweepy`
-                Crée par :func:`credentials_class.authenticate`.
+            auth: Contient l&#39;objet auth de `tweepy.OAuthHandler`.
+                Crée par `credentials_class.authenticate`.
+            api: Contient l&#39;objet `tweepy.API`.
+                Crée par `credentials_class.authenticate`.
         &#34;&#34;&#34;
 
         # Vérifie le format de &#39;credentials&#39;
@@ -788,7 +799,7 @@ Crée par :func:<code><a title="projet_python_twitter.twitter_streaming.credenti
         self.consumer_secret = credentials[&#34;consumer_secret&#34;]
         self.access_token = credentials[&#34;access_token&#34;]
         self.access_token_secret = credentials[&#34;access_token_secret&#34;]
-
+        self.kwargs = kwargs
         # Attributs auth et api
         self.auth, self.api = self.authenticate()
 
@@ -796,13 +807,15 @@ Crée par :func:<code><a title="projet_python_twitter.twitter_streaming.credenti
         &#34;&#34;&#34;Authentification et connexion à l&#39;API
 
         Returns:
-            (tuple): tuple qui contient :
-                auth (:obj:`tweepy.OAuthHandler`): objet OAuthHandler de `tweepy` qui contient les clés
-                api (:obj:`tweepy.API`) : objet API de `tweepy` qui utilise auth
+            Un tuple qui contient :
+
+                * auth: Objet tweepy.OAuthHandler qui contient les clés
+
+                * api: Objet tweepy.API qui utilise auth
         &#34;&#34;&#34;
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.access_token, self.access_token_secret)
-        api = tweepy.API(auth)
+        api = tweepy.API(auth, self.kwargs)
         return auth, api</code></pre>
 </details>
 <h3>Methods</h3>
@@ -813,9 +826,11 @@ Crée par :func:<code><a title="projet_python_twitter.twitter_streaming.credenti
 <dd>
 <div class="desc"><p>Authentification et connexion à l'API</p>
 <h2 id="returns">Returns</h2>
-<p>(tuple): tuple qui contient :
-auth (:obj:<code>tweepy.OAuthHandler</code>): objet OAuthHandler de <code>tweepy</code> qui contient les clés
-api (:obj:<code>tweepy.API</code>) : objet API de <code>tweepy</code> qui utilise auth</p></div>
+<p>Un tuple qui contient :</p>
+<pre><code>* auth: Objet tweepy.OAuthHandler qui contient les clés
+
+* api: Objet tweepy.API qui utilise auth
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -824,13 +839,15 @@ api (:obj:<code>tweepy.API</code>) : objet API de <code>tweepy</code> qui utilis
     &#34;&#34;&#34;Authentification et connexion à l&#39;API
 
     Returns:
-        (tuple): tuple qui contient :
-            auth (:obj:`tweepy.OAuthHandler`): objet OAuthHandler de `tweepy` qui contient les clés
-            api (:obj:`tweepy.API`) : objet API de `tweepy` qui utilise auth
+        Un tuple qui contient :
+
+            * auth: Objet tweepy.OAuthHandler qui contient les clés
+
+            * api: Objet tweepy.API qui utilise auth
     &#34;&#34;&#34;
     auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
     auth.set_access_token(self.access_token, self.access_token_secret)
-    api = tweepy.API(auth)
+    api = tweepy.API(auth, self.kwargs)
     return auth, api</code></pre>
 </details>
 </dd>
