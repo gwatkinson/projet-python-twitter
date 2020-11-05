@@ -1,6 +1,6 @@
 
 ### Config file with the API key ###
-projet_python_twitter/twitter_credentials.py
+projet_python_twitter/_twitter_credentials.py
 
 ### Template with Data, JupyterNotebboks, Python, vscode ###
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vscode,Data

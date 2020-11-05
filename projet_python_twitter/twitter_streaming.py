@@ -263,12 +263,12 @@ def start_stream(
 ### Lancement du stream ###
 if __name__ == "__main__":
     import listes_mots as listes
-    import twitter_credentials
+    import _twitter_credentials
 
-    credentials = credentials_class(twitter_credentials.credentials)
+    credentials = credentials_class(_twitter_credentials.credentials)
 
     start_stream(
-        credentials=credentials,  # Vérifier que 'twitter_credentials" existe bien.
+        credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
         liste_mot=listes.liste_5,  # Liste de mot à tracker (voir `projet_python_twitter.listes_mots`).
         timeout=0.001,
         fprefix="liste_5",  # À modifier en fonction de la liste selectionnée.
