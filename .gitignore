@@ -1,6 +1,6 @@
 
 ### Config file with the API key ###
-scripts/twitter_credentials.py
+projet_python_twitter/twitter_credentials.py
 
 ### Template with Data, JupyterNotebboks, Python, vscode ###
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vscode,Data
@@ -19,6 +19,7 @@ scripts/twitter_credentials.py
 *.tax2010
 *.vcf
 *.xml
+data/json/*.json
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
@@ -173,7 +174,7 @@ dmypy.json
 
 ### vscode ###
 .vscode/*
-!.vscode/settings.json
+# !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json

@@ -16,3 +16,7 @@ repo github:
 workflows:
   - .github/workflows/*
   - .github/labeler.yml
+
+# Add 'documentation' label to any change within the 'build' folder
+documentation:
+  - build/**/*
