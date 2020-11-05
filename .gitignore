@@ -1,6 +1,25 @@
 
-# Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vscode
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,vscode
+### Config file with the API key ###
+scripts/twitter_credentials.py
+
+### Template with Data, JupyterNotebboks, Python, vscode ###
+# Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vscode,Data
+# Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,vscode,Data
+
+### Data ###
+*.csv
+*.dat
+*.efx
+*.gbr
+*.key
+*.pps
+*.ppt
+*.pptx
+*.sdf
+*.tax2010
+*.vcf
+*.xml
+data/json/*.json
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
@@ -152,21 +171,6 @@ dmypy.json
 
 # profiling data
 .prof
-
-### Data ###
-*.csv
-*.dat
-*.efx
-*.gbr
-*.key
-*.pps
-*.ppt
-*.pptx
-*.sdf
-*.tax2010
-*.vcf
-*.xml
-data/json/*.json
 
 ### vscode ###
 .vscode/*
