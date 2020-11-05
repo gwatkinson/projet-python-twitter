@@ -11,9 +11,9 @@ cligj==0.7.0
 colorama
 coverage==5.3
 cryptography
-Fiona==1.8.13.post1
-GDAL==3.0.2
-geopandas
+# Fiona==1.8.13.post1
+# GDAL==3.0.2
+# geopandas
 idna
 iniconfig
 Mako==1.1.3
