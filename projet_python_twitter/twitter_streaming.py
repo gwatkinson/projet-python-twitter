@@ -7,67 +7,50 @@ import csv
 import numpy as np
 import tweepy
 from tweepy.streaming import StreamListener
+from tweepy import Stream
 
 
 ### Authentification et connexion avec l'API ###
 class credentials_class:
-    def __init__(self, credentials=None):
+    def __init__(self, credentials, **kwargs):
         """Credentials class
 
         Classe qui garde les clés de l'API et crée une connexion avec.
 
         Args:
-            credentials (dict, optional):
-                Soit un dictionnaire qui contient les clés de l'API.
+            credentials (dict):
+                Un dictionnaire qui contient les clés de l'API.
                 Les clés necessaires sont 'consumer_key, 'consumer_secret', 'access_token' et 'bearer_token'.
                 Les valeurs sont des chaines de caractères.
+                Voir 'projet_python_twitter/README.md' pour un exemple.
 
-                Soit 'None' (par défaut), dans ce cas le fichier local 'twitter_credentials.py' est utilisé.
-                Voir 'projet_python_twitter/README.md' pour plus de détails sur 'twitter_credentials.py'. (À compléter)
-        
+            **kwargs: Arguments à passer à `tweepy.API`.
+
         Attributes:
             consumer_key (str): Contient l'API Key
             consumer_secret (str): Contient l'API Key Secret
             access_token (str): Contient l'Access Token
             access_token_secret (str): Contient l'Access Token Secret
-            auth (:obj:`tweepy.OAuthHandler`): Contient l'objet auth de tweepy
+            auth (:obj:`tweepy.OAuthHandler`): Contient l'objet auth de `tweepy`
                 Crée par :func:`~twitter_streaming.credentials_class.authenticate`.
-            api (:obj:`tweepy.API`) : Contient l'objet API de tweepy
-                Crée par :func:`~twitter_streaming.credentials_class.authenticate`.
+            api (:obj:`tweepy.API`) : Contient l'objet API de `tweepy`
+                Crée par :func:`credentials_class.authenticate`.
         """
 
-        # Attributs clés de l'API
-        if credentials is None:
-            # Import les clés d'accès de l'API Twitter de `twitter_credentials.py` (à créer localement)
-            try:
-                import projet_python_twitter.twitter_credentials
-
-                credentials = projet_python_twitter.twitter_credentials.credentials
-
-            except ModuleNotFoundError as e:
-                print(
-                    "Erreur: " + str(e),
-                    "",
-                    "Créer le module `twitter_credentials.py` dans ./projet_python_twitter/",
-                    "",
-                    "De la forme :",
-                    "",
-                    "credentials = {",
-                    "   'consumer_key' : '',",
-                    "   'consumer_secret' = '',",
-                    "   'access_token' = '',",
-                    "   'access_token_secret' = '',",
-                    "   'bearer_token' = '' # pas necessaire",
-                    "}",
-                    sep="\n",
-                )
-
         # Vérifie le format de 'credentials'
-        assert type(credentials) is dict
-        assert "consumer_key" in credentials
-        assert "consumer_secret" in credentials
-        assert "access_token" in credentials
-        assert "access_token_secret" in credentials
+        assert type(credentials) is dict, "'credentials' doit être un dictionnaire"
+        assert (
+            "consumer_key" in credentials
+        ), "Il manque 'consumer_key' dans le dictionnaire"
+        assert (
+            "consumer_secret" in credentials
+        ), "Il manque 'consumer_secret' dans le dictionnaire"
+        assert (
+            "access_token" in credentials
+        ), "Il manque 'access_token' dans le dictionnaire"
+        assert (
+            "access_token_secret" in credentials
+        ), "Il manque 'access_token_secret' dans le dictionnaire"
 
         # Utilise les clés fournies dans le dictionnaire 'credentials'
         self.consumer_key = credentials["consumer_key"]
@@ -83,8 +66,8 @@ class credentials_class:
 
         Returns:
             (tuple): tuple qui contient :
-                auth (:obj:`tweepy.OAuthHandler`): objet OAuthHandler de tweepy qui contient les clés
-                api (:obj:`tweepy.API`) : objet api de tweepy qui utilise auth
+                auth (:obj:`tweepy.OAuthHandler`): objet OAuthHandler de `tweepy` qui contient les clés
+                api (:obj:`tweepy.API`) : objet API de `tweepy` qui utilise auth
         """
         auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         auth.set_access_token(self.access_token, self.access_token_secret)
@@ -92,32 +75,58 @@ class credentials_class:
         return auth, api
 
 
-cred = credentials_class()
-auth, api = cred.auth, cred.api
-
-
+### Stream des Tweets ###
 class SListener(StreamListener):
-    def __init__(self, api=None, fprefix="streamer", path="", max=20000):
+    def __init__(
+        self, credentials, fprefix="streamer", path="", max=20000, verbose=False
+    ):
         """SListener Class
 
-        Hérite de la classe StreamListener de tweepy.streaming.
+        Hérite de la classe StreamListener de `tweepy.streaming`.
         Cette classe permet de gérer comment on traite le stream de Tweet.
+        Enregistre les tweets au format .json.
+        Les fichiers sont de la forme: `fprefix` + '_' + 'YYYYmmdd-HHMMSS' + '.json'
 
         Args:
-            api (:obj:`tweepy.API`, optional): L'objet API de tweepy qui gère la connexion avec Twitter.
-                C'est le même objet que celui de `credentials_class`
-                S'il est omis, il est crée avec 'tweepy.API()'.
-            fprefix (str, optional): [description]. Defaults to "streamer".
-            path (str, optional): [description]. Defaults to "".
-            max (int, optional): [description]. Defaults to 20000.
+            credentials (:obj:`credentials_class`): 
+                L'objet `credentials_class` qui gère la connexion avec Twitter.
+            fprefix (str, optional): Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
+                Vaut "streamer" par défaut.
+            path (str, optional): Dossier où mettre les fichiers.
+                Vaut "" par défaut.
+                Doit finir avec '/' ou '\\' si différent de "".
+            max (int, optional): Nombre maximal de tweets par fichier. 
+                Une fois atteint, un nouveau fichier est crée.
+                Vaut 20000 par défaut.
+                Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.
+            verbose (bool, optional): Si True, affiche un point tout les 50 tweets traités.
+                Vaut False par défaut
+        
+        Attributes:
+            api (:obj:`tweepy.API`) : Contient l'objet API de `tweepy`.
+                Attribut de `credentials` crée par :func:`credentials_class.authenticate`.
+            counter (int): Compteur du nombre de tweets dans le fichier actuel.
+            max (int): Contient le nombre maximal de tweets par fichier.
+            fprefix (str): Contient le préfixe.
+            path (str): Contient le chemin du dossier.
+            output (str): Contient le chemin du fichier actuel.
+                Au format: `path` + `fprefix` + '_' + 'YYYYmmdd-HHMMSS' + '.json'
+            verbose (bool): Contient la valeur du booléen `verbose`.
         """
-        self.api = api or tweepy.API()
+        assert isinstance(
+            credentials, credentials_class
+        ), "'credentials' doit être une instance de 'credentials_class'."
+        self.api = credentials.api
         self.counter = 0
-        self.max = max
+        self.max = int(max) if max > 0 else 0
+        self.verbose = verbose
         self.fprefix = fprefix
+        if len(path) > 0:
+            assert path[-1] in ["/", "\\"], "'path' devrait terminer par '/' ou '\\'."
         self.path = path
         self.output = open(
-            path + r"%s_%s.json" % (self.fprefix, time.strftime("%Y%m%d-%H%M%S")), "w"
+            self.path + self.fprefix + "_" + time.strftime("%Y%m%d-%H%M%S") + ".json",
+            "w",
         )
 
     def on_data(self, data):
@@ -130,6 +139,10 @@ class SListener(StreamListener):
         elif "limit" in data:
             if self.on_limit(json.loads(data)["limit"]["track"]) is False:
                 return False
+        # elif "error" in data:
+        #     status_code = json.loads(data)["error"]["status_code"]
+        #     if self.on_error(status_code) is False:
+        #         return False
         elif "warning" in data:
             warning = json.loads(data)["warnings"]
             print("WARNING: %s" % warning["message"])
@@ -138,11 +151,16 @@ class SListener(StreamListener):
     def on_status(self, status):
         self.output.write(status)
         self.counter += 1
+        if self.verbose and self.counter % 50 == 0:
+            print("|")
         if self.counter >= 20000:
             self.output.close()
             self.output = open(
                 self.path
-                + r"%s_%s.json" % (self.fprefix, time.strftime("%Y%m%d-%H%M%S")),
+                + self.fprefix
+                + "_"
+                + time.strftime("%Y%m%d-%H%M%S")
+                + ".json",
                 "w",
             )
             self.counter = 0
@@ -159,6 +177,8 @@ class SListener(StreamListener):
     def on_error(self, status_code):
         print(sys.stderr, "Encountered error with status code:", status_code)
         return True  # Don't kill the stream
+        # if status_code = 420:
+        #    time
         # print("Stream restarted")
 
     def on_timeout(self):
@@ -167,86 +187,91 @@ class SListener(StreamListener):
         # print("Stream restarted")
 
 
-from tweepy import Stream
+def start_stream(
+    liste_mot, credentials, timeout=None, fprefix="streamer", path="", verbose=False
+):
+    """Lancement du stream
 
-# liste des mots à tracker faite par fabien.
-liste_1 = [
-    "JoeBiden",
-    "realDonaldTrump",
-    "biden",
-    "trump",
-    "presidentialelection",
-    "presidential",
-    "election",
-    "electionnight",
-    "vote",
-    "iwillvote",
-    "america",
-    "govote",
-    "uselection",
-    "president",
-]
+    Cette fonction lance le stream pour la durée donnée.
+    Si time n'est pas définie, il est lancé indéfiniment et il faut l'arrêter manuellement.
 
-liste_2 = [
-    "JoeBiden",
-    "realDonaldTrump",
-    "biden",
-    "trump",
-    "presidentialelection",
-    "electionnight",
-    "iwillvote",
-    "govote",
-    "uselection",
-]
+    Args:
+        liste_mot (list): Liste des mots à tracker.
+        credentials (:obj:`credentials_class`): 
+            L'objet `credentials_class` qui gère la connexion avec Twitter.
+        time (float, optional): Le temps (en heures) que le stream doit-il être lancé.
+            Si `time` est omis, le stream sera lancé indéfiniment et il faudra l'arrêter manuellement.
+            C'est le cas par défaut.
+        fprefix (str, optional): Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
+            Vaut "streamer" par défaut.
+        path (str, optional): Dossier où mettre les fichiers.
+            Vaut "" par défaut.
+            Doit finir avec '/' ou '\\', si différent de "".
+        verbose (bool, optional): Si True, affiche un point tout les 50 tweets traités.
+            Vaut False par défaut
+    """
+    start_time = end_time = time.time()
+    if type(timeout) is float:
+        end_time += timeout * 60 * 60
 
-# mathias
-liste_3 = [
-    "biden",
-    "trump",
-    "JoeBiden",
-    "realDonaldTrump",
-]
+    assert type(liste_mot) is list and all(
+        type(mot) is str for mot in liste_mot
+    ), "'liste_mot' doit être une liste de string."
+    assert isinstance(
+        credentials, credentials_class
+    ), "'credentials' doit être une instance de 'credentials_class'."
 
-# wilfried
-liste_4 = ["iwillvote", "govote", "uselection", "vote"]
-
-# gabriel
-liste_5 = [
-    "uselection",
-    "president",
-    "presidentialelection",
-    "presidential",
-    "electionnight",
-]
-
-## Debut du stream
-def start_stream(liste_mot, fprefix="", path=""):
     print(
-        "Début du stream, checkez le dossier que vous avez spécifié comme chemin pour le stream",
-        "\n",
+        "Début du stream, checkez le dossier que vous avez spécifié comme chemin pour le stream"
     )
     while True:
         try:
             # Instantiate the SListener object
-            listen = SListener(api, fprefix=fprefix, path=path)
+            listen = SListener(credentials, fprefix=fprefix, path=path, verbose=verbose)
             # Instantiate the Stream object
-            stream = Stream(auth, listen)
+            stream = Stream(credentials.auth, listen)
             # Begin collecting data
-            # Ici on stream tous les followers du conseil,
-            # pour passer à un stream sur tout twitter et filter avec un hastag donné
-            # remplacer l'argument de stream.filter par stream.filter(track= ['premier mot','second mot'])
-            # ou bien stream.filter(follow = liste_selected_followers )
             stream.filter(track=liste_mot)
-        except:
+        except Exception as e:
+            if timeout is not None and time.time() > end_time:
+                print(
+                    "Le stream a duré :"
+                    + str(round((time.time() - start_time) / (60 * 60), 3))
+                    + "h"
+                )
+                print("Fin du stream")
+                return
+            print(sys.stderr, "Erreur: " + str(e))
             print("Pause de 15 min avant le prochain essai de streaming")
-            time.sleep(900)
+            time.sleep(300)
+            for i in range(1, 3):
+                print("Il reste %s min" % (15 - 5 * i))
+                time.sleep(300)
             print("Pause terminée")
             continue
+        except KeyboardInterrupt:
+            print("Stream coupé manuellement")
+            print(
+                "Le stream a duré :"
+                + str(round((time.time() - start_time) / (60 * 60), 3))
+                + "h"
+            )
+            print("Fin du stream")
+            return
 
 
+### Lancement du stream ###
 if __name__ == "__main__":
+    import listes_mots as listes
+    import twitter_credentials
+
+    credentials = credentials_class(twitter_credentials.credentials)
+
     start_stream(
-        liste_mot=liste_5,
-        fprefix="liste_5",
-        path="C:/Users/gabri/Documents/json_files/",
+        credentials=credentials,  # Vérifier que 'twitter_credentials" existe bien.
+        liste_mot=listes.liste_5,  # Liste de mot à tracker (voir `projet_python_twitter.listes_mots`).
+        timeout=0.001,
+        fprefix="liste_5",  # À modifier en fonction de la liste selectionnée.
+        path="C:/Users/gabri/Documents/json_files/",  # À modifier selon l'utilisateur.
+        verbose=True,  # Selon les préférences.
     )
