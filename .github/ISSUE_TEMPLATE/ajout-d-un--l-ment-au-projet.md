@@ -14,6 +14,9 @@ assignees: ''
 - [ ] Processing des données
 - [ ] Modélisation des données
 - [ ] Visualisation
+- [ ] Test
+- [ ] Notebook
+- [ ] Documention
 
 ---
 
