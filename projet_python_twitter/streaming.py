@@ -318,9 +318,9 @@ def start_stream(
 ### Lancement du stream ###
 if __name__ == "__main__":
     import listes_mots as listes
-    import _twitter_credentials
+    import _credentials
 
-    credentials = credentials_class(_twitter_credentials.credentials)
+    credentials = credentials_class(_credentials.credentials)
 
     start_stream(
         credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
