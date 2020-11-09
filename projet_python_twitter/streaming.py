@@ -10,6 +10,23 @@ from tweepy.streaming import StreamListener
 from tweepy import Stream
 
 
+###Erreurs###
+class CredentialsType(Exception):
+    """Erreur à lever si credentials n'est pas du bon type"""
+
+    pass
+
+
+class MissingKey(Exception):
+    pass
+
+
+class CredentialsKeyType(Exception):
+    """Erreur à lever si les clés ne sont pas du bon type"""
+
+    pass
+
+
 ### Authentification et connexion avec l'API ###
 class credentials_class:
     def __init__(self, credentials, **kwargs):
@@ -46,19 +63,36 @@ class credentials_class:
         """
 
         # Vérifie le format de 'credentials'
-        assert type(credentials) is dict, "'credentials' doit être un dictionnaire"
-        assert (
-            "consumer_key" in credentials
-        ), "Il manque 'consumer_key' dans le dictionnaire"
-        assert (
-            "consumer_secret" in credentials
-        ), "Il manque 'consumer_secret' dans le dictionnaire"
-        assert (
-            "access_token" in credentials
-        ), "Il manque 'access_token' dans le dictionnaire"
-        assert (
-            "access_token_secret" in credentials
-        ), "Il manque 'access_token_secret' dans le dictionnaire"
+        if type(credentials) is not dict:
+            raise CredentialsType(
+                "'credentials' doit être un dictionnaire, pas {}.".format(
+                    str(type(credentials))
+                )
+            )
+
+        # Liste des clés nécessaire
+        key_names = [
+            "consumer_key",
+            "consumer_secret",
+            "access_token",
+            "access_token_secret",
+        ]
+
+        # Vérifie si les clés existent bien
+        if any(key not in credentials for key in key_names):
+            raise MissingKey(
+                "Il manque {} dans le dictionnaire.".format(
+                    str([key for key in key_names if key not in credentials])
+                )
+            )
+
+        # Vérifie le type des clés
+        if any(type(credentials[key]) is not str for key in credentials):
+            raise CredentialsKeyType(
+                "{} doivent être des strings.".format(
+                    str([key for key in key_names if type(credentials[key]) is not str])
+                )
+            )
 
         # Utilise les clés fournies dans le dictionnaire 'credentials'
         self.consumer_key = credentials["consumer_key"]
@@ -317,16 +351,24 @@ def start_stream(
 
 ### Lancement du stream ###
 if __name__ == "__main__":
-    import listes_mots as listes
-    import _credentials
+    try:
+        import listes_mots as listes
+        import _credentials
 
-    credentials = credentials_class(_credentials.credentials)
+        credentials = credentials_class(_credentials.credentials)
 
-    start_stream(
-        credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
-        liste_mot=listes.liste_5,  # Liste de mot à tracker (voir `projet_python_twitter.listes_mots`).
-        timeout=0.001,
-        fprefix="liste_5",  # À modifier en fonction de la liste selectionnée.
-        path="C:/Users/gabri/Documents/json_files/",  # À modifier selon l'utilisateur.
-        verbose=True,  # Selon les préférences.
-    )
+        start_stream(
+            credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
+            liste_mot=listes.liste_5,  # Liste de mot à tracker (voir `projet_python_twitter.listes_mots`).
+            timeout=0.001,
+            fprefix="liste_5",  # À modifier en fonction de la liste selectionnée.
+            path="C:/Users/gabri/Documents/json_files/",  # À modifier selon l'utilisateur.
+            verbose=True,  # Selon les préférences.
+        )
+    except ModuleNotFoundError as e:
+        print(
+            "Erreur : " + str(e),
+            "",
+            "Vérifier que '_credentials.py' existe bien et est dans le bon dossier ('projet_python_twitter/')",
+            sep="\n",
+        )
