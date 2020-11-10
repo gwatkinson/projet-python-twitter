@@ -1,31 +1,11 @@
 ### Import les modules ###
-import os
-import time
-import sys
+# Import les modules utilisés
+import time, sys
 import json
-import csv
-import numpy as np
 import tweepy
-from tweepy.streaming import StreamListener
-from tweepy import Stream
 
-
-###Erreurs###
-class CredentialsType(Exception):
-    """Erreur à lever si credentials n'est pas du bon type"""
-
-    pass
-
-
-class MissingKey(Exception):
-    pass
-
-
-class CredentialsKeyType(Exception):
-    """Erreur à lever si les clés ne sont pas du bon type"""
-
-    pass
-
+# Erreurs du projet
+import projet_python_twitter.project_errors as errors
 
 ### Authentification et connexion avec l'API ###
 class credentials_class:
@@ -43,7 +23,8 @@ class credentials_class:
 
                 Voir `projet_python_twitter/README.md` pour un exemple.
 
-            **kwargs: Arguments à passer à `tweepy.API`.
+            **kwargs (optional): Arguments à passer à `tweepy.API`.
+
                 Voir [la documentation de tweepy](http://docs.tweepy.org/en/latest/api.html#tweepy-api-twitter-api-wrapper)
 
         Attributes:
@@ -64,11 +45,7 @@ class credentials_class:
 
         # Vérifie le format de 'credentials'
         if type(credentials) is not dict:
-            raise CredentialsType(
-                "'credentials' doit être un dictionnaire, pas {}.".format(
-                    str(type(credentials))
-                )
-            )
+            raise errors.CredentialsType(type=type(credentials))
 
         # Liste des clés nécessaire
         key_names = [
@@ -79,20 +56,16 @@ class credentials_class:
         ]
 
         # Vérifie si les clés existent bien
-        if any(key not in credentials for key in key_names):
-            raise MissingKey(
-                "Il manque {} dans le dictionnaire.".format(
-                    str([key for key in key_names if key not in credentials])
-                )
-            )
+        if (missing_keys := [key for key in key_names if key not in credentials]) :
+            raise errors.MissingKey(missing_keys=missing_keys)
 
         # Vérifie le type des clés
-        if any(type(credentials[key]) is not str for key in credentials):
-            raise CredentialsKeyType(
-                "{} doivent être des strings.".format(
-                    str([key for key in key_names if type(credentials[key]) is not str])
-                )
-            )
+        if (
+            wrong_keys := [
+                key for key in key_names if type(credentials[key]) is not str
+            ]
+        ) :
+            raise errors.CredentialsKeyType(wrong_keys=wrong_keys)
 
         # Utilise les clés fournies dans le dictionnaire 'credentials'
         self.consumer_key = credentials["consumer_key"]
@@ -119,7 +92,7 @@ class credentials_class:
 
 
 ### Stream des Tweets ###
-class SListener(StreamListener):
+class SListener(tweepy.StreamListener):
     def __init__(
         self, credentials, fprefix="streamer", path="", max=20000, verbose=False
     ):
@@ -179,9 +152,9 @@ class SListener(StreamListener):
 
             verbose (bool): Contient la valeur du booléen `verbose`.
         """
-        assert isinstance(
-            credentials, credentials_class
-        ), "'credentials' doit être une instance de 'credentials_class'."
+        if not isinstance(credentials, credentials_class):
+            raise errors.CredentialsClassType(type=type(credentials))
+
         self.api = credentials.api
         self.counter = 0
         self.max = int(max) if max > 0 else 0
@@ -205,10 +178,6 @@ class SListener(StreamListener):
         elif "limit" in data:
             if self.on_limit(json.loads(data)["limit"]["track"]) is False:
                 return False
-        # elif "error" in data:
-        #     status_code = json.loads(data)["error"]["status_code"]
-        #     if self.on_error(status_code) is False:
-        #         return False
         elif "warning" in data:
             warning = json.loads(data)["warnings"]
             print("WARNING: %s" % warning["message"])
@@ -243,18 +212,14 @@ class SListener(StreamListener):
     def on_error(self, status_code):
         print(sys.stderr, "Encountered error with status code:", status_code)
         return True  # Don't kill the stream
-        # if status_code = 420:
-        #    time
-        # print("Stream restarted")
 
     def on_timeout(self):
         print(sys.stderr, "Timeout...")
         return True  # Don't kill the stream
-        # print("Stream restarted")
 
 
 def start_stream(
-    liste_mot, credentials, timeout=None, fprefix="streamer", path="", verbose=False
+    liste_mots, credentials, timeout=None, fprefix="streamer", path="", verbose=False
 ):
     """
     Cette fonction lance le stream pour la durée donnée.
@@ -266,7 +231,7 @@ def start_stream(
     dans une instance de la classe `SListener`.
 
     Args:
-        liste_mot (list): 
+        liste_mots (list): 
             Liste des mots à tracker.
             
             Doit contenir des `str`.
@@ -299,28 +264,28 @@ def start_stream(
 
             Par défaut : `False`.
     """
+
+    if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
+        raise errors.WordType(wrong_words=wrong_words)
+
+    if not isinstance(credentials, credentials_class):
+        raise errors.CredentialsClassType(type=type(credentials))
+
     start_time = end_time = time.time()
     if type(timeout) is float:
         end_time += timeout * 60 * 60
-
-    assert type(liste_mot) is list and all(
-        type(mot) is str for mot in liste_mot
-    ), "'liste_mot' doit être une liste de string."
-    assert isinstance(
-        credentials, credentials_class
-    ), "'credentials' doit être une instance de 'credentials_class'."
-
     print(
         "Début du stream, checkez le dossier que vous avez spécifié comme chemin pour le stream"
     )
+
     while True:
         try:
             # Instantiate the SListener object
             listen = SListener(credentials, fprefix=fprefix, path=path, verbose=verbose)
             # Instantiate the Stream object
-            stream = Stream(credentials.auth, listen)
+            stream = tweepy.Stream(credentials.auth, listen)
             # Begin collecting data
-            stream.filter(track=liste_mot)
+            stream.filter(track=liste_mots)
         except Exception as e:
             if timeout is not None and time.time() > end_time:
                 print(
@@ -352,14 +317,14 @@ def start_stream(
 ### Lancement du stream ###
 if __name__ == "__main__":
     try:
-        import listes_mots as listes
-        import _credentials
+        import projet_python_twitter.listes_mots as listes
+        import projet_python_twitter._credentials as _credentials
 
         credentials = credentials_class(_credentials.credentials)
 
         start_stream(
             credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
-            liste_mot=listes.liste_5,  # Liste de mot à tracker (voir `projet_python_twitter.listes_mots`).
+            liste_mots=listes.liste_5,  # Liste de mot à tracker (voir `projet_python_twitter.listes_mots`).
             timeout=0.001,
             fprefix="liste_5",  # À modifier en fonction de la liste selectionnée.
             path="C:/Users/gabri/Documents/json_files/",  # À modifier selon l'utilisateur.
