@@ -7,16 +7,16 @@ import projet_python_twitter.listes_mots as listes
 import projet_python_twitter.project_errors as errors
 
 
-# cred_file_exist = pytest.mark.skipif(
-#     not os.path.isfile(
-#         os.path.abspath(__file__) + "../projet_python_twitter/_credentials.py"
-#     ),
-#     reason="'_credentials' n'existe pas",
-# )
-
-cred_file_exist = pytest.importorskip(
-    "projet_python_twitter._credentials", reason="'_credentials' n'existe pas"
+cred_file_exist = pytest.mark.skipif(
+    not os.path.isfile(
+        os.path.abspath(__file__) + "/../../projet_python_twitter/_credentials.py"
+    ),
+    reason="'_credentials' n'existe pas",
 )
+
+# cred_file_exist = pytest.importorskip(
+#     "projet_python_twitter._credentials", reason="'_credentials' n'existe pas"
+# )
 
 
 @pytest.fixture
