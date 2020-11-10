@@ -26,7 +26,12 @@ def test_file_cred(file_credentials):
     print(file_credentials)
     assert all(
         key in file_credentials
-        for key in ["consumer_key", "consumer_secret", "access_token", "bearer_token"]
+        for key in [
+            "consumer_key",
+            "consumer_secret",
+            "access_token",
+            "access_token_secret",
+        ]
     )
 
 
