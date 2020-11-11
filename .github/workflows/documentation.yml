@@ -23,9 +23,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install pdoc3
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Create documentation
         run: |
           pdoc --html -f --output-dir docs projet_python_twitter
+          mv docs/projet_python_twitter/* docs
+          rmdir docs/projet_python_twitter
       - name: Commit files
         run: |
           git config --local user.email "action@github.com"
