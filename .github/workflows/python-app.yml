@@ -1,5 +1,6 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# and https://github.community/t/run-job-only-if-folder-changed/118292
 
 name: Python application
 
@@ -24,7 +25,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: check modified files
+      - name: Check modified files
         id: check_files_python
         run: |
           echo "=============== list modified files ==============="
@@ -38,9 +39,10 @@ jobs:
             if [[ $file != projet_python_twitter/* && $file != test/* ]]; then
               echo "This modified file is not under the 'projet_python_twitter' or the 'test' folder."
               echo "::set-output name=run_job::false"
-              break
+              # break
             else
               echo "::set-output name=run_job::true"
+              break
             fi
           done < files.txt
 
@@ -102,9 +104,10 @@ jobs:
             if [[ $file != docs/* ]]; then
               echo "This modified file is not under the 'docs' folder."
               echo "::set-output name=run_doc::false"
-              break
+              # break
             else
               echo "::set-output name=run_doc::true"
+              break
             fi
           done < files.txt
 
