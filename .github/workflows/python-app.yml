@@ -35,7 +35,7 @@ jobs:
           while IFS= read -r file
           do
             echo $file
-            if [[ $file != projet_python_twitter/* and $file != test/* ]]; then
+            if [[ $file != projet_python_twitter/* ]] and [[ $file != test/* ]]; then
               echo "This modified file is not under the 'projet_python_twitter' or the 'test' folder."
               echo "::set-output name=run_job::false"
               break
