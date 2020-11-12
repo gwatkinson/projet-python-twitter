@@ -31,16 +31,17 @@ jobs:
           echo "=============== list modified files ==============="
           git diff --name-only HEAD^ HEAD
 
-          echo "========== check paths of modified files =========="
+          echo "========== modified files under 'projet_python_twitter' or 'test' folder =========="
           git diff --name-only HEAD^ HEAD > files.txt
           while IFS= read -r file
           do
-            echo $file
+            # echo $file
             if [[ $file != projet_python_twitter/* && $file != test/* ]]; then
-              echo "This modified file is not under the 'projet_python_twitter' or the 'test' folder."
+              # echo "This modified file is not under the 'projet_python_twitter' or the 'test' folder."
               echo "::set-output name=run_job::false"
               # break
             else
+              echo $file
               echo "::set-output name=run_job::true"
               break
             fi
@@ -94,18 +95,19 @@ jobs:
         id: check_files_docs
         run: |
           echo "=============== list modified files ==============="
-          git diff --name-only HEAD^ HEAD
+          git status --porcelain | cut -c4-
 
-          echo "========== check paths of modified files =========="
-          git diff --name-only HEAD^ HEAD > files.txt
+          echo "========== modified files under the 'docs' folder =========="
+          git status --porcelain | cut -c4- > files.txt
           while IFS= read -r file
           do
-            echo $file
+            # echo $file
             if [[ $file != docs/* ]]; then
-              echo "This modified file is not under the 'docs' folder."
+              # echo "This modified file is not under the 'docs' folder."
               echo "::set-output name=run_doc::false"
               # break
             else
+              echo $file
               echo "::set-output name=run_doc::true"
               break
             fi
