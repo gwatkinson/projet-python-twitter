@@ -1,6 +1,8 @@
 ### Contient les erreurs du projet ###
+
+
 class CredentialsType(Exception):
-    """Erreur à lever si credentials n'est pas un dictionnaire"""
+    """Erreur à lever si `credentials` n'est pas un dictionnaire."""
 
     def __init__(self, type, message="'credentials' doit être un dictionnaire, pas un"):
         self.type = type
@@ -12,7 +14,7 @@ class CredentialsType(Exception):
 
 
 class MissingKey(Exception):
-    """Erreur à lever s'il manque des clés dans le dictionnaire"""
+    """Erreur à lever s'il manque des clés dans le dictionnaire."""
 
     def __init__(
         self, missing_keys, message="Il manque des clés dans le dictionnaire."
@@ -26,7 +28,7 @@ class MissingKey(Exception):
 
 
 class CredentialsKeyType(Exception):
-    """Erreur à lever si les clés ne sont pas des str"""
+    """Erreur à lever si les clés ne sont pas des `str`."""
 
     def __init__(self, wrong_keys, message="doivent être des strings."):
         self.wrong_keys = wrong_keys
@@ -38,7 +40,7 @@ class CredentialsKeyType(Exception):
 
 
 class CredentialsClassType(Exception):
-    """Erreur à lever si credentials n'est pas une instance de credentials_class"""
+    """Erreur à lever si `credentials` n'est pas une instance de `credentials_class`."""
 
     def __init__(
         self,
@@ -54,7 +56,7 @@ class CredentialsClassType(Exception):
 
 
 class WordType(Exception):
-    """Erreur à lever si les mots de la liste de mots à suivre ne sont pas des str"""
+    """Erreur à lever si les mots de la liste de mots à suivre ne sont pas des `str`."""
 
     def __init__(self, wrong_words, message="doivent être des strings."):
         self.wrong_words = wrong_words
