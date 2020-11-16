@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
-<title>projet_python_twitter.project_errors API documentation</title>
+<title>projet.project_errors API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,14 +19,14 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>projet_python_twitter.project_errors</code></h1>
+<h1 class="title">Module <code>projet.project_errors</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">###Erreurs###
+<pre><code class="python">### Contient les erreurs du projet ###
 class CredentialsType(Exception):
     &#34;&#34;&#34;Erreur à lever si credentials n&#39;est pas un dictionnaire&#34;&#34;&#34;
 
@@ -102,7 +102,7 @@ class WordType(Exception):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="projet_python_twitter.project_errors.CredentialsClassType"><code class="flex name class">
+<dt id="projet.project_errors.CredentialsClassType"><code class="flex name class">
 <span>class <span class="ident">CredentialsClassType</span></span>
 <span>(</span><span>type, message="'credentials' doit être une instance de 'credentials_class', pas un")</span>
 </code></dt>
@@ -133,7 +133,7 @@ class WordType(Exception):
 <li>builtins.BaseException</li>
 </ul>
 </dd>
-<dt id="projet_python_twitter.project_errors.CredentialsKeyType"><code class="flex name class">
+<dt id="projet.project_errors.CredentialsKeyType"><code class="flex name class">
 <span>class <span class="ident">CredentialsKeyType</span></span>
 <span>(</span><span>wrong_keys, message='doivent être des strings.')</span>
 </code></dt>
@@ -160,7 +160,7 @@ class WordType(Exception):
 <li>builtins.BaseException</li>
 </ul>
 </dd>
-<dt id="projet_python_twitter.project_errors.CredentialsType"><code class="flex name class">
+<dt id="projet.project_errors.CredentialsType"><code class="flex name class">
 <span>class <span class="ident">CredentialsType</span></span>
 <span>(</span><span>type, message="'credentials' doit être un dictionnaire, pas un")</span>
 </code></dt>
@@ -187,7 +187,7 @@ class WordType(Exception):
 <li>builtins.BaseException</li>
 </ul>
 </dd>
-<dt id="projet_python_twitter.project_errors.MissingKey"><code class="flex name class">
+<dt id="projet.project_errors.MissingKey"><code class="flex name class">
 <span>class <span class="ident">MissingKey</span></span>
 <span>(</span><span>missing_keys, message='Il manque des clés dans le dictionnaire.')</span>
 </code></dt>
@@ -216,7 +216,7 @@ class WordType(Exception):
 <li>builtins.BaseException</li>
 </ul>
 </dd>
-<dt id="projet_python_twitter.project_errors.WordType"><code class="flex name class">
+<dt id="projet.project_errors.WordType"><code class="flex name class">
 <span>class <span class="ident">WordType</span></span>
 <span>(</span><span>wrong_words, message='doivent être des strings.')</span>
 </code></dt>
@@ -254,25 +254,25 @@ class WordType(Exception):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="projet_python_twitter" href="index.html">projet_python_twitter</a></code></li>
+<li><code><a title="projet" href="index.html">projet</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="projet_python_twitter.project_errors.CredentialsClassType" href="#projet_python_twitter.project_errors.CredentialsClassType">CredentialsClassType</a></code></h4>
+<h4><code><a title="projet.project_errors.CredentialsClassType" href="#projet.project_errors.CredentialsClassType">CredentialsClassType</a></code></h4>
 </li>
 <li>
-<h4><code><a title="projet_python_twitter.project_errors.CredentialsKeyType" href="#projet_python_twitter.project_errors.CredentialsKeyType">CredentialsKeyType</a></code></h4>
+<h4><code><a title="projet.project_errors.CredentialsKeyType" href="#projet.project_errors.CredentialsKeyType">CredentialsKeyType</a></code></h4>
 </li>
 <li>
-<h4><code><a title="projet_python_twitter.project_errors.CredentialsType" href="#projet_python_twitter.project_errors.CredentialsType">CredentialsType</a></code></h4>
+<h4><code><a title="projet.project_errors.CredentialsType" href="#projet.project_errors.CredentialsType">CredentialsType</a></code></h4>
 </li>
 <li>
-<h4><code><a title="projet_python_twitter.project_errors.MissingKey" href="#projet_python_twitter.project_errors.MissingKey">MissingKey</a></code></h4>
+<h4><code><a title="projet.project_errors.MissingKey" href="#projet.project_errors.MissingKey">MissingKey</a></code></h4>
 </li>
 <li>
-<h4><code><a title="projet_python_twitter.project_errors.WordType" href="#projet_python_twitter.project_errors.WordType">WordType</a></code></h4>
+<h4><code><a title="projet.project_errors.WordType" href="#projet.project_errors.WordType">WordType</a></code></h4>
 </li>
 </ul>
 </li>
