@@ -4,7 +4,7 @@ Contient les fonctions et classes **python** utilisés dans le notebook final
 
 ```python
 print(
-    "Créer le module `twitter_credentials.py` dans ./projet_python_twitter/",
+    "Créer le module `twitter_credentials.py` dans ./projet/",
     "",
     "De la forme :",
     "",

@@ -5,7 +5,7 @@ import json
 import tweepy
 
 # Erreurs du projet
-import projet_python_twitter.project_errors as errors
+import projet.project_errors as errors
 
 ### Authentification et connexion avec l'API ###
 class credentials_class:
@@ -21,7 +21,7 @@ class credentials_class:
                 `access_token` et `bearer_token`.    
                 Les valeurs sont des chaines de caractères.
 
-                Voir `projet_python_twitter/README.md` pour un exemple.
+                Voir `projet/README.md` pour un exemple.
 
             **kwargs (optional): Arguments à passer à `tweepy.API`.
 
@@ -317,14 +317,14 @@ def start_stream(
 ### Lancement du stream ###
 if __name__ == "__main__":
     try:
-        import projet_python_twitter.listes_mots as listes
-        import projet_python_twitter._credentials as _credentials
+        import projet.listes_mots as listes
+        import projet._credentials as _credentials
 
         credentials = credentials_class(_credentials.credentials)
 
         start_stream(
             credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
-            liste_mots=listes.liste_5,  # Liste de mot à tracker (voir `projet_python_twitter.listes_mots`).
+            liste_mots=listes.liste_5,  # Liste de mot à tracker (voir `projet.listes_mots`).
             timeout=0.001,
             fprefix="liste_5",  # À modifier en fonction de la liste selectionnée.
             path="C:/Users/gabri/Documents/json_files/",  # À modifier selon l'utilisateur.
@@ -334,6 +334,6 @@ if __name__ == "__main__":
         print(
             "Erreur : " + str(e),
             "",
-            "Vérifier que '_credentials.py' existe bien et est dans le bon dossier ('projet_python_twitter/')",
+            "Vérifier que '_credentials.py' existe bien et est dans le bon dossier ('projet/')",
             sep="\n",
         )
