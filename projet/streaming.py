@@ -1,3 +1,6 @@
+### Récupère les tweets avec l'API Twitter ###
+
+
 ### Import les modules ###
 # Import les modules utilisés
 import time, sys

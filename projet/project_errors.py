@@ -1,4 +1,4 @@
-###Erreurs###
+### Contient les erreurs du projet ###
 class CredentialsType(Exception):
     """Erreur à lever si credentials n'est pas un dictionnaire"""
 
