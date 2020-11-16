@@ -31,13 +31,13 @@ jobs:
           echo "=============== list modified files ==============="
           git diff --name-only HEAD^ HEAD
 
-          echo "========== modified files under 'projet_python_twitter' or 'test' folder =========="
+          echo "========== modified files under 'projet' or 'test' folder =========="
           git diff --name-only HEAD^ HEAD > files.txt
           while IFS= read -r file
           do
             # echo $file
-            if [[ $file != projet_python_twitter/* && $file != test/* ]]; then
-              # echo "This modified file is not under the 'projet_python_twitter' or the 'test' folder."
+            if [[ $file != projet/* && $file != test/* ]]; then
+              # echo "This modified file is not under the 'projet' or the 'test' folder."
               echo "::set-output name=run_job::false"
               # break
             else
@@ -87,9 +87,9 @@ jobs:
 
       - name: Generate documentation
         run: |
-          pdoc --html -f --output-dir docs projet_python_twitter
-          mv docs/projet_python_twitter/* docs
-          rmdir docs/projet_python_twitter
+          pdoc --html -f --output-dir docs projet
+          mv docs/projet/* docs
+          rmdir docs/projet
 
       - name: Check if docs files changed
         id: check_files_docs
