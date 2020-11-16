@@ -106,7 +106,7 @@ class SListener(tweepy.StreamListener):
         
         Chaque Tweet est enregistré au format `.json`.    
         Puis les tweets sont rassemblés dans des fichiers `.json` de la forme:    
-        `[fprefix]_YYYYmmdd-HHMMSS.json`
+        `[fprefix]_YYYYmmdd-HHMMSS.json`.
 
         Args:
             credentials: 
