@@ -125,6 +125,7 @@ jobs:
         if: steps.check_files_docs.outputs.run_doc == 'true'
         #  && github.ref == 'refs/heads/master'
         run: |
+          git checkout ${{ steps.branch_name.outputs.branch }}
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add docs/*
