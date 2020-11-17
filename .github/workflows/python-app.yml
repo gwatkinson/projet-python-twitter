@@ -31,7 +31,7 @@ jobs:
           echo "=============== list modified files ==============="
           git diff --name-only HEAD^ HEAD
 
-          echo "========== modified files under 'projet' or 'test' folder =========="
+          # echo "========== modified files under 'projet' or 'test' folder =========="
           git diff --name-only HEAD^ HEAD > files.txt
           while IFS= read -r file
           do
@@ -41,7 +41,7 @@ jobs:
               echo "::set-output name=run_job::false"
               # break
             else
-              echo $file
+              # echo $file
               echo "::set-output name=run_job::true"
               break
             fi
@@ -97,7 +97,7 @@ jobs:
           echo "=============== list modified files ==============="
           git status --porcelain | cut -c4-
 
-          echo "========== modified files under the 'docs' folder =========="
+          # echo "========== modified files under the 'docs' folder =========="
           git status --porcelain | cut -c4- > files.txt
           while IFS= read -r file
           do
@@ -107,7 +107,7 @@ jobs:
               echo "::set-output name=run_doc::false"
               # break
             else
-              echo $file
+              # echo $file
               echo "::set-output name=run_doc::true"
               break
             fi
