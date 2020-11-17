@@ -27,8 +27,10 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">### Contient les erreurs du projet ###
+
+
 class CredentialsType(Exception):
-    &#34;&#34;&#34;Erreur à lever si credentials n&#39;est pas un dictionnaire&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever si `credentials` n&#39;est pas un dictionnaire.&#34;&#34;&#34;
 
     def __init__(self, type, message=&#34;&#39;credentials&#39; doit être un dictionnaire, pas un&#34;):
         self.type = type
@@ -40,7 +42,7 @@ class CredentialsType(Exception):
 
 
 class MissingKey(Exception):
-    &#34;&#34;&#34;Erreur à lever s&#39;il manque des clés dans le dictionnaire&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever s&#39;il manque des clés dans le dictionnaire.&#34;&#34;&#34;
 
     def __init__(
         self, missing_keys, message=&#34;Il manque des clés dans le dictionnaire.&#34;
@@ -54,7 +56,7 @@ class MissingKey(Exception):
 
 
 class CredentialsKeyType(Exception):
-    &#34;&#34;&#34;Erreur à lever si les clés ne sont pas des str&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever si les clés ne sont pas des `str`.&#34;&#34;&#34;
 
     def __init__(self, wrong_keys, message=&#34;doivent être des strings.&#34;):
         self.wrong_keys = wrong_keys
@@ -66,7 +68,7 @@ class CredentialsKeyType(Exception):
 
 
 class CredentialsClassType(Exception):
-    &#34;&#34;&#34;Erreur à lever si credentials n&#39;est pas une instance de credentials_class&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever si `credentials` n&#39;est pas une instance de `credentials_class`.&#34;&#34;&#34;
 
     def __init__(
         self,
@@ -82,7 +84,7 @@ class CredentialsClassType(Exception):
 
 
 class WordType(Exception):
-    &#34;&#34;&#34;Erreur à lever si les mots de la liste de mots à suivre ne sont pas des str&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever si les mots de la liste de mots à suivre ne sont pas des `str`.&#34;&#34;&#34;
 
     def __init__(self, wrong_words, message=&#34;doivent être des strings.&#34;):
         self.wrong_words = wrong_words
@@ -107,13 +109,13 @@ class WordType(Exception):
 <span>(</span><span>type, message="'credentials' doit être une instance de 'credentials_class', pas un")</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Erreur à lever si credentials n'est pas une instance de credentials_class</p></div>
+<div class="desc"><p>Erreur à lever si <code>credentials</code> n'est pas une instance de <code>credentials_class</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class CredentialsClassType(Exception):
-    &#34;&#34;&#34;Erreur à lever si credentials n&#39;est pas une instance de credentials_class&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever si `credentials` n&#39;est pas une instance de `credentials_class`.&#34;&#34;&#34;
 
     def __init__(
         self,
@@ -138,13 +140,13 @@ class WordType(Exception):
 <span>(</span><span>wrong_keys, message='doivent être des strings.')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Erreur à lever si les clés ne sont pas des str</p></div>
+<div class="desc"><p>Erreur à lever si les clés ne sont pas des <code>str</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class CredentialsKeyType(Exception):
-    &#34;&#34;&#34;Erreur à lever si les clés ne sont pas des str&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever si les clés ne sont pas des `str`.&#34;&#34;&#34;
 
     def __init__(self, wrong_keys, message=&#34;doivent être des strings.&#34;):
         self.wrong_keys = wrong_keys
@@ -165,13 +167,13 @@ class WordType(Exception):
 <span>(</span><span>type, message="'credentials' doit être un dictionnaire, pas un")</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Erreur à lever si credentials n'est pas un dictionnaire</p></div>
+<div class="desc"><p>Erreur à lever si <code>credentials</code> n'est pas un dictionnaire.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class CredentialsType(Exception):
-    &#34;&#34;&#34;Erreur à lever si credentials n&#39;est pas un dictionnaire&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever si `credentials` n&#39;est pas un dictionnaire.&#34;&#34;&#34;
 
     def __init__(self, type, message=&#34;&#39;credentials&#39; doit être un dictionnaire, pas un&#34;):
         self.type = type
@@ -192,13 +194,13 @@ class WordType(Exception):
 <span>(</span><span>missing_keys, message='Il manque des clés dans le dictionnaire.')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Erreur à lever s'il manque des clés dans le dictionnaire</p></div>
+<div class="desc"><p>Erreur à lever s'il manque des clés dans le dictionnaire.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class MissingKey(Exception):
-    &#34;&#34;&#34;Erreur à lever s&#39;il manque des clés dans le dictionnaire&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever s&#39;il manque des clés dans le dictionnaire.&#34;&#34;&#34;
 
     def __init__(
         self, missing_keys, message=&#34;Il manque des clés dans le dictionnaire.&#34;
@@ -221,13 +223,13 @@ class WordType(Exception):
 <span>(</span><span>wrong_words, message='doivent être des strings.')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Erreur à lever si les mots de la liste de mots à suivre ne sont pas des str</p></div>
+<div class="desc"><p>Erreur à lever si les mots de la liste de mots à suivre ne sont pas des <code>str</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class WordType(Exception):
-    &#34;&#34;&#34;Erreur à lever si les mots de la liste de mots à suivre ne sont pas des str&#34;&#34;&#34;
+    &#34;&#34;&#34;Erreur à lever si les mots de la liste de mots à suivre ne sont pas des `str`.&#34;&#34;&#34;
 
     def __init__(self, wrong_words, message=&#34;doivent être des strings.&#34;):
         self.wrong_words = wrong_words

@@ -39,7 +39,7 @@ import tweepy
 import projet.project_errors as errors
 
 ### Authentification et connexion avec l&#39;API ###
-class credentials_class:
+class CredentialsClass:
     def __init__(self, credentials, **kwargs):
         &#34;&#34;&#34;
         Classe qui stock les clés et crée une connexion avec l&#39;API.
@@ -66,16 +66,12 @@ class credentials_class:
             auth: 
                 Contient l&#39;objet auth de `tweepy.OAuthHandler`.
 
-                Crée par `credentials_class.authenticate`.
+                Crée par `CredentialsClass.authenticate`.
 
             api: 
                 Contient l&#39;objet `tweepy.API`.
 
-                Crée par `credentials_class.authenticate`.
-                
-        Methods:
-            authenticate: 
-                Méthode qui gère l&#39;authentification et connexion à l&#39;API.
+                Crée par `CredentialsClass.authenticate`.
         &#34;&#34;&#34;
 
         # Vérifie le format de &#39;credentials&#39;
@@ -138,11 +134,11 @@ class SListener(tweepy.StreamListener):
         
         Chaque Tweet est enregistré au format `.json`.    
         Puis les tweets sont rassemblés dans des fichiers `.json` de la forme:    
-        `[fprefix]_YYYYmmdd-HHMMSS.json`
+        `[fprefix]_YYYYmmdd-HHMMSS.json`.
 
         Args:
             credentials: 
-                Instance de `credentials_class` qui gère la connexion avec l&#39;API de Twitter.
+                Instance de `CredentialsClass` qui gère la connexion avec l&#39;API de Twitter.
 
             fprefix (str, optional): 
                 Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
@@ -187,7 +183,7 @@ class SListener(tweepy.StreamListener):
 
             verbose (bool): Contient la valeur du booléen `verbose`.
         &#34;&#34;&#34;
-        if not isinstance(credentials, credentials_class):
+        if not isinstance(credentials, CredentialsClass):
             raise errors.CredentialsClassType(type=type(credentials))
 
         self.api = credentials.api
@@ -272,7 +268,7 @@ def start_stream(
             Doit contenir des `str`.
 
         credentials: 
-            Instance de `credentials_class` qui gère la connexion avec Twitter.
+            Instance de `CredentialsClass` qui gère la connexion avec Twitter.
 
         timeout (float, optional): 
             Le temps (en heures) que le stream doit-il être lancé.
@@ -303,7 +299,7 @@ def start_stream(
     if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
         raise errors.WordType(wrong_words=wrong_words)
 
-    if not isinstance(credentials, credentials_class):
+    if not isinstance(credentials, CredentialsClass):
         raise errors.CredentialsClassType(type=type(credentials))
 
     start_time = end_time = time.time()
@@ -355,7 +351,7 @@ if __name__ == &#34;__main__&#34;:
         import projet.listes_mots as listes
         import projet._credentials as _credentials
 
-        credentials = credentials_class(_credentials.credentials)
+        credentials = CredentialsClass(_credentials.credentials)
 
         start_stream(
             credentials=credentials,  # Vérifier que &#39;_twitter_credentials&#34; existe bien.
@@ -398,7 +394,7 @@ dans une instance de la classe <code><a title="projet.streaming.SListener" href=
 <p>Doit contenir des <code>str</code>.</p>
 </dd>
 <dt><strong><code>credentials</code></strong></dt>
-<dd>Instance de <code><a title="projet.streaming.credentials_class" href="#projet.streaming.credentials_class">credentials_class</a></code> qui gère la connexion avec Twitter.</dd>
+<dd>Instance de <code><a title="projet.streaming.CredentialsClass" href="#projet.streaming.CredentialsClass">CredentialsClass</a></code> qui gère la connexion avec Twitter.</dd>
 <dt><strong><code>timeout</code></strong> :&ensp;<code>float</code>, optional</dt>
 <dd>
 <p>Le temps (en heures) que le stream doit-il être lancé.</p>
@@ -446,7 +442,7 @@ et il faudra l'arrêter manuellement.</p>
             Doit contenir des `str`.
 
         credentials: 
-            Instance de `credentials_class` qui gère la connexion avec Twitter.
+            Instance de `CredentialsClass` qui gère la connexion avec Twitter.
 
         timeout (float, optional): 
             Le temps (en heures) que le stream doit-il être lancé.
@@ -477,7 +473,7 @@ et il faudra l'arrêter manuellement.</p>
     if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
         raise errors.WordType(wrong_words=wrong_words)
 
-    if not isinstance(credentials, credentials_class):
+    if not isinstance(credentials, CredentialsClass):
         raise errors.CredentialsClassType(type=type(credentials))
 
     start_time = end_time = time.time()
@@ -528,6 +524,170 @@ et il faudra l'arrêter manuellement.</p>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="projet.streaming.CredentialsClass"><code class="flex name class">
+<span>class <span class="ident">CredentialsClass</span></span>
+<span>(</span><span>credentials, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Classe qui stock les clés et crée une connexion avec l'API.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>credentials</code></strong></dt>
+<dd>
+<p>Un dictionnaire qui contient les clés de l'API.</p>
+<p>Les clés necessaires sont <code>consumer_key</code>, <code>consumer_secret</code>,
+<code>access_token</code> et <code>bearer_token</code>.
+<br>
+Les valeurs sont des chaines de caractères.</p>
+<p>Voir <code>projet/README.md</code> pour un exemple.</p>
+</dd>
+<dt><strong><code>**kwargs</code></strong> :&ensp;<code>optional</code></dt>
+<dd>
+<p>Arguments à passer à <code>tweepy.API</code>.</p>
+<p>Voir <a href="http://docs.tweepy.org/en/latest/api.html#tweepy-api-twitter-api-wrapper">la documentation de tweepy</a></p>
+</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>consumer_key</code></strong> :&ensp;<code>str</code></dt>
+<dd>Contient l'API Key.</dd>
+<dt><strong><code>consumer_secret</code></strong> :&ensp;<code>str</code></dt>
+<dd>Contient l'API Key Secret.</dd>
+<dt><strong><code>access_token</code></strong> :&ensp;<code>str</code></dt>
+<dd>Contient l'Access Token.</dd>
+<dt><strong><code>access_token_secret</code></strong> :&ensp;<code>str</code></dt>
+<dd>Contient l'Access Token Secret.</dd>
+<dt><strong><code>auth</code></strong></dt>
+<dd>
+<p>Contient l'objet auth de <code>tweepy.OAuthHandler</code>.</p>
+<p>Crée par <code><a title="projet.streaming.CredentialsClass.authenticate" href="#projet.streaming.CredentialsClass.authenticate">CredentialsClass.authenticate()</a></code>.</p>
+</dd>
+<dt><strong><code>api</code></strong></dt>
+<dd>
+<p>Contient l'objet <code>tweepy.API</code>.</p>
+<p>Crée par <code><a title="projet.streaming.CredentialsClass.authenticate" href="#projet.streaming.CredentialsClass.authenticate">CredentialsClass.authenticate()</a></code>.</p>
+</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class CredentialsClass:
+    def __init__(self, credentials, **kwargs):
+        &#34;&#34;&#34;
+        Classe qui stock les clés et crée une connexion avec l&#39;API.
+
+        Args:
+            credentials: 
+                Un dictionnaire qui contient les clés de l&#39;API.
+
+                Les clés necessaires sont `consumer_key`, `consumer_secret`, 
+                `access_token` et `bearer_token`.    
+                Les valeurs sont des chaines de caractères.
+
+                Voir `projet/README.md` pour un exemple.
+
+            **kwargs (optional): Arguments à passer à `tweepy.API`.
+
+                Voir [la documentation de tweepy](http://docs.tweepy.org/en/latest/api.html#tweepy-api-twitter-api-wrapper)
+
+        Attributes:
+            consumer_key (str): Contient l&#39;API Key.
+            consumer_secret (str): Contient l&#39;API Key Secret.
+            access_token (str): Contient l&#39;Access Token.
+            access_token_secret (str): Contient l&#39;Access Token Secret.
+            auth: 
+                Contient l&#39;objet auth de `tweepy.OAuthHandler`.
+
+                Crée par `CredentialsClass.authenticate`.
+
+            api: 
+                Contient l&#39;objet `tweepy.API`.
+
+                Crée par `CredentialsClass.authenticate`.
+        &#34;&#34;&#34;
+
+        # Vérifie le format de &#39;credentials&#39;
+        if type(credentials) is not dict:
+            raise errors.CredentialsType(type=type(credentials))
+
+        # Liste des clés nécessaire
+        key_names = [
+            &#34;consumer_key&#34;,
+            &#34;consumer_secret&#34;,
+            &#34;access_token&#34;,
+            &#34;access_token_secret&#34;,
+        ]
+
+        # Vérifie si les clés existent bien
+        if (missing_keys := [key for key in key_names if key not in credentials]) :
+            raise errors.MissingKey(missing_keys=missing_keys)
+
+        # Vérifie le type des clés
+        if (
+            wrong_keys := [
+                key for key in key_names if type(credentials[key]) is not str
+            ]
+        ) :
+            raise errors.CredentialsKeyType(wrong_keys=wrong_keys)
+
+        # Utilise les clés fournies dans le dictionnaire &#39;credentials&#39;
+        self.consumer_key = credentials[&#34;consumer_key&#34;]
+        self.consumer_secret = credentials[&#34;consumer_secret&#34;]
+        self.access_token = credentials[&#34;access_token&#34;]
+        self.access_token_secret = credentials[&#34;access_token_secret&#34;]
+        self.kwargs = kwargs
+        # Attributs auth et api
+        self.auth, self.api = self.authenticate()
+
+    def authenticate(self):
+        &#34;&#34;&#34;
+        Authentification et connexion à l&#39;API.
+
+        Returns: 
+            Un tuple qui contient :             
+                auth: Objet `tweepy.OAuthHandler` qui contient les clés.    
+                api: Objet `tweepy.API` qui utilise auth.
+        &#34;&#34;&#34;
+        auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
+        auth.set_access_token(self.access_token, self.access_token_secret)
+        api = tweepy.API(auth, self.kwargs)
+        return auth, api</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="projet.streaming.CredentialsClass.authenticate"><code class="name flex">
+<span>def <span class="ident">authenticate</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Authentification et connexion à l'API.</p>
+<p>Returns:
+Un tuple qui contient :
+<br>
+auth: Objet <code>tweepy.OAuthHandler</code> qui contient les clés.
+<br>
+api: Objet <code>tweepy.API</code> qui utilise auth.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def authenticate(self):
+    &#34;&#34;&#34;
+    Authentification et connexion à l&#39;API.
+
+    Returns: 
+        Un tuple qui contient :             
+            auth: Objet `tweepy.OAuthHandler` qui contient les clés.    
+            api: Objet `tweepy.API` qui utilise auth.
+    &#34;&#34;&#34;
+    auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
+    auth.set_access_token(self.access_token, self.access_token_secret)
+    api = tweepy.API(auth, self.kwargs)
+    return auth, api</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="projet.streaming.SListener"><code class="flex name class">
 <span>class <span class="ident">SListener</span></span>
 <span>(</span><span>credentials, fprefix='streamer', path='', max=20000, verbose=False)</span>
@@ -539,11 +699,11 @@ et il faudra l'arrêter manuellement.</p>
 <br>
 Puis les tweets sont rassemblés dans des fichiers <code>.json</code> de la forme:
 <br>
-<code>[fprefix]_YYYYmmdd-HHMMSS.json</code></p>
+<code>[fprefix]_YYYYmmdd-HHMMSS.json</code>.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>credentials</code></strong></dt>
-<dd>Instance de <code><a title="projet.streaming.credentials_class" href="#projet.streaming.credentials_class">credentials_class</a></code> qui gère la connexion avec l'API de Twitter.</dd>
+<dd>Instance de <code><a title="projet.streaming.CredentialsClass" href="#projet.streaming.CredentialsClass">CredentialsClass</a></code> qui gère la connexion avec l'API de Twitter.</dd>
 <dt><strong><code>fprefix</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>
 <p>Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. </p>
@@ -606,11 +766,11 @@ Puis les tweets sont rassemblés dans des fichiers <code>.json</code> de la form
         
         Chaque Tweet est enregistré au format `.json`.    
         Puis les tweets sont rassemblés dans des fichiers `.json` de la forme:    
-        `[fprefix]_YYYYmmdd-HHMMSS.json`
+        `[fprefix]_YYYYmmdd-HHMMSS.json`.
 
         Args:
             credentials: 
-                Instance de `credentials_class` qui gère la connexion avec l&#39;API de Twitter.
+                Instance de `CredentialsClass` qui gère la connexion avec l&#39;API de Twitter.
 
             fprefix (str, optional): 
                 Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
@@ -655,7 +815,7 @@ Puis les tweets sont rassemblés dans des fichiers <code>.json</code> de la form
 
             verbose (bool): Contient la valeur du booléen `verbose`.
         &#34;&#34;&#34;
-        if not isinstance(credentials, credentials_class):
+        if not isinstance(credentials, CredentialsClass):
             raise errors.CredentialsClassType(type=type(credentials))
 
         self.api = credentials.api
@@ -839,177 +999,6 @@ the stream data. Return False to stop stream and close connection.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="projet.streaming.credentials_class"><code class="flex name class">
-<span>class <span class="ident">credentials_class</span></span>
-<span>(</span><span>credentials, **kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Classe qui stock les clés et crée une connexion avec l'API.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>credentials</code></strong></dt>
-<dd>
-<p>Un dictionnaire qui contient les clés de l'API.</p>
-<p>Les clés necessaires sont <code>consumer_key</code>, <code>consumer_secret</code>,
-<code>access_token</code> et <code>bearer_token</code>.
-<br>
-Les valeurs sont des chaines de caractères.</p>
-<p>Voir <code>projet/README.md</code> pour un exemple.</p>
-</dd>
-<dt><strong><code>**kwargs</code></strong> :&ensp;<code>optional</code></dt>
-<dd>
-<p>Arguments à passer à <code>tweepy.API</code>.</p>
-<p>Voir <a href="http://docs.tweepy.org/en/latest/api.html#tweepy-api-twitter-api-wrapper">la documentation de tweepy</a></p>
-</dd>
-</dl>
-<h2 id="attributes">Attributes</h2>
-<dl>
-<dt><strong><code>consumer_key</code></strong> :&ensp;<code>str</code></dt>
-<dd>Contient l'API Key.</dd>
-<dt><strong><code>consumer_secret</code></strong> :&ensp;<code>str</code></dt>
-<dd>Contient l'API Key Secret.</dd>
-<dt><strong><code>access_token</code></strong> :&ensp;<code>str</code></dt>
-<dd>Contient l'Access Token.</dd>
-<dt><strong><code>access_token_secret</code></strong> :&ensp;<code>str</code></dt>
-<dd>Contient l'Access Token Secret.</dd>
-<dt><strong><code>auth</code></strong></dt>
-<dd>
-<p>Contient l'objet auth de <code>tweepy.OAuthHandler</code>.</p>
-<p>Crée par <code><a title="projet.streaming.credentials_class.authenticate" href="#projet.streaming.credentials_class.authenticate">credentials_class.authenticate()</a></code>.</p>
-</dd>
-<dt><strong><code>api</code></strong></dt>
-<dd>
-<p>Contient l'objet <code>tweepy.API</code>.</p>
-<p>Crée par <code><a title="projet.streaming.credentials_class.authenticate" href="#projet.streaming.credentials_class.authenticate">credentials_class.authenticate()</a></code>.</p>
-</dd>
-</dl>
-<h2 id="methods">Methods</h2>
-<p>authenticate:
-Méthode qui gère l'authentification et connexion à l'API.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class credentials_class:
-    def __init__(self, credentials, **kwargs):
-        &#34;&#34;&#34;
-        Classe qui stock les clés et crée une connexion avec l&#39;API.
-
-        Args:
-            credentials: 
-                Un dictionnaire qui contient les clés de l&#39;API.
-
-                Les clés necessaires sont `consumer_key`, `consumer_secret`, 
-                `access_token` et `bearer_token`.    
-                Les valeurs sont des chaines de caractères.
-
-                Voir `projet/README.md` pour un exemple.
-
-            **kwargs (optional): Arguments à passer à `tweepy.API`.
-
-                Voir [la documentation de tweepy](http://docs.tweepy.org/en/latest/api.html#tweepy-api-twitter-api-wrapper)
-
-        Attributes:
-            consumer_key (str): Contient l&#39;API Key.
-            consumer_secret (str): Contient l&#39;API Key Secret.
-            access_token (str): Contient l&#39;Access Token.
-            access_token_secret (str): Contient l&#39;Access Token Secret.
-            auth: 
-                Contient l&#39;objet auth de `tweepy.OAuthHandler`.
-
-                Crée par `credentials_class.authenticate`.
-
-            api: 
-                Contient l&#39;objet `tweepy.API`.
-
-                Crée par `credentials_class.authenticate`.
-                
-        Methods:
-            authenticate: 
-                Méthode qui gère l&#39;authentification et connexion à l&#39;API.
-        &#34;&#34;&#34;
-
-        # Vérifie le format de &#39;credentials&#39;
-        if type(credentials) is not dict:
-            raise errors.CredentialsType(type=type(credentials))
-
-        # Liste des clés nécessaire
-        key_names = [
-            &#34;consumer_key&#34;,
-            &#34;consumer_secret&#34;,
-            &#34;access_token&#34;,
-            &#34;access_token_secret&#34;,
-        ]
-
-        # Vérifie si les clés existent bien
-        if (missing_keys := [key for key in key_names if key not in credentials]) :
-            raise errors.MissingKey(missing_keys=missing_keys)
-
-        # Vérifie le type des clés
-        if (
-            wrong_keys := [
-                key for key in key_names if type(credentials[key]) is not str
-            ]
-        ) :
-            raise errors.CredentialsKeyType(wrong_keys=wrong_keys)
-
-        # Utilise les clés fournies dans le dictionnaire &#39;credentials&#39;
-        self.consumer_key = credentials[&#34;consumer_key&#34;]
-        self.consumer_secret = credentials[&#34;consumer_secret&#34;]
-        self.access_token = credentials[&#34;access_token&#34;]
-        self.access_token_secret = credentials[&#34;access_token_secret&#34;]
-        self.kwargs = kwargs
-        # Attributs auth et api
-        self.auth, self.api = self.authenticate()
-
-    def authenticate(self):
-        &#34;&#34;&#34;
-        Authentification et connexion à l&#39;API.
-
-        Returns: 
-            Un tuple qui contient :             
-                auth: Objet `tweepy.OAuthHandler` qui contient les clés.    
-                api: Objet `tweepy.API` qui utilise auth.
-        &#34;&#34;&#34;
-        auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
-        auth.set_access_token(self.access_token, self.access_token_secret)
-        api = tweepy.API(auth, self.kwargs)
-        return auth, api</code></pre>
-</details>
-<h3>Methods</h3>
-<dl>
-<dt id="projet.streaming.credentials_class.authenticate"><code class="name flex">
-<span>def <span class="ident">authenticate</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Authentification et connexion à l'API.</p>
-<p>Returns:
-Un tuple qui contient :
-<br>
-auth: Objet <code>tweepy.OAuthHandler</code> qui contient les clés.
-<br>
-api: Objet <code>tweepy.API</code> qui utilise auth.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def authenticate(self):
-    &#34;&#34;&#34;
-    Authentification et connexion à l&#39;API.
-
-    Returns: 
-        Un tuple qui contient :             
-            auth: Objet `tweepy.OAuthHandler` qui contient les clés.    
-            api: Objet `tweepy.API` qui utilise auth.
-    &#34;&#34;&#34;
-    auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
-    auth.set_access_token(self.access_token, self.access_token_secret)
-    api = tweepy.API(auth, self.kwargs)
-    return auth, api</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
 </dl>
 </section>
 </article>
@@ -1032,6 +1021,12 @@ api: Objet <code>tweepy.API</code> qui utilise auth.</p></div>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="projet.streaming.CredentialsClass" href="#projet.streaming.CredentialsClass">CredentialsClass</a></code></h4>
+<ul class="">
+<li><code><a title="projet.streaming.CredentialsClass.authenticate" href="#projet.streaming.CredentialsClass.authenticate">authenticate</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="projet.streaming.SListener" href="#projet.streaming.SListener">SListener</a></code></h4>
 <ul class="two-column">
 <li><code><a title="projet.streaming.SListener.on_data" href="#projet.streaming.SListener.on_data">on_data</a></code></li>
@@ -1040,12 +1035,6 @@ api: Objet <code>tweepy.API</code> qui utilise auth.</p></div>
 <li><code><a title="projet.streaming.SListener.on_limit" href="#projet.streaming.SListener.on_limit">on_limit</a></code></li>
 <li><code><a title="projet.streaming.SListener.on_status" href="#projet.streaming.SListener.on_status">on_status</a></code></li>
 <li><code><a title="projet.streaming.SListener.on_timeout" href="#projet.streaming.SListener.on_timeout">on_timeout</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="projet.streaming.credentials_class" href="#projet.streaming.credentials_class">credentials_class</a></code></h4>
-<ul class="">
-<li><code><a title="projet.streaming.credentials_class.authenticate" href="#projet.streaming.credentials_class.authenticate">authenticate</a></code></li>
 </ul>
 </li>
 </ul>

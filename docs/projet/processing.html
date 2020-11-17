@@ -39,19 +39,25 @@ import glob
 import projet.project_errors as errors
 
 
-### A tweet flattening function ###
+### Con ###
 def flatten_tweets(path):
     &#34;&#34;&#34;
-    Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary
+    Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.
     
-    Args: 
-        
+    Args:
+        path (str): 
+            Contient le chemin vers le dossier qui contient les fichiers `.json`.
     &#34;&#34;&#34;
+
+    # Utiliser une liste de path plutot ?
+    # Puis faire une fonction qui renvoie une liste de tous les fichiers json dans un dosiier donné
+
     tweets_list = []
+    # Liste des tweets (au format .json)
     with open(path, &#34;r&#34;) as fh:
         tweets_json = fh.read().split(&#34;\n&#34;)
 
-    # Iterate through each tweet
+    # Itère sur chaque tweet
     for tweet in tweets_json:
         if len(tweet) &gt; 0:
             tweet_obj = json.loads(tweet)
@@ -105,24 +111,34 @@ def flatten_tweets(path):
 <span>def <span class="ident">flatten_tweets</span></span>(<span>path)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary</p>
-<p>Args:</p></div>
+<div class="desc"><p>Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Contient le chemin vers le dossier qui contient les fichiers <code>.json</code>.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def flatten_tweets(path):
     &#34;&#34;&#34;
-    Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary
+    Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.
     
-    Args: 
-        
+    Args:
+        path (str): 
+            Contient le chemin vers le dossier qui contient les fichiers `.json`.
     &#34;&#34;&#34;
+
+    # Utiliser une liste de path plutot ?
+    # Puis faire une fonction qui renvoie une liste de tous les fichiers json dans un dosiier donné
+
     tweets_list = []
+    # Liste des tweets (au format .json)
     with open(path, &#34;r&#34;) as fh:
         tweets_json = fh.read().split(&#34;\n&#34;)
 
-    # Iterate through each tweet
+    # Itère sur chaque tweet
     for tweet in tweets_json:
         if len(tweet) &gt; 0:
             tweet_obj = json.loads(tweet)
