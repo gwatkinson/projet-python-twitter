@@ -77,14 +77,14 @@ jobs:
         run: |
           pytest --cov="." test/
 
-      - name: E)(1/5) Generate documentation
+      - name: E)(1/4) Generate documentation
         # if: github.ref == 'refs/heads/master'
         run: |
           pdoc --html -f --output-dir docs projet
           # mv docs/projet/* docs
           # rmdir docs/projet
 
-      - name: E)(2/5) Check if docs files changed
+      - name: E)(2/4) Check if docs files changed
         # if: github.ref == 'refs/heads/master'
         id: check_files_docs
         run: |
@@ -101,7 +101,7 @@ jobs:
             fi
           done < files.txt
 
-      - name: E)(3/5) Get branch name
+      - name: E)(3/4) Get branch name
         id: branch_name
         env:
           GITHUB_REF: ${{ github.ref }}
@@ -109,8 +109,8 @@ jobs:
           echo "=============== branch name ==============="
 
           if [[ ${{ github.event_name }} == 'pull_request' ]]; then
-            echo "::set-output name=branch::${{ github.base_ref }}"
-            echo "pull_request : the branch is '${{ github.base_ref }}'"
+            echo "::set-output name=branch::${{ github.event.pull_request.head.ref }}"
+            echo "pull_request : the branch is '${{ github.event.pull_request.head.ref }}'"
 
           elif [[ ${{ github.event_name }} == 'push' ]]; then
             echo "::set-output name=branch::${{ github.ref }}"
@@ -121,7 +121,7 @@ jobs:
             echo "workflow_dispatch : the branch is 'refs/heads/master'"
           fi
 
-      - name: E)(4/5) Commit files
+      - name: E)(4/4) Commit files
         if: steps.check_files_docs.outputs.run_doc == 'true'
         #  && github.ref == 'refs/heads/master'
         run: |
@@ -132,7 +132,7 @@ jobs:
 
         # git push origin ${{ steps.branch_name.outputs.branch }}
       - name: E)(5/5) Push changes
-        if: steps.check_files_docs.outputs.run_doc == 'true'
+        if: steps.check_files_docs.outputs.run_doc == 'true' && steps.branch_name.outputs.branch != 'refs/heads/master'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
