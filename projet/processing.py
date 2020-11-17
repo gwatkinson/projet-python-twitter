@@ -13,7 +13,13 @@ import projet.project_errors as errors
 
 ### A tweet flattening function ###
 def flatten_tweets(path):
-    """Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary"""
+    """
+    Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.
+    
+    Args: 
+        path: 
+            Une `str` qui contient le chemin vers le dossier qui contient les fichiers `.json`.
+    """
     tweets_list = []
     with open(path, "r") as fh:
         tweets_json = fh.read().split("\n")
