@@ -11,20 +11,25 @@ import glob
 import projet.project_errors as errors
 
 
-### A tweet flattening function ###
+### Con ###
 def flatten_tweets(path):
     """
     Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.
-    
-    Args: 
-        path: 
-            Une `str` qui contient le chemin vers le dossier qui contient les fichiers `.json`.
+
+    Args:
+        path (list): 
+            Une liste de `str` qui contiennent les chemin vers les fichiers `.json`.
     """
+
+    # Utiliser une liste de path plutot ?
+    # Puis faire une fonction qui renvoie une liste de tous les fichiers json dans un dosiier donné
+
     tweets_list = []
+    # Liste des tweets (au format .json)
     with open(path, "r") as fh:
         tweets_json = fh.read().split("\n")
 
-    # Iterate through each tweet
+    # Itère sur chaque tweet
     for tweet in tweets_json:
         if len(tweet) > 0:
             tweet_obj = json.loads(tweet)
@@ -65,4 +70,3 @@ def flatten_tweets(path):
 
         tweets_list.append(tweet_obj)
     return tweets_list
-
