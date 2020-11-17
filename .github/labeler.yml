@@ -1,12 +1,3 @@
-# Add 'data' label to any change within the 'data' or 'image' folder
-data:
-  - data/**/*
-  - image/**/*
-
-# Add 'test' label to any change within the 'test' folder
-test:
-  - test/**/*
-
 # Add 'repo github' label to any change within the root or '.github' folder
 repo github:
   - .github/**/*
@@ -17,6 +8,28 @@ workflows:
   - .github/workflows/*
   - .github/labeler.yml
 
-# Add 'documentation' label to any change within the 'build' folder
-documentation:
-  - build/**/*
+# Add 'test' label to any change within the 'test' folder
+test:
+  - test/**/*
+
+# Add 'errors' label to any change within the 'project_errors.py' file
+errors:
+  - projet/project_errors.py
+
+# Add 'data' label to any change within the 'data' or 'image' folder
+data:
+  - data/**/*
+  - image/**/*
+
+# # Add 'documentation' label to any change within the 'docs' folder
+# documentation:
+#   - docs/**/*
+
+# Add 'twitter stream' label to any change within the 'listes_mots.py' or 'streaming.py' files
+twitter stream:
+  - projet/listes_mots.py
+  - projet/streaming.py
+
+# Add 'data processing' label to any change within the 'processing.py' file
+data processing:
+  - projet/processing.py

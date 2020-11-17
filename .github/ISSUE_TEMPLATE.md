@@ -1,12 +1,3 @@
----
-name: Ajout d'un élément au projet
-about: Pour ajouter un élément au projet
-title: ''
-labels: ''
-assignees: ''
-
----
-
 **Concerne quelle partie du projet?**
 
 - [ ] Organisation du GitHub
@@ -24,8 +15,12 @@ assignees: ''
 
 - Objectif de l'élément ?
   - ...
+
 - Quelles étapes effectuer ?
-  - ...
+  - [ ] ...
+  - [ ] .
+  - [ ] .
+
 - Qui doit le faire ?
   - @
 

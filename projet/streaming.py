@@ -1,3 +1,6 @@
+### Récupère les tweets avec l'API Twitter ###
+
+
 ### Import les modules ###
 # Import les modules utilisés
 import time, sys
@@ -5,10 +8,10 @@ import json
 import tweepy
 
 # Erreurs du projet
-import projet_python_twitter.project_errors as errors
+import projet.project_errors as errors
 
 ### Authentification et connexion avec l'API ###
-class credentials_class:
+class CredentialsClass:
     def __init__(self, credentials, **kwargs):
         """
         Classe qui stock les clés et crée une connexion avec l'API.
@@ -21,7 +24,7 @@ class credentials_class:
                 `access_token` et `bearer_token`.    
                 Les valeurs sont des chaines de caractères.
 
-                Voir `projet_python_twitter/README.md` pour un exemple.
+                Voir `projet/README.md` pour un exemple.
 
             **kwargs (optional): Arguments à passer à `tweepy.API`.
 
@@ -35,12 +38,12 @@ class credentials_class:
             auth: 
                 Contient l'objet auth de `tweepy.OAuthHandler`.
 
-                Crée par `credentials_class.authenticate`.
+                Crée par `CredentialsClass.authenticate`.
 
             api: 
                 Contient l'objet `tweepy.API`.
 
-                Crée par `credentials_class.authenticate`.
+                Crée par `CredentialsClass.authenticate`.
         """
 
         # Vérifie le format de 'credentials'
@@ -103,11 +106,11 @@ class SListener(tweepy.StreamListener):
         
         Chaque Tweet est enregistré au format `.json`.    
         Puis les tweets sont rassemblés dans des fichiers `.json` de la forme:    
-        `[fprefix]_YYYYmmdd-HHMMSS.json`
+        `[fprefix]_YYYYmmdd-HHMMSS.json`.
 
         Args:
             credentials: 
-                Instance de `credentials_class` qui gère la connexion avec l'API de Twitter.
+                Instance de `CredentialsClass` qui gère la connexion avec l'API de Twitter.
 
             fprefix (str, optional): 
                 Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
@@ -152,7 +155,7 @@ class SListener(tweepy.StreamListener):
 
             verbose (bool): Contient la valeur du booléen `verbose`.
         """
-        if not isinstance(credentials, credentials_class):
+        if not isinstance(credentials, CredentialsClass):
             raise errors.CredentialsClassType(type=type(credentials))
 
         self.api = credentials.api
@@ -237,7 +240,7 @@ def start_stream(
             Doit contenir des `str`.
 
         credentials: 
-            Instance de `credentials_class` qui gère la connexion avec Twitter.
+            Instance de `CredentialsClass` qui gère la connexion avec Twitter.
 
         timeout (float, optional): 
             Le temps (en heures) que le stream doit-il être lancé.
@@ -268,7 +271,7 @@ def start_stream(
     if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
         raise errors.WordType(wrong_words=wrong_words)
 
-    if not isinstance(credentials, credentials_class):
+    if not isinstance(credentials, CredentialsClass):
         raise errors.CredentialsClassType(type=type(credentials))
 
     start_time = end_time = time.time()
@@ -317,14 +320,14 @@ def start_stream(
 ### Lancement du stream ###
 if __name__ == "__main__":
     try:
-        import projet_python_twitter.listes_mots as listes
-        import projet_python_twitter._credentials as _credentials
+        import projet.listes_mots as listes
+        import projet._credentials as _credentials
 
-        credentials = credentials_class(_credentials.credentials)
+        credentials = CredentialsClass(_credentials.credentials)
 
         start_stream(
             credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
-            liste_mots=listes.liste_5,  # Liste de mot à tracker (voir `projet_python_twitter.listes_mots`).
+            liste_mots=listes.liste_5,  # Liste de mot à tracker (voir `projet.listes_mots`).
             timeout=0.001,
             fprefix="liste_5",  # À modifier en fonction de la liste selectionnée.
             path="C:/Users/gabri/Documents/json_files/",  # À modifier selon l'utilisateur.
@@ -334,6 +337,6 @@ if __name__ == "__main__":
         print(
             "Erreur : " + str(e),
             "",
-            "Vérifier que '_credentials.py' existe bien et est dans le bon dossier ('projet_python_twitter/')",
+            "Vérifier que '_credentials.py' existe bien et est dans le bon dossier ('projet/')",
             sep="\n",
         )
