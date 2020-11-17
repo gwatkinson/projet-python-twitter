@@ -2,30 +2,28 @@
 import os
 import pytest
 import tweepy
-import projet_python_twitter.streaming as stream
-import projet_python_twitter.project_errors as errors
+import projet.streaming as stream
+import projet.project_errors as errors
 
 
 cred_file_exist = cred_file_exist = pytest.mark.skipif(
-    not os.path.isfile(
-        os.path.abspath(__file__) + "/../../projet_python_twitter/_credentials.py"
-    ),
+    not os.path.isfile(os.path.abspath(__file__) + "/../../projet/_credentials.py"),
     reason="'_credentials' n'existe pas",
 )
 
 
 @pytest.fixture
 def file_credentials():
-    """Returns the dictionary in projet_python_twitter._credentials"""
+    """Returns the dictionary in projet._credentials"""
     try:
-        import projet_python_twitter._credentials
+        import projet._credentials
 
-        return projet_python_twitter._credentials.credentials
+        return projet._credentials.credentials
     except ModuleNotFoundError as e:
         print(
             "Erreur : " + str(e),
             "",
-            "Vérifier que '_credentials.py' existe bien et est dans le bon dossier ('projet_python_twitter/')",
+            "Vérifier que '_credentials.py' existe bien et est dans le bon dossier ('projet/')",
             sep="\n",
         )
         return None
