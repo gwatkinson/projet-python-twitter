@@ -1,7 +1,6 @@
 ### Import les modules ###
 import os
 import pytest
-import tweepy
 import projet.streaming as stream
 import projet.project_errors as errors
 
