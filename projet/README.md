@@ -3,18 +3,15 @@
 Contient les fonctions et classes **python** utilisés dans le notebook final
 
 ```python
-print(
-    "Créer le module `twitter_credentials.py` dans ./projet/",
-    "",
-    "De la forme :",
-    "",
-    "credentials = {",
-    "   'consumer_key' : '',",
-    "   'consumer_secret' = '',",
-    "   'access_token' = '',",
-    "   'access_token_secret' = '',",
-    "   'bearer_token' = '' # pas necessaire",
-    "}",
-    sep="\n",
-)
+# Variables that contains the user credentials to access Twitter API
+# .gitignore should ignore this file
+# import _credentials to use the keys
+
+credentials = {
+    "consumer_key": "XXXXXXX",
+    "consumer_secret": "XXXXXXX",
+    "access_token": "XXXXXXX",
+    "access_token_secret": "XXXXXXX",
+}
+
 ```
