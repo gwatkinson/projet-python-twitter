@@ -13,7 +13,7 @@ on:
 
 jobs:
   check_python:
-    name: Check python files
+    name: Check the python files
     outputs:
       run_job: ${{ steps.check_files_python.outputs.run_job }}
     runs-on: ubuntu-latest
@@ -46,7 +46,7 @@ jobs:
           done < files.txt
 
   build:
-    name: Test the modules if some files changed
+    name: Test the modules
     needs: check_python
     runs-on: ubuntu-latest
     if: needs.check_python.outputs.run_job == 'true'
@@ -111,7 +111,7 @@ jobs:
             fi
           done < files.txt
 
-      - name: Commit and push files if push on master
+      - name: Commit and push files on master
         if: steps.check_files_docs.outputs.run_doc == 'true' && github.ref == 'refs/heads/master'
         run: |
           git config --local user.email "action@github.com"
