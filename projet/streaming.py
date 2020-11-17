@@ -11,7 +11,7 @@ import tweepy
 import projet.project_errors as errors
 
 ### Authentification et connexion avec l'API ###
-class credentials_class:
+class CredentialsClass:
     def __init__(self, credentials, **kwargs):
         """
         Classe qui stock les clés et crée une connexion avec l'API.
@@ -38,12 +38,12 @@ class credentials_class:
             auth: 
                 Contient l'objet auth de `tweepy.OAuthHandler`.
 
-                Crée par `credentials_class.authenticate`.
+                Crée par `CredentialsClass.authenticate`.
 
             api: 
                 Contient l'objet `tweepy.API`.
 
-                Crée par `credentials_class.authenticate`.
+                Crée par `CredentialsClass.authenticate`.
         """
 
         # Vérifie le format de 'credentials'
@@ -110,7 +110,7 @@ class SListener(tweepy.StreamListener):
 
         Args:
             credentials: 
-                Instance de `credentials_class` qui gère la connexion avec l'API de Twitter.
+                Instance de `CredentialsClass` qui gère la connexion avec l'API de Twitter.
 
             fprefix (str, optional): 
                 Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
@@ -155,7 +155,7 @@ class SListener(tweepy.StreamListener):
 
             verbose (bool): Contient la valeur du booléen `verbose`.
         """
-        if not isinstance(credentials, credentials_class):
+        if not isinstance(credentials, CredentialsClass):
             raise errors.CredentialsClassType(type=type(credentials))
 
         self.api = credentials.api
@@ -240,7 +240,7 @@ def start_stream(
             Doit contenir des `str`.
 
         credentials: 
-            Instance de `credentials_class` qui gère la connexion avec Twitter.
+            Instance de `CredentialsClass` qui gère la connexion avec Twitter.
 
         timeout (float, optional): 
             Le temps (en heures) que le stream doit-il être lancé.
@@ -271,7 +271,7 @@ def start_stream(
     if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
         raise errors.WordType(wrong_words=wrong_words)
 
-    if not isinstance(credentials, credentials_class):
+    if not isinstance(credentials, CredentialsClass):
         raise errors.CredentialsClassType(type=type(credentials))
 
     start_time = end_time = time.time()
@@ -323,7 +323,7 @@ if __name__ == "__main__":
         import projet.listes_mots as listes
         import projet._credentials as _credentials
 
-        credentials = credentials_class(_credentials.credentials)
+        credentials = CredentialsClass(_credentials.credentials)
 
         start_stream(
             credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
