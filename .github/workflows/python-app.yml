@@ -48,8 +48,8 @@ jobs:
       - name: A) Checkout code
         uses: actions/checkout@v2
         with:
-          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
-          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: B)(1/2) Set up Python 3.8
         uses: actions/setup-python@v2
@@ -77,15 +77,13 @@ jobs:
         run: |
           pytest --cov="." test/
 
-      - name: E)(1/4) Generate documentation
-        # if: github.ref == 'refs/heads/master'
+      - name: E)(1/5) Generate documentation
         run: |
           pdoc --html -f --output-dir docs projet
           # mv docs/projet/* docs
           # rmdir docs/projet
 
-      - name: E)(2/4) Check if docs files changed
-        # if: github.ref == 'refs/heads/master'
+      - name: E)(2/5) Check if docs files changed
         id: check_files_docs
         run: |
           echo "=============== list modified files ==============="
@@ -101,7 +99,8 @@ jobs:
             fi
           done < files.txt
 
-      - name: E)(3/4) Get branch name
+      - name: E)(3/5) Get branch name
+        if: steps.check_files_docs.outputs.run_doc == 'true'
         id: branch_name
         env:
           GITHUB_REF: ${{ github.ref }}
@@ -121,9 +120,8 @@ jobs:
             echo "workflow_dispatch : the branch is 'refs/heads/master'"
           fi
 
-      - name: E)(4/4) Commit files
+      - name: E)(4/5) Commit files
         if: steps.check_files_docs.outputs.run_doc == 'true'
-        #  && github.ref == 'refs/heads/master'
         run: |
           git checkout ${{ steps.branch_name.outputs.branch }}
           git config --local user.email "action@github.com"
@@ -131,7 +129,6 @@ jobs:
           git add docs/*
           git commit -m "Automatic commit : Update documentation"
 
-        # git push origin ${{ steps.branch_name.outputs.branch }}
       - name: E)(5/5) Push changes
         if: steps.check_files_docs.outputs.run_doc == 'true' && steps.branch_name.outputs.branch != 'refs/heads/master'
         uses: ad-m/github-push-action@master
