@@ -1,7 +1,7 @@
-### Process les tweets récupérés ###
+## Process les tweets récupérés
 
 
-### Import les modules ###
+## Import les modules
 # Import les modules utilisés
 import json
 import pandas as pd
@@ -11,7 +11,7 @@ import glob
 import projet.project_errors as errors
 
 
-### Con ###
+## Con
 def flatten_tweets(path):
     """
     Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.

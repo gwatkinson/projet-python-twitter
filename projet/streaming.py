@@ -1,7 +1,7 @@
-### Récupère les tweets avec l'API Twitter ###
+## Récupère les tweets avec l'API Twitter
 
 
-### Import les modules ###
+## Import les modules
 # Import les modules utilisés
 import time, sys
 import json
@@ -10,7 +10,7 @@ import tweepy
 # Erreurs du projet
 import projet.project_errors as errors
 
-### Authentification et connexion avec l'API ###
+## Authentification et connexion avec l'API
 class CredentialsClass:
     def __init__(self, credentials, **kwargs):
         """
@@ -94,7 +94,7 @@ class CredentialsClass:
         return auth, api
 
 
-### Stream des Tweets ###
+## Stream des Tweets
 class SListener(tweepy.StreamListener):
     def __init__(
         self, credentials, fprefix="streamer", path="", max=20000, verbose=False
@@ -103,7 +103,7 @@ class SListener(tweepy.StreamListener):
         Classe qui crée le stream de Tweets et gère l'enregistrement des Tweets récupérés.
 
         Hérite de la classe `StreamListener` de `tweepy.streaming`.
-        
+
         Chaque Tweet est enregistré au format `.json`.    
         Puis les tweets sont rassemblés dans des fichiers `.json` de la forme:    
         `[fprefix]_YYYYmmdd-HHMMSS.json`.
@@ -114,7 +114,7 @@ class SListener(tweepy.StreamListener):
 
             fprefix (str, optional): 
                 Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date. 
-                
+
                 Par défaut : `"streamer"`.
 
             path (str, optional): 
@@ -137,13 +137,13 @@ class SListener(tweepy.StreamListener):
                 Si `True`, affiche un point tout les 50 tweets traités.
 
                 Par défaut : `False`.
-        
+
         Attributes:
             api: 
                 Contient l'objet `tweepy.API`.
 
                 Attribut de `credentials`.
-            
+
             counter (int): Compteur du nombre de tweets dans le fichier actuel.
             max (int): Contient le nombre maximal de tweets par fichier.
             fprefix (str): Contient le préfixe.
@@ -317,7 +317,7 @@ def start_stream(
             return
 
 
-### Lancement du stream ###
+## Lancement du stream
 if __name__ == "__main__":
     try:
         import projet.listes_mots as listes
@@ -326,11 +326,11 @@ if __name__ == "__main__":
         credentials = CredentialsClass(_credentials.credentials)
 
         start_stream(
-            credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien.
-            liste_mots=listes.liste_5,  # Liste de mot à tracker (voir `projet.listes_mots`).
+            credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien
+            liste_mots=listes.liste_5,  # Liste de mot à tracker (voir `projet.listes_mots`)
             timeout=0.001,
-            fprefix="liste_5",  # À modifier en fonction de la liste selectionnée.
-            path="C:/Users/gabri/Documents/json_files/",  # À modifier selon l'utilisateur.
+            fprefix="liste_5",  # À modifier en fonction de la liste selectionnée
+            path="C:/Users/gabri/Documents/json_files/",  # À modifier selon l'utilisateur
             verbose=True,  # Selon les préférences.
         )
     except ModuleNotFoundError as e:
