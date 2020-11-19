@@ -163,8 +163,8 @@ class SListener(tweepy.StreamListener):
         self.max = int(max) if max > 0 else 0
         self.verbose = verbose
         self.fprefix = fprefix
-        if len(path) > 0:
-            assert path[-1] in ["/", "\\"], "'path' devrait terminer par '/' ou '\\'."
+        if path:
+            assert path[-1] in ["/", "\\"], "'path' doit terminer par '/' ou '\\'."
         self.path = path
         self.output = open(
             self.path + self.fprefix + "_" + time.strftime("%Y%m%d-%H%M%S") + ".json",
@@ -267,7 +267,6 @@ def start_stream(
 
             Par défaut : `False`.
     """
-
     if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
         raise errors.WordType(wrong_words=wrong_words)
 
