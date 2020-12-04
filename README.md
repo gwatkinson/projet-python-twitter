@@ -12,7 +12,7 @@ Fonctionnalités
 Documentation
 -------------
 
-Documentation : <https://gwatkinson.github.io/projet-python-twitter/>
+Documentation : <a href="https://gwatkinson.github.io/projet-python-twitter/" target="_blank">https://gwatkinson.github.io/projet-python-twitter/</a>
 
 Installation
 ------------
