@@ -9,12 +9,17 @@ Fonctionnalités
 * Fonctionnalité 1
 * Fonctionnalité 2
 
+Documentation
+-------------
+
+Documentation : <https://gwatkinson.github.io/projet-python-twitter/>
+
 Installation
 ------------
 
 Install projet-python-twitter by running:
 
-    pip install projet-python-twitter
+    pip ...
 
 Autheurs
 --------
