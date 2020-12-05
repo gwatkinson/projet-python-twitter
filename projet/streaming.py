@@ -189,8 +189,8 @@ class SListener(tweepy.StreamListener):
     def on_status(self, status):
         self.output.write(status)
         self.counter += 1
-        if self.verbose and self.counter % 50 == 0:
-            print("|")
+        if self.verbose and self.counter % 100 == 0:
+            print(["|", "/", "-", "\\"][self.counter // 100 % 4], end="\r")
         if self.counter >= 20000:
             self.output.close()
             self.output = open(
