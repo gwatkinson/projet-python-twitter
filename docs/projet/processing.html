@@ -33,71 +33,164 @@
 # Import les modules utilisés
 import json
 import pandas as pd
+import numpy as np
 import glob
 
 # Erreurs du projet
 import projet.project_errors as errors
 
+# Affichage du progrès
+def progressBar(current, total, file=None, total_file=None, barLength=20):
+    percent = float(current) * 100 / total
+    arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
+    spaces = &#34; &#34; * (barLength - len(arrow) - 1)
+    prefix = (
+        f&#34;File {file}/{total_file}&#34;
+        if file is not None and total_file is not None
+        else &#34;Progress&#34;
+    )
+    print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)
 
-## Con
-def flatten_tweets(path):
+
+## Converti et nettoie les tweets
+def folder_to_path_list(folder_path):
     &#34;&#34;&#34;
-    Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.
+    Retourne la liste des fichiers `.json` dans le dossier donné.
 
     Args:
-        path (list): 
-            Une liste de `str` qui contiennent les chemin vers les fichiers `.json`.
+        folder_path (str): Chemin du dossier.
+        Ne pas terminer avec un ``/`` ou ``\``.
+
+    Examples:
+        folder_path(&#34;path/to/folder&#34;)
+        folder_path(&#34;path\\to\\folder&#34;)
+    
+    Returns:
+        list: Liste des fichiers `.json` dans le dossier.
     &#34;&#34;&#34;
+    path_list = glob.glob(folder_path + &#34;/*.json&#34;)
 
-    # Utiliser une liste de path plutot ?
-    # Puis faire une fonction qui renvoie une liste de tous les fichiers json dans un dosiier donné
+    return path_list
 
+
+def tweet_json_to_df(path_list=None, folder=None):
+    &#34;&#34;&#34;
+    Converti les fichiers json en dataframe pandas.
+
+    Args:
+        path_list (list, optional): 
+            Une liste des chemin vers les fichiers `.json`.
+        folder (str, optional): 
+            Le chemin du dossier qui contient les fichiers `.json`.
+            Ne pas terminer avec un ``/`` ou ``\``.
+    
+    Returns:
+        pandas.dataframe: Dataframe pandas qui contient les tweets.
+    &#34;&#34;&#34;
+    assert path_list is not None or folder is not None, &#34;Un argument est nécessaire&#34;
+    assert path_list is None or (
+        path_list
+        and isinstance(path_list, list)
+        and all(isinstance(path, str) for path in path_list)
+    ), &#34;&#39;path_list&#39; doit être une liste de strings&#34;
+    assert folder is None or isinstance(
+        folder, str
+    ), &#34;&#39;folder&#39; doit être une chaîne de caractères&#34;
+
+    if path_list is None:
+        path_list = folder_to_path_list(folder_path=folder)
+
+    print(&#34;The file conversion started, this operation can take time&#34;)
+
+    # Contient la liste des tweets en json
     tweets_list = []
-    # Liste des tweets (au format .json)
-    with open(path, &#34;r&#34;) as fh:
-        tweets_json = fh.read().split(&#34;\n&#34;)
+    file_total = len(path_list)
+    for i, path in enumerate(path_list):
+        with open(path, &#34;r&#34;) as fh:
+            tweets_json = fh.read().split(&#34;\n&#34;)
+            for j, tweet in enumerate(tweets_json):
+                tweet_total = len(tweets_json)
+                if tweet:
+                    tweet_obj = json.loads(tweet)
+                tweets_list.append(tweet_obj)
+                progressBar(j, tweet_total, file=i + 1, total_file=file_total)
+        print(&#34;&#34;)
 
-    # Itère sur chaque tweet
-    for tweet in tweets_json:
-        if len(tweet) &gt; 0:
-            tweet_obj = json.loads(tweet)
+    # Créer une DataFrame à partir de `tweets_list`
+    df_tweets = pd.DataFrame(tweets_list)
 
-            # Store the user screen name in &#39;user-screen_name&#39;
-            tweet_obj[&#34;user-screen_name&#34;] = tweet_obj[&#34;user&#34;][&#34;screen_name&#34;]
+    # # Store the user screen name in &#39;user-screen_name&#39;
+    # df_tweets[&#34;user-screen_name&#34;] = df_tweets[&#34;user&#34;][&#34;screen_name&#34;]
 
-            # Check if this is a 140+ character tweet
-            if &#34;extended_tweet&#34; in tweet_obj:
-                # Store the extended tweet text in &#39;extended_tweet-full_text&#39;
-                tweet_obj[&#34;extended_tweet-full_text&#34;] = tweet_obj[&#34;extended_tweet&#34;][
-                    &#34;full_text&#34;
-                ]
+    # # Check if this is a 140+ character tweet
+    # if &#34;extended_tweet&#34; in df_tweets:
+    #     # Store the extended tweet text in &#39;extended_tweet-full_text&#39;
+    #     df_tweets[&#34;extended_tweet-full_text&#34;] = df_tweets[&#34;extended_tweet&#34;][&#34;full_text&#34;]
 
-            if &#34;retweeted_status&#34; in tweet_obj:
-                # Store the retweet user screen name in &#39;retweeted_status-user-screen_name&#39;
-                tweet_obj[&#34;retweeted_status-user-screen_name&#34;] = tweet_obj[
-                    &#34;retweeted_status&#34;
-                ][&#34;user&#34;][&#34;screen_name&#34;]
+    # Drop all the text duplicate (Est ce qu&#39;on a vraiment envie de supprimer les RT ?)
+    # df_tweets = df_tweets.drop_duplicates(subset=[&#34;text&#34;])
 
-                # Store the retweet text in &#39;retweeted_status-text&#39;
-                tweet_obj[&#34;retweeted_status-text&#34;] = tweet_obj[&#34;retweeted_status&#34;][
-                    &#34;text&#34;
-                ]
+    # Convert the created_at column to np.datetime object
+    df_tweets[&#34;created_at&#34;] = pd.to_datetime(df_tweets[&#34;created_at&#34;])
 
-                if &#34;extended_tweet&#34; in tweet_obj[&#34;retweeted_status&#34;]:
-                    tweet_obj[&#34;retweeted_status-extended_tweet-full_text&#34;] = tweet_obj[
-                        &#34;retweeted_status&#34;
-                    ][&#34;extended_tweet&#34;][&#34;full_text&#34;]
+    # Set the index of df_tweets to id
+    df_tweets = df_tweets.set_index(&#34;id&#34;)
 
-            if &#34;quoted_status&#34; in tweet_obj:
-                tweet_obj[&#34;quoted_status-text&#34;] = tweet_obj[&#34;quoted_status&#34;][&#34;text&#34;]
+    return df_tweets
 
-                if &#34;extended_tweet&#34; in tweet_obj[&#34;quoted_status&#34;]:
-                    tweet_obj[&#34;quoted_status-extended_tweet-full_text&#34;] = tweet_obj[
-                        &#34;quoted_status&#34;
-                    ][&#34;extended_tweet&#34;][&#34;full_text&#34;]
 
-        tweets_list.append(tweet_obj)
-    return tweets_list</code></pre>
+def select_time_range(df, start, end):
+    &#34;&#34;&#34;
+    Filtre les twwets.
+    Garde les tweets créés entre les dates données. 
+
+    Args:
+        df (dataframe): La dataframe pandas qui contient les tweets.
+        start (str): La date de départ.
+
+            Au format: ``&#34;YYYY-MM-DD HH:MM:SS&#34;``.
+        end (str): La date de fin
+        
+            Au format: ``&#34;YYYY-MM-DD HH:MM:SS&#34;``.
+
+    Returns:
+        pandas.dataframe: La dataframe filtrée.
+
+    Examples:
+        select_time_range(df, &#34;2020-11-03 08:15:00&#34;, &#34;2021-01-03 22:30:00&#34;)
+    &#34;&#34;&#34;
+    start_time = pd.to_datetime(start, &#34;%Y-%m-%d %H:%M:%S&#34;)
+    end_time = pd.to_datetime(end, &#34;%Y-%m-%d %H:%M:%S&#34;)
+
+    filtered_df = df[start_time &lt; df[&#34;created_at&#34;] &lt; end_time]
+
+    return filtered_df
+
+
+def filter_df(df):
+    &#34;&#34;&#34;
+    Fonction pour filtrer la df qui contient les tweets.
+
+    Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse 
+    (text, full text, les counts, la localisation, on supprime retweeted_status et quoted_status).
+    Il faut peut etre récuperer les counts via l&#39;API (car on récupère les nouveaux tweets et ils n&#34;ont pas encore de likes).
+    Il faudra peut etre utiliser des expr reg pour nettoyer les rt.
+    Mettre l&#39;option de choisir le timespan.
+
+    Args:
+        df ([type]): [description]
+    &#34;&#34;&#34;
+    pass
+
+
+def nlp(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter la ou les colonnes de nlp (à l&#39;aide de nltk ou TextBlob ou les deux)
+
+    Args:
+        df ([type]): [description]
+    &#34;&#34;&#34;
+    pass</code></pre>
 </details>
 </section>
 <section>
@@ -107,78 +200,275 @@ def flatten_tweets(path):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="projet.processing.flatten_tweets"><code class="name flex">
-<span>def <span class="ident">flatten_tweets</span></span>(<span>path)</span>
+<dt id="projet.processing.filter_df"><code class="name flex">
+<span>def <span class="ident">filter_df</span></span>(<span>df)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.</p>
+<div class="desc"><p>Fonction pour filtrer la df qui contient les tweets.</p>
+<p>Il s'agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse
+(text, full text, les counts, la localisation, on supprime retweeted_status et quoted_status).
+Il faut peut etre récuperer les counts via l'API (car on récupère les nouveaux tweets et ils n"ont pas encore de likes).
+Il faudra peut etre utiliser des expr reg pour nettoyer les rt.
+Mettre l'option de choisir le timespan.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>path</code></strong> :&ensp;<code>list</code></dt>
-<dd>Une liste de <code>str</code> qui contiennent les chemin vers les fichiers <code>.json</code>.</dd>
+<dt><strong><code>df</code></strong> :&ensp;<code>[type]</code></dt>
+<dd>[description]</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def flatten_tweets(path):
+<pre><code class="python">def filter_df(df):
     &#34;&#34;&#34;
-    Flattens out tweet dictionaries so relevant JSON is in a top-level dictionary.
+    Fonction pour filtrer la df qui contient les tweets.
+
+    Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse 
+    (text, full text, les counts, la localisation, on supprime retweeted_status et quoted_status).
+    Il faut peut etre récuperer les counts via l&#39;API (car on récupère les nouveaux tweets et ils n&#34;ont pas encore de likes).
+    Il faudra peut etre utiliser des expr reg pour nettoyer les rt.
+    Mettre l&#39;option de choisir le timespan.
 
     Args:
-        path (list): 
-            Une liste de `str` qui contiennent les chemin vers les fichiers `.json`.
+        df ([type]): [description]
     &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.folder_to_path_list"><code class="name flex">
+<span>def <span class="ident">folder_to_path_list</span></span>(<span>folder_path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Retourne la liste des fichiers <code>.json</code> dans le dossier donné.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>folder_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Chemin du dossier.</dd>
+</dl>
+<p>Ne pas terminer avec un <code>/</code> ou <code>\</code>.</p>
+<h2 id="examples">Examples</h2>
+<p>folder_path("path/to/folder")
+folder_path("path\to\folder")</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>Liste des fichiers <code>.json</code> dans le dossier.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def folder_to_path_list(folder_path):
+    &#34;&#34;&#34;
+    Retourne la liste des fichiers `.json` dans le dossier donné.
 
-    # Utiliser une liste de path plutot ?
-    # Puis faire une fonction qui renvoie une liste de tous les fichiers json dans un dosiier donné
+    Args:
+        folder_path (str): Chemin du dossier.
+        Ne pas terminer avec un ``/`` ou ``\``.
 
+    Examples:
+        folder_path(&#34;path/to/folder&#34;)
+        folder_path(&#34;path\\to\\folder&#34;)
+    
+    Returns:
+        list: Liste des fichiers `.json` dans le dossier.
+    &#34;&#34;&#34;
+    path_list = glob.glob(folder_path + &#34;/*.json&#34;)
+
+    return path_list</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.nlp"><code class="name flex">
+<span>def <span class="ident">nlp</span></span>(<span>df)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fonction pour ajouter la ou les colonnes de nlp (à l'aide de nltk ou TextBlob ou les deux)</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>[type]</code></dt>
+<dd>[description]</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def nlp(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter la ou les colonnes de nlp (à l&#39;aide de nltk ou TextBlob ou les deux)
+
+    Args:
+        df ([type]): [description]
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.progressBar"><code class="name flex">
+<span>def <span class="ident">progressBar</span></span>(<span>current, total, file=None, total_file=None, barLength=20)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def progressBar(current, total, file=None, total_file=None, barLength=20):
+    percent = float(current) * 100 / total
+    arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
+    spaces = &#34; &#34; * (barLength - len(arrow) - 1)
+    prefix = (
+        f&#34;File {file}/{total_file}&#34;
+        if file is not None and total_file is not None
+        else &#34;Progress&#34;
+    )
+    print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.select_time_range"><code class="name flex">
+<span>def <span class="ident">select_time_range</span></span>(<span>df, start, end)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Filtre les twwets.
+Garde les tweets créés entre les dates données. </p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>dataframe</code></dt>
+<dd>La dataframe pandas qui contient les tweets.</dd>
+<dt><strong><code>start</code></strong> :&ensp;<code>str</code></dt>
+<dd>
+<p>La date de départ.</p>
+<p>Au format: <code>"YYYY-MM-DD HH:MM:SS"</code>.</p>
+</dd>
+<dt><strong><code>end</code></strong> :&ensp;<code>str</code></dt>
+<dd>
+<p>La date de fin</p>
+<p>Au format: <code>"YYYY-MM-DD HH:MM:SS"</code>.</p>
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>La dataframe filtrée.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<p>select_time_range(df, "2020-11-03 08:15:00", "2021-01-03 22:30:00")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def select_time_range(df, start, end):
+    &#34;&#34;&#34;
+    Filtre les twwets.
+    Garde les tweets créés entre les dates données. 
+
+    Args:
+        df (dataframe): La dataframe pandas qui contient les tweets.
+        start (str): La date de départ.
+
+            Au format: ``&#34;YYYY-MM-DD HH:MM:SS&#34;``.
+        end (str): La date de fin
+        
+            Au format: ``&#34;YYYY-MM-DD HH:MM:SS&#34;``.
+
+    Returns:
+        pandas.dataframe: La dataframe filtrée.
+
+    Examples:
+        select_time_range(df, &#34;2020-11-03 08:15:00&#34;, &#34;2021-01-03 22:30:00&#34;)
+    &#34;&#34;&#34;
+    start_time = pd.to_datetime(start, &#34;%Y-%m-%d %H:%M:%S&#34;)
+    end_time = pd.to_datetime(end, &#34;%Y-%m-%d %H:%M:%S&#34;)
+
+    filtered_df = df[start_time &lt; df[&#34;created_at&#34;] &lt; end_time]
+
+    return filtered_df</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.tweet_json_to_df"><code class="name flex">
+<span>def <span class="ident">tweet_json_to_df</span></span>(<span>path_list=None, folder=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converti les fichiers json en dataframe pandas.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>path_list</code></strong> :&ensp;<code>list</code>, optional</dt>
+<dd>Une liste des chemin vers les fichiers <code>.json</code>.</dd>
+<dt><strong><code>folder</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Le chemin du dossier qui contient les fichiers <code>.json</code>.
+Ne pas terminer avec un <code>/</code> ou <code>\</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>Dataframe pandas qui contient les tweets.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tweet_json_to_df(path_list=None, folder=None):
+    &#34;&#34;&#34;
+    Converti les fichiers json en dataframe pandas.
+
+    Args:
+        path_list (list, optional): 
+            Une liste des chemin vers les fichiers `.json`.
+        folder (str, optional): 
+            Le chemin du dossier qui contient les fichiers `.json`.
+            Ne pas terminer avec un ``/`` ou ``\``.
+    
+    Returns:
+        pandas.dataframe: Dataframe pandas qui contient les tweets.
+    &#34;&#34;&#34;
+    assert path_list is not None or folder is not None, &#34;Un argument est nécessaire&#34;
+    assert path_list is None or (
+        path_list
+        and isinstance(path_list, list)
+        and all(isinstance(path, str) for path in path_list)
+    ), &#34;&#39;path_list&#39; doit être une liste de strings&#34;
+    assert folder is None or isinstance(
+        folder, str
+    ), &#34;&#39;folder&#39; doit être une chaîne de caractères&#34;
+
+    if path_list is None:
+        path_list = folder_to_path_list(folder_path=folder)
+
+    print(&#34;The file conversion started, this operation can take time&#34;)
+
+    # Contient la liste des tweets en json
     tweets_list = []
-    # Liste des tweets (au format .json)
-    with open(path, &#34;r&#34;) as fh:
-        tweets_json = fh.read().split(&#34;\n&#34;)
+    file_total = len(path_list)
+    for i, path in enumerate(path_list):
+        with open(path, &#34;r&#34;) as fh:
+            tweets_json = fh.read().split(&#34;\n&#34;)
+            for j, tweet in enumerate(tweets_json):
+                tweet_total = len(tweets_json)
+                if tweet:
+                    tweet_obj = json.loads(tweet)
+                tweets_list.append(tweet_obj)
+                progressBar(j, tweet_total, file=i + 1, total_file=file_total)
+        print(&#34;&#34;)
 
-    # Itère sur chaque tweet
-    for tweet in tweets_json:
-        if len(tweet) &gt; 0:
-            tweet_obj = json.loads(tweet)
+    # Créer une DataFrame à partir de `tweets_list`
+    df_tweets = pd.DataFrame(tweets_list)
 
-            # Store the user screen name in &#39;user-screen_name&#39;
-            tweet_obj[&#34;user-screen_name&#34;] = tweet_obj[&#34;user&#34;][&#34;screen_name&#34;]
+    # # Store the user screen name in &#39;user-screen_name&#39;
+    # df_tweets[&#34;user-screen_name&#34;] = df_tweets[&#34;user&#34;][&#34;screen_name&#34;]
 
-            # Check if this is a 140+ character tweet
-            if &#34;extended_tweet&#34; in tweet_obj:
-                # Store the extended tweet text in &#39;extended_tweet-full_text&#39;
-                tweet_obj[&#34;extended_tweet-full_text&#34;] = tweet_obj[&#34;extended_tweet&#34;][
-                    &#34;full_text&#34;
-                ]
+    # # Check if this is a 140+ character tweet
+    # if &#34;extended_tweet&#34; in df_tweets:
+    #     # Store the extended tweet text in &#39;extended_tweet-full_text&#39;
+    #     df_tweets[&#34;extended_tweet-full_text&#34;] = df_tweets[&#34;extended_tweet&#34;][&#34;full_text&#34;]
 
-            if &#34;retweeted_status&#34; in tweet_obj:
-                # Store the retweet user screen name in &#39;retweeted_status-user-screen_name&#39;
-                tweet_obj[&#34;retweeted_status-user-screen_name&#34;] = tweet_obj[
-                    &#34;retweeted_status&#34;
-                ][&#34;user&#34;][&#34;screen_name&#34;]
+    # Drop all the text duplicate (Est ce qu&#39;on a vraiment envie de supprimer les RT ?)
+    # df_tweets = df_tweets.drop_duplicates(subset=[&#34;text&#34;])
 
-                # Store the retweet text in &#39;retweeted_status-text&#39;
-                tweet_obj[&#34;retweeted_status-text&#34;] = tweet_obj[&#34;retweeted_status&#34;][
-                    &#34;text&#34;
-                ]
+    # Convert the created_at column to np.datetime object
+    df_tweets[&#34;created_at&#34;] = pd.to_datetime(df_tweets[&#34;created_at&#34;])
 
-                if &#34;extended_tweet&#34; in tweet_obj[&#34;retweeted_status&#34;]:
-                    tweet_obj[&#34;retweeted_status-extended_tweet-full_text&#34;] = tweet_obj[
-                        &#34;retweeted_status&#34;
-                    ][&#34;extended_tweet&#34;][&#34;full_text&#34;]
+    # Set the index of df_tweets to id
+    df_tweets = df_tweets.set_index(&#34;id&#34;)
 
-            if &#34;quoted_status&#34; in tweet_obj:
-                tweet_obj[&#34;quoted_status-text&#34;] = tweet_obj[&#34;quoted_status&#34;][&#34;text&#34;]
-
-                if &#34;extended_tweet&#34; in tweet_obj[&#34;quoted_status&#34;]:
-                    tweet_obj[&#34;quoted_status-extended_tweet-full_text&#34;] = tweet_obj[
-                        &#34;quoted_status&#34;
-                    ][&#34;extended_tweet&#34;][&#34;full_text&#34;]
-
-        tweets_list.append(tweet_obj)
-    return tweets_list</code></pre>
+    return df_tweets</code></pre>
 </details>
 </dd>
 </dl>
@@ -198,8 +488,13 @@ def flatten_tweets(path):
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="projet.processing.flatten_tweets" href="#projet.processing.flatten_tweets">flatten_tweets</a></code></li>
+<ul class="two-column">
+<li><code><a title="projet.processing.filter_df" href="#projet.processing.filter_df">filter_df</a></code></li>
+<li><code><a title="projet.processing.folder_to_path_list" href="#projet.processing.folder_to_path_list">folder_to_path_list</a></code></li>
+<li><code><a title="projet.processing.nlp" href="#projet.processing.nlp">nlp</a></code></li>
+<li><code><a title="projet.processing.progressBar" href="#projet.processing.progressBar">progressBar</a></code></li>
+<li><code><a title="projet.processing.select_time_range" href="#projet.processing.select_time_range">select_time_range</a></code></li>
+<li><code><a title="projet.processing.tweet_json_to_df" href="#projet.processing.tweet_json_to_df">tweet_json_to_df</a></code></li>
 </ul>
 </li>
 </ul>

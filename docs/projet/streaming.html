@@ -191,8 +191,8 @@ class SListener(tweepy.StreamListener):
         self.max = int(max) if max &gt; 0 else 0
         self.verbose = verbose
         self.fprefix = fprefix
-        if len(path) &gt; 0:
-            assert path[-1] in [&#34;/&#34;, &#34;\\&#34;], &#34;&#39;path&#39; devrait terminer par &#39;/&#39; ou &#39;\\&#39;.&#34;
+        if path:
+            assert path[-1] in [&#34;/&#34;, &#34;\\&#34;], &#34;&#39;path&#39; doit terminer par &#39;/&#39; ou &#39;\\&#39;.&#34;
         self.path = path
         self.output = open(
             self.path + self.fprefix + &#34;_&#34; + time.strftime(&#34;%Y%m%d-%H%M%S&#34;) + &#34;.json&#34;,
@@ -217,8 +217,8 @@ class SListener(tweepy.StreamListener):
     def on_status(self, status):
         self.output.write(status)
         self.counter += 1
-        if self.verbose and self.counter % 50 == 0:
-            print(&#34;|&#34;)
+        if self.verbose and self.counter % 100 == 0:
+            print([&#34;|&#34;, &#34;/&#34;, &#34;-&#34;, &#34;\\&#34;][self.counter // 100 % 4], end=&#34;\r&#34;)
         if self.counter &gt;= 20000:
             self.output.close()
             self.output = open(
@@ -295,7 +295,6 @@ def start_stream(
 
             Par défaut : `False`.
     &#34;&#34;&#34;
-
     if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
         raise errors.WordType(wrong_words=wrong_words)
 
@@ -469,7 +468,6 @@ et il faudra l'arrêter manuellement.</p>
 
             Par défaut : `False`.
     &#34;&#34;&#34;
-
     if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
         raise errors.WordType(wrong_words=wrong_words)
 
@@ -823,8 +821,8 @@ Puis les tweets sont rassemblés dans des fichiers <code>.json</code> de la form
         self.max = int(max) if max &gt; 0 else 0
         self.verbose = verbose
         self.fprefix = fprefix
-        if len(path) &gt; 0:
-            assert path[-1] in [&#34;/&#34;, &#34;\\&#34;], &#34;&#39;path&#39; devrait terminer par &#39;/&#39; ou &#39;\\&#39;.&#34;
+        if path:
+            assert path[-1] in [&#34;/&#34;, &#34;\\&#34;], &#34;&#39;path&#39; doit terminer par &#39;/&#39; ou &#39;\\&#39;.&#34;
         self.path = path
         self.output = open(
             self.path + self.fprefix + &#34;_&#34; + time.strftime(&#34;%Y%m%d-%H%M%S&#34;) + &#34;.json&#34;,
@@ -849,8 +847,8 @@ Puis les tweets sont rassemblés dans des fichiers <code>.json</code> de la form
     def on_status(self, status):
         self.output.write(status)
         self.counter += 1
-        if self.verbose and self.counter % 50 == 0:
-            print(&#34;|&#34;)
+        if self.verbose and self.counter % 100 == 0:
+            print([&#34;|&#34;, &#34;/&#34;, &#34;-&#34;, &#34;\\&#34;][self.counter // 100 % 4], end=&#34;\r&#34;)
         if self.counter &gt;= 20000:
             self.output.close()
             self.output = open(
@@ -967,8 +965,8 @@ the stream data. Return False to stop stream and close connection.</p></div>
 <pre><code class="python">def on_status(self, status):
     self.output.write(status)
     self.counter += 1
-    if self.verbose and self.counter % 50 == 0:
-        print(&#34;|&#34;)
+    if self.verbose and self.counter % 100 == 0:
+        print([&#34;|&#34;, &#34;/&#34;, &#34;-&#34;, &#34;\\&#34;][self.counter // 100 % 4], end=&#34;\r&#34;)
     if self.counter &gt;= 20000:
         self.output.close()
         self.output = open(
