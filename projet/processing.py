@@ -9,22 +9,9 @@ import numpy as np
 import glob
 
 # Erreurs du projet
-import projet.project_errors as errors
+import projet.projet_utils as utils
 
-# Affichage du progrès
-def progressBar(current, total, file=None, total_file=None, barLength=20):
-    percent = float(current) * 100 / total
-    arrow = "-" * int(percent / 100 * barLength - 1) + ">"
-    spaces = " " * (barLength - len(arrow) - 1)
-    prefix = (
-        f"File {file}/{total_file}"
-        if file is not None and total_file is not None
-        else "Progress"
-    )
-    print(f"{prefix}: [{arrow}{spaces}] {percent:.0f} %", end="\r")
-
-
-## Converti et nettoie les tweets
+## Convertit et nettoie les tweets
 def folder_to_path_list(folder_path):
     """
     Retourne la liste des fichiers `.json` dans le dossier donné.
@@ -85,7 +72,7 @@ def tweet_json_to_df(path_list=None, folder=None):
                 if tweet:
                     tweet_obj = json.loads(tweet)
                 tweets_list.append(tweet_obj)
-                progressBar(j, tweet_total, file=i + 1, total_file=file_total)
+                utils.progressBar(j, tweet_total, file=i + 1, total_file=file_total)
         print("")
 
     # Créer une DataFrame à partir de `tweets_list`
