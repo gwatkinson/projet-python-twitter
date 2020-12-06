@@ -1,4 +1,21 @@
-### Contient les erreurs du projet ###
+## Fonctions auxiliaires
+
+# Affichage du progrès
+def progressBar(current, total, prefix=None, file=None, total_file=None, barLength=20):
+    """ Affiche une barre de progrès """
+    percent = float(current) * 100 / total
+    arrow = "-" * int(percent / 100 * barLength - 1) + ">"
+    spaces = " " * (barLength - len(arrow) - 1)
+    if prefix is None:
+        prefix = (
+            f"File {file}/{total_file}"
+            if file is not None and total_file is not None
+            else "Progress"
+        )
+    print(f"{prefix}: [{arrow}{spaces}] {percent:.0f} %", end="\r")
+
+
+## Les erreurs du projet
 
 
 class CredentialsType(Exception):
