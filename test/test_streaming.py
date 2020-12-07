@@ -2,7 +2,7 @@
 import os
 import pytest
 import projet.streaming as stream
-import projet.project_errors as errors
+import projet.projet_utils as utils
 
 
 cred_file_exist = cred_file_exist = pytest.mark.skipif(
@@ -46,13 +46,13 @@ def test_file_cred(file_credentials):
 
 def test_credentials_type():
     """Test qu'une erreur est levée quand credentials n'est pas un dictionnaire."""
-    with pytest.raises(errors.CredentialsType):
+    with pytest.raises(utils.CredentialsType):
         stream.CredentialsClass(credentials="XXXXXXXXX")
 
 
 def test_custom_cred_missing():
     """Test qu'une erreur est levée si les credentials données ne sont pas complets."""
-    with pytest.raises(errors.MissingKey):
+    with pytest.raises(utils.MissingKey):
         stream.CredentialsClass(
             credentials={
                 "consumer_key": "",
@@ -65,7 +65,7 @@ def test_custom_cred_missing():
 
 def test_custom_cred_type():
     """Test qu'une erreur est levée si les credentials données ne sont pas complets."""
-    with pytest.raises(errors.CredentialsKeyType):
+    with pytest.raises(utils.CredentialsKeyType):
         stream.CredentialsClass(
             credentials={
                 "consumer_key": "",
@@ -94,7 +94,7 @@ def test_custom_cred_type():
 
 def test_cred_SListener():
     """Test qu'une erreur est levée si 'credentials' n'est pas une instance de 'CredentialsClass'."""
-    with pytest.raises(errors.CredentialsClassType):
+    with pytest.raises(utils.CredentialsClassType):
         stream.SListener(
             credentials={
                 "consumer_key": "XXX",
@@ -107,7 +107,7 @@ def test_cred_SListener():
 
 def test_word_start_stream():
     """Test qu'une erreur est levée si 'credentials' n'est pas une instance de 'CredentialsClass'."""
-    with pytest.raises(errors.WordType):
+    with pytest.raises(utils.WordType):
         stream.start_stream(
             liste_mots=[3, True, "AAA"],
             credentials=stream.CredentialsClass(
@@ -123,7 +123,7 @@ def test_word_start_stream():
 
 def test_cred_start_stream():
     """Test qu'une erreur est levée si 'credentials' n'est pas une instance de 'CredentialsClass'."""
-    with pytest.raises(errors.CredentialsClassType):
+    with pytest.raises(utils.CredentialsClassType):
         stream.start_stream(
             liste_mots=["AAA", "BBB"],
             credentials={
