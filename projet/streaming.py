@@ -317,7 +317,7 @@ def start_stream(
         path (str, optional): 
             Chemin du doossier où enregistrer les fichiers.
 
-            Doit finir avec `'/'` ou `'\\'` si différent de `""`.
+            Doit finir avec `/` ou `\` si différent de `""`.
 
             Par défaut : `""`.
         verbose (bool, optional): 
@@ -385,7 +385,7 @@ if __name__ == "__main__":
 
         start_stream(
             credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien
-            liste_mots=listes.liste_5,  # Liste de mot à tracker (voir `projet.listes_mots`)
+            liste_mots=listes.liste_5,  # Liste de mots à tracker (voir `projet.listes_mots`)
             nb=100,  # Nombre de tweets à recupérer
             fprefix="liste_5",  # À modifier en fonction de la liste selectionnée
             path="C:/Users/gabri/OneDrive/Desktop/temp/",  # À modifier selon l'utilisateur
