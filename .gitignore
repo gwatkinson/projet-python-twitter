@@ -1,8 +1,11 @@
 
-### Config file with the API key ###
+## Config file with the API key
 projet/_credentials.py
 
-### Template with Data, JupyterNotebboks, Python, vscode ###
+## The documentation folder
+docs/
+
+## Template with Data, JupyterNotebboks, Python, vscode
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vscode,Data
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,vscode,Data
 
