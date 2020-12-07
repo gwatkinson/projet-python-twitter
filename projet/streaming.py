@@ -227,19 +227,11 @@ class SListener(tweepy.StreamListener):
 
         if self.nb and self.nb_tweets >= self.nb:
             print("")
-            print(f"Les {self.nb} tweets ont été récupéré.")
+            print(f"Les {self.nb} tweets ont été récupérés.")
             raise KeyboardInterrupt
 
         if self.timeout and time.time() > self.start + self.timeout * 3600:
-            print(
-                "Le stream a duré :"
-                + str(round((time.time() - self.start) / (60 * 60), 2))
-                + "h"
-            )
-            print("Fin du stream")
-            print("Timeout : ", self.timeout)
-            print("start + timeout : ", self.start + self.timeout * 3600)
-            print("Time : ", time.time())
+            print("Durée terminée")
             raise KeyboardInterrupt
 
         if self.counter >= 20000:
@@ -281,7 +273,7 @@ def start_stream(
     path="",
     verbose=False,
 ):
-    """
+    r"""
     Cette fonction lance le stream pour la durée donnée.
 
     Si `timeout` n'est pas défini, le stream est lancé indéfiniment 
@@ -333,9 +325,7 @@ def start_stream(
 
     start = time.time()
 
-    print(
-        "Début du stream, checkez le dossier que vous avez spécifié comme chemin pour le stream"
-    )
+    print("Début du stream")
 
     while True:
         try:
@@ -364,8 +354,6 @@ def start_stream(
             print("Pause terminée")
             continue
         except KeyboardInterrupt:
-            print("")
-            print("Stream coupé")
             print(
                 "Le stream a duré :"
                 + str(round((time.time() - start) / (60 * 60), 2))
