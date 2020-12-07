@@ -13,16 +13,16 @@ import projet.projet_utils as utils
 
 ## Convertit et nettoie les tweets
 def folder_to_path_list(folder_path):
-    """
+    r"""
     Retourne la liste des fichiers `.json` dans le dossier donné.
 
     Args:
         folder_path (str): Chemin du dossier.
-        Ne pas terminer avec un ``/`` ou ``\``.
+        Ne pas terminer avec un `/` ou `\`.
 
     Examples:
         folder_path("path/to/folder")
-        folder_path("path\\to\\folder")
+        folder_path(r"path\to\folder")
     
     Returns:
         list: Liste des fichiers `.json` dans le dossier.
@@ -33,7 +33,7 @@ def folder_to_path_list(folder_path):
 
 
 def tweet_json_to_df(path_list=None, folder=None):
-    """
+    r"""
     Converti les fichiers json en dataframe pandas.
 
     Args:
@@ -41,7 +41,7 @@ def tweet_json_to_df(path_list=None, folder=None):
             Une liste des chemin vers les fichiers `.json`.
         folder (str, optional): 
             Le chemin du dossier qui contient les fichiers `.json`.
-            Ne pas terminer avec un ``/`` ou ``\``.
+            Ne pas terminer avec un `/` ou `\`.
     
     Returns:
         pandas.dataframe: Dataframe pandas qui contient les tweets.
@@ -59,7 +59,7 @@ def tweet_json_to_df(path_list=None, folder=None):
     if path_list is None:
         path_list = folder_to_path_list(folder_path=folder)
 
-    print("The file conversion started, this operation can take time")
+    print("La conversion des fichiers 'json' a commencé, cela peut prendre du temps")
 
     # Contient la liste des tweets en json
     tweets_list = []
@@ -71,7 +71,7 @@ def tweet_json_to_df(path_list=None, folder=None):
                 tweet_total = len(tweets_json)
                 if tweet:
                     tweet_obj = json.loads(tweet)
-                tweets_list.append(tweet_obj)
+                    tweets_list.append(tweet_obj)
                 utils.progressBar(j, tweet_total, file=i + 1, total_file=file_total)
         print("")
 

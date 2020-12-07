@@ -355,7 +355,7 @@ def start_stream(
             continue
         except KeyboardInterrupt:
             print(
-                "Le stream a duré :"
+                "Le stream a duré : "
                 + str(round((time.time() - start) / (60 * 60), 2))
                 + "h"
             )
