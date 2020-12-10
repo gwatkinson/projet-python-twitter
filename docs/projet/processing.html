@@ -36,8 +36,12 @@ import pandas as pd
 import numpy as np
 import glob
 
-# Erreurs du projet
+# Import les listes de variables
+import projet.listes_variables
+
+# Utils du projet
 import projet.projet_utils as utils
+
 
 ## Convertit et nettoie les tweets
 def folder_to_path_list(folder_path):
@@ -46,7 +50,7 @@ def folder_to_path_list(folder_path):
 
     Args:
         folder_path (str): Chemin du dossier.
-        Ne pas terminer avec un `/` ou `\`.
+        À terminer avec un `/` ou `\`.
 
     Examples:
         folder_path(&#34;path/to/folder&#34;)
@@ -55,12 +59,12 @@ def folder_to_path_list(folder_path):
     Returns:
         list: Liste des fichiers `.json` dans le dossier.
     &#34;&#34;&#34;
-    path_list = glob.glob(folder_path + &#34;/*.json&#34;)
+    path_list = glob.glob(folder_path + &#34;*.json&#34;)
 
     return path_list
 
 
-def tweet_json_to_df(path_list=None, folder=None):
+def tweet_json_to_df(path_list=None, folder=None, verbose=False):
     r&#34;&#34;&#34;
     Converti les fichiers json en dataframe pandas.
 
@@ -69,7 +73,12 @@ def tweet_json_to_df(path_list=None, folder=None):
             Une liste des chemin vers les fichiers `.json`.
         folder (str, optional): 
             Le chemin du dossier qui contient les fichiers `.json`.
-            Ne pas terminer avec un `/` ou `\`.
+            
+            À terminer avec un `/` ou `\`.
+        verbose (bool, optional): 
+            `True` pour afficher une barre de progrès et des messages.
+
+            Par défaut : `False`.
     
     Returns:
         pandas.dataframe: Dataframe pandas qui contient les tweets.
@@ -87,7 +96,10 @@ def tweet_json_to_df(path_list=None, folder=None):
     if path_list is None:
         path_list = folder_to_path_list(folder_path=folder)
 
-    print(&#34;La conversion des fichiers &#39;json&#39; a commencé, cela peut prendre du temps&#34;)
+    if verbose:
+        print(
+            &#34;La conversion des fichiers &#39;json&#39; a commencé, cela peut prendre du temps&#34;
+        )
 
     # Contient la liste des tweets en json
     tweets_list = []
@@ -100,35 +112,135 @@ def tweet_json_to_df(path_list=None, folder=None):
                 if tweet:
                     tweet_obj = json.loads(tweet)
                     tweets_list.append(tweet_obj)
-                utils.progressBar(j, tweet_total, file=i + 1, total_file=file_total)
-        print(&#34;&#34;)
+                if verbose:
+                    utils.progressBar(j, tweet_total, file=i + 1, total_file=file_total)
+        if verbose:
+            print(&#34;&#34;)
 
     # Créer une DataFrame à partir de `tweets_list`
     df_tweets = pd.DataFrame(tweets_list)
 
-    # # Store the user screen name in &#39;user-screen_name&#39;
-    # df_tweets[&#34;user-screen_name&#34;] = df_tweets[&#34;user&#34;][&#34;screen_name&#34;]
-
-    # # Check if this is a 140+ character tweet
-    # if &#34;extended_tweet&#34; in df_tweets:
-    #     # Store the extended tweet text in &#39;extended_tweet-full_text&#39;
-    #     df_tweets[&#34;extended_tweet-full_text&#34;] = df_tweets[&#34;extended_tweet&#34;][&#34;full_text&#34;]
-
-    # Drop all the text duplicate (Est ce qu&#39;on a vraiment envie de supprimer les RT ?)
-    # df_tweets = df_tweets.drop_duplicates(subset=[&#34;text&#34;])
-
-    # Convert the created_at column to np.datetime object
-    df_tweets[&#34;created_at&#34;] = pd.to_datetime(df_tweets[&#34;created_at&#34;])
-
-    # Set the index of df_tweets to id
-    df_tweets = df_tweets.set_index(&#34;id&#34;)
-
     return df_tweets
 
 
-def select_time_range(df, start, end):
+def clean_df(
+    df,
+    index=&#34;id&#34;,
+    date=&#34;created_at&#34;,
+    verbose=False,
+    extra=None,
+    vars=projet.listes_variables.liste_1,
+):
     &#34;&#34;&#34;
-    Filtre les twwets.
+    Fonction pour nettoyer la df qui contient les tweets.
+
+    Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse 
+    (text, , les counts, la localisation, on supprime retweeted_status et quoted_status).
+    Il faut peut etre récuperer les counts via l&#39;API (car on récupère les nouveaux tweets et ils n&#34;ont pas encore de likes).
+    Il faudra peut etre utiliser des expr reg pour nettoyer les rt.
+
+    Args:
+        df (pandas.dataframe): Dataframe non nettoyée qui contient les tweets.
+        index (str, optional): 
+            Nom de la colonne de `df` à mettre en index.
+
+            Mettre `None` pour ne pas avoir d&#39;index.
+
+            Par défaut : `id`.
+        date (str, optional): 
+            Nom de la variable de `df` qui contient la date.
+
+            Mettre `None` pour ne pas avoir de date.
+
+            Par défaut : `created_at`.
+        vars (list, optional): 
+
+        extra (list, optional): 
+            Même format que vars.
+
+            À utiliser pour ajouter des variables à la valeur par défaut de `vars`.
+        verbose (bool, optional): 
+            `True` pour afficher une barre de progrès et des messages.
+
+            Par défaut : `False`.
+
+    Returns:
+        pandas.dataframe: La dataframe nettoyée.
+    &#34;&#34;&#34;
+    # Ajoute les extra à la liste des variables
+    columns = vars.copy()
+    if extra:
+        columns.append(extra)
+
+    # Vérifie que toute les variables données existent dans df
+    cols = list(df)
+    wrong_var = []
+    if index and index not in cols:
+        wrong_var.append(index)
+    if date and date not in cols:
+        wrong_var.append(date)
+    for var in columns:
+        if isinstance(var, list):
+            if var[0] not in cols:
+                wrong_var.append(var[0])
+        elif isinstance(var, str):
+            if var not in cols:
+                wrong_var.append(var)
+    if wrong_var:
+        raise utils.WrongColumnName(var=wrong_var)
+
+    if verbose:
+        print(&#34;Le nettoyage a commencé&#34;)
+        total = len(columns) + 3
+
+    # Initialise la df
+    clean_df = pd.DataFrame()
+
+    # Ajoute la date au format datetime
+    if date:
+        clean_df[date] = pd.to_datetime(df[date])
+    if verbose:
+        utils.progressBar(current=1, total=total)
+
+    # Ajoute les variables
+    for i, var in enumerate(columns):
+        if isinstance(var, list):
+            var_name = &#34;-&#34;.join(var)
+            new_col = df[var[0]]
+            for i in range(1, len(var)):
+                new_col = [
+                    new_col[j].get(var[i], np.nan)
+                    if isinstance(new_col[j], dict)
+                    else np.nan
+                    for j in range(len(new_col))
+                ]
+            clean_df[var_name] = new_col
+        elif isinstance(var, str):
+            clean_df[var] = df[var]
+        if verbose:
+            utils.progressBar(current=i + 2, total=total)
+
+    # Convertit la date de création des accounts
+    if &#34;user-created_at&#34; in clean_df:
+        clean_df[&#34;user-created_at&#34;] = pd.to_datetime(clean_df[&#34;user-created_at&#34;])
+    if verbose:
+        utils.progressBar(current=total - 1, total=total)
+
+    # Ajoute les index
+    if index:
+        clean_df = clean_df.set_index(df[index])
+    if verbose:
+        utils.progressBar(current=total, total=total)
+
+    if verbose:
+        print(&#34;&#34;)
+
+    return clean_df
+
+
+def select_time_range(df, start, end, date_var=&#34;created_at&#34;):
+    &#34;&#34;&#34;
+    Filtre les tweets.
     Garde les tweets créés entre les dates données. 
 
     Args:
@@ -139,9 +251,10 @@ def select_time_range(df, start, end):
         end (str): La date de fin
         
             Au format: ``&#34;YYYY-MM-DD HH:MM:SS&#34;``.
+        date_var (str): Le nom de la colonne qui contient la date
 
     Returns:
-        pandas.dataframe: La dataframe filtrée.
+        pandas.dataframe: La dataframe filtrée par le temps.
 
     Examples:
         select_time_range(df, &#34;2020-11-03 08:15:00&#34;, &#34;2021-01-03 22:30:00&#34;)
@@ -149,25 +262,9 @@ def select_time_range(df, start, end):
     start_time = pd.to_datetime(start, &#34;%Y-%m-%d %H:%M:%S&#34;)
     end_time = pd.to_datetime(end, &#34;%Y-%m-%d %H:%M:%S&#34;)
 
-    filtered_df = df[start_time &lt; df[&#34;created_at&#34;] &lt; end_time]
+    filtered_df = df[start_time &lt; df[date_var] &lt; end_time]
 
     return filtered_df
-
-
-def filter_df(df):
-    &#34;&#34;&#34;
-    Fonction pour filtrer la df qui contient les tweets.
-
-    Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse 
-    (text, full text, les counts, la localisation, on supprime retweeted_status et quoted_status).
-    Il faut peut etre récuperer les counts via l&#39;API (car on récupère les nouveaux tweets et ils n&#34;ont pas encore de likes).
-    Il faudra peut etre utiliser des expr reg pour nettoyer les rt.
-    Mettre l&#39;option de choisir le timespan.
-
-    Args:
-        df ([type]): [description]
-    &#34;&#34;&#34;
-    pass
 
 
 def nlp(df):
@@ -187,39 +284,166 @@ def nlp(df):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="projet.processing.filter_df"><code class="name flex">
-<span>def <span class="ident">filter_df</span></span>(<span>df)</span>
+<dt id="projet.processing.clean_df"><code class="name flex">
+<span>def <span class="ident">clean_df</span></span>(<span>df, index='id', date='created_at', verbose=False, extra=None, vars=['text', 'lang', 'quote_count', 'reply_count', 'retweet_count', 'favorite_count', ['user', 'id'], ['user', 'name'], ['user', 'screen_name'], ['user', 'location'], ['user', 'description'], ['user', 'protected'], ['user', 'verified'], ['user', 'followers_count'], ['user', 'friends_count'], ['user', 'listed_count'], ['user', 'favourites_count'], ['user', 'statuses_count'], ['user', 'created_at'], ['user', 'contributors_enabled'], ['user', 'geo_enabled'], ['user', 'profile_background_color'], ['user', 'profile_sidebar_border_color'], ['user', 'profile_sidebar_fill_color'], ['user', 'profile_text_color'], ['user', 'profile_use_background_image'], ['user', 'default_profile'], ['user', 'description'], ['place', 'name'], ['place', 'full_name'], ['place', 'place_type'], ['place', 'country_code'], ['place', 'country'], ['place', 'bounding_box'], ['place', 'bounding_box', 'type'], ['place', 'bounding_box', 'coordinates']])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Fonction pour filtrer la df qui contient les tweets.</p>
+<div class="desc"><p>Fonction pour nettoyer la df qui contient les tweets.</p>
 <p>Il s'agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse
-(text, full text, les counts, la localisation, on supprime retweeted_status et quoted_status).
+(text, , les counts, la localisation, on supprime retweeted_status et quoted_status).
 Il faut peut etre récuperer les counts via l'API (car on récupère les nouveaux tweets et ils n"ont pas encore de likes).
-Il faudra peut etre utiliser des expr reg pour nettoyer les rt.
-Mettre l'option de choisir le timespan.</p>
+Il faudra peut etre utiliser des expr reg pour nettoyer les rt.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>df</code></strong> :&ensp;<code>[type]</code></dt>
-<dd>[description]</dd>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>Dataframe non nettoyée qui contient les tweets.</dd>
+<dt><strong><code>index</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>
+<p>Nom de la colonne de <code>df</code> à mettre en index.</p>
+<p>Mettre <code>None</code> pour ne pas avoir d'index.</p>
+<p>Par défaut : <code>id</code>.</p>
+</dd>
+<dt><strong><code>date</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>
+<p>Nom de la variable de <code>df</code> qui contient la date.</p>
+<p>Mettre <code>None</code> pour ne pas avoir de date.</p>
+<p>Par défaut : <code>created_at</code>.</p>
+</dd>
+<dt><strong><code>vars</code></strong> :&ensp;<code>list</code>, optional</dt>
+<dd></dd>
+<dt><strong><code>extra</code></strong> :&ensp;<code>list</code>, optional</dt>
+<dd>
+<p>Même format que vars.</p>
+<p>À utiliser pour ajouter des variables à la valeur par défaut de <code>vars</code>.</p>
+</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>
+<p><code>True</code> pour afficher une barre de progrès et des messages.</p>
+<p>Par défaut : <code>False</code>.</p>
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>La dataframe nettoyée.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def filter_df(df):
+<pre><code class="python">def clean_df(
+    df,
+    index=&#34;id&#34;,
+    date=&#34;created_at&#34;,
+    verbose=False,
+    extra=None,
+    vars=projet.listes_variables.liste_1,
+):
     &#34;&#34;&#34;
-    Fonction pour filtrer la df qui contient les tweets.
+    Fonction pour nettoyer la df qui contient les tweets.
 
     Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse 
-    (text, full text, les counts, la localisation, on supprime retweeted_status et quoted_status).
+    (text, , les counts, la localisation, on supprime retweeted_status et quoted_status).
     Il faut peut etre récuperer les counts via l&#39;API (car on récupère les nouveaux tweets et ils n&#34;ont pas encore de likes).
     Il faudra peut etre utiliser des expr reg pour nettoyer les rt.
-    Mettre l&#39;option de choisir le timespan.
 
     Args:
-        df ([type]): [description]
+        df (pandas.dataframe): Dataframe non nettoyée qui contient les tweets.
+        index (str, optional): 
+            Nom de la colonne de `df` à mettre en index.
+
+            Mettre `None` pour ne pas avoir d&#39;index.
+
+            Par défaut : `id`.
+        date (str, optional): 
+            Nom de la variable de `df` qui contient la date.
+
+            Mettre `None` pour ne pas avoir de date.
+
+            Par défaut : `created_at`.
+        vars (list, optional): 
+
+        extra (list, optional): 
+            Même format que vars.
+
+            À utiliser pour ajouter des variables à la valeur par défaut de `vars`.
+        verbose (bool, optional): 
+            `True` pour afficher une barre de progrès et des messages.
+
+            Par défaut : `False`.
+
+    Returns:
+        pandas.dataframe: La dataframe nettoyée.
     &#34;&#34;&#34;
-    pass</code></pre>
+    # Ajoute les extra à la liste des variables
+    columns = vars.copy()
+    if extra:
+        columns.append(extra)
+
+    # Vérifie que toute les variables données existent dans df
+    cols = list(df)
+    wrong_var = []
+    if index and index not in cols:
+        wrong_var.append(index)
+    if date and date not in cols:
+        wrong_var.append(date)
+    for var in columns:
+        if isinstance(var, list):
+            if var[0] not in cols:
+                wrong_var.append(var[0])
+        elif isinstance(var, str):
+            if var not in cols:
+                wrong_var.append(var)
+    if wrong_var:
+        raise utils.WrongColumnName(var=wrong_var)
+
+    if verbose:
+        print(&#34;Le nettoyage a commencé&#34;)
+        total = len(columns) + 3
+
+    # Initialise la df
+    clean_df = pd.DataFrame()
+
+    # Ajoute la date au format datetime
+    if date:
+        clean_df[date] = pd.to_datetime(df[date])
+    if verbose:
+        utils.progressBar(current=1, total=total)
+
+    # Ajoute les variables
+    for i, var in enumerate(columns):
+        if isinstance(var, list):
+            var_name = &#34;-&#34;.join(var)
+            new_col = df[var[0]]
+            for i in range(1, len(var)):
+                new_col = [
+                    new_col[j].get(var[i], np.nan)
+                    if isinstance(new_col[j], dict)
+                    else np.nan
+                    for j in range(len(new_col))
+                ]
+            clean_df[var_name] = new_col
+        elif isinstance(var, str):
+            clean_df[var] = df[var]
+        if verbose:
+            utils.progressBar(current=i + 2, total=total)
+
+    # Convertit la date de création des accounts
+    if &#34;user-created_at&#34; in clean_df:
+        clean_df[&#34;user-created_at&#34;] = pd.to_datetime(clean_df[&#34;user-created_at&#34;])
+    if verbose:
+        utils.progressBar(current=total - 1, total=total)
+
+    # Ajoute les index
+    if index:
+        clean_df = clean_df.set_index(df[index])
+    if verbose:
+        utils.progressBar(current=total, total=total)
+
+    if verbose:
+        print(&#34;&#34;)
+
+    return clean_df</code></pre>
 </details>
 </dd>
 <dt id="projet.processing.folder_to_path_list"><code class="name flex">
@@ -232,7 +456,7 @@ Mettre l'option de choisir le timespan.</p>
 <dt><strong><code>folder_path</code></strong> :&ensp;<code>str</code></dt>
 <dd>Chemin du dossier.</dd>
 </dl>
-<p>Ne pas terminer avec un <code>/</code> ou <code>\</code>.</p>
+<p>À terminer avec un <code>/</code> ou <code>\</code>.</p>
 <h2 id="examples">Examples</h2>
 <p>folder_path("path/to/folder")
 folder_path(r"path\to\folder")</p>
@@ -251,7 +475,7 @@ folder_path(r"path\to\folder")</p>
 
     Args:
         folder_path (str): Chemin du dossier.
-        Ne pas terminer avec un `/` ou `\`.
+        À terminer avec un `/` ou `\`.
 
     Examples:
         folder_path(&#34;path/to/folder&#34;)
@@ -260,7 +484,7 @@ folder_path(r"path\to\folder")</p>
     Returns:
         list: Liste des fichiers `.json` dans le dossier.
     &#34;&#34;&#34;
-    path_list = glob.glob(folder_path + &#34;/*.json&#34;)
+    path_list = glob.glob(folder_path + &#34;*.json&#34;)
 
     return path_list</code></pre>
 </details>
@@ -290,10 +514,10 @@ folder_path(r"path\to\folder")</p>
 </details>
 </dd>
 <dt id="projet.processing.select_time_range"><code class="name flex">
-<span>def <span class="ident">select_time_range</span></span>(<span>df, start, end)</span>
+<span>def <span class="ident">select_time_range</span></span>(<span>df, start, end, date_var='created_at')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Filtre les twwets.
+<div class="desc"><p>Filtre les tweets.
 Garde les tweets créés entre les dates données. </p>
 <h2 id="args">Args</h2>
 <dl>
@@ -309,11 +533,13 @@ Garde les tweets créés entre les dates données. </p>
 <p>La date de fin</p>
 <p>Au format: <code>"YYYY-MM-DD HH:MM:SS"</code>.</p>
 </dd>
+<dt><strong><code>date_var</code></strong> :&ensp;<code>str</code></dt>
+<dd>Le nom de la colonne qui contient la date</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>pandas.dataframe</code></dt>
-<dd>La dataframe filtrée.</dd>
+<dd>La dataframe filtrée par le temps.</dd>
 </dl>
 <h2 id="examples">Examples</h2>
 <p>select_time_range(df, "2020-11-03 08:15:00", "2021-01-03 22:30:00")</p></div>
@@ -321,9 +547,9 @@ Garde les tweets créés entre les dates données. </p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def select_time_range(df, start, end):
+<pre><code class="python">def select_time_range(df, start, end, date_var=&#34;created_at&#34;):
     &#34;&#34;&#34;
-    Filtre les twwets.
+    Filtre les tweets.
     Garde les tweets créés entre les dates données. 
 
     Args:
@@ -334,9 +560,10 @@ Garde les tweets créés entre les dates données. </p>
         end (str): La date de fin
         
             Au format: ``&#34;YYYY-MM-DD HH:MM:SS&#34;``.
+        date_var (str): Le nom de la colonne qui contient la date
 
     Returns:
-        pandas.dataframe: La dataframe filtrée.
+        pandas.dataframe: La dataframe filtrée par le temps.
 
     Examples:
         select_time_range(df, &#34;2020-11-03 08:15:00&#34;, &#34;2021-01-03 22:30:00&#34;)
@@ -344,13 +571,13 @@ Garde les tweets créés entre les dates données. </p>
     start_time = pd.to_datetime(start, &#34;%Y-%m-%d %H:%M:%S&#34;)
     end_time = pd.to_datetime(end, &#34;%Y-%m-%d %H:%M:%S&#34;)
 
-    filtered_df = df[start_time &lt; df[&#34;created_at&#34;] &lt; end_time]
+    filtered_df = df[start_time &lt; df[date_var] &lt; end_time]
 
     return filtered_df</code></pre>
 </details>
 </dd>
 <dt id="projet.processing.tweet_json_to_df"><code class="name flex">
-<span>def <span class="ident">tweet_json_to_df</span></span>(<span>path_list=None, folder=None)</span>
+<span>def <span class="ident">tweet_json_to_df</span></span>(<span>path_list=None, folder=None, verbose=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Converti les fichiers json en dataframe pandas.</p>
@@ -359,8 +586,15 @@ Garde les tweets créés entre les dates données. </p>
 <dt><strong><code>path_list</code></strong> :&ensp;<code>list</code>, optional</dt>
 <dd>Une liste des chemin vers les fichiers <code>.json</code>.</dd>
 <dt><strong><code>folder</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Le chemin du dossier qui contient les fichiers <code>.json</code>.
-Ne pas terminer avec un <code>/</code> ou <code>\</code>.</dd>
+<dd>
+<p>Le chemin du dossier qui contient les fichiers <code>.json</code>.</p>
+<p>À terminer avec un <code>/</code> ou <code>\</code>.</p>
+</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>
+<p><code>True</code> pour afficher une barre de progrès et des messages.</p>
+<p>Par défaut : <code>False</code>.</p>
+</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -371,7 +605,7 @@ Ne pas terminer avec un <code>/</code> ou <code>\</code>.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def tweet_json_to_df(path_list=None, folder=None):
+<pre><code class="python">def tweet_json_to_df(path_list=None, folder=None, verbose=False):
     r&#34;&#34;&#34;
     Converti les fichiers json en dataframe pandas.
 
@@ -380,7 +614,12 @@ Ne pas terminer avec un <code>/</code> ou <code>\</code>.</dd>
             Une liste des chemin vers les fichiers `.json`.
         folder (str, optional): 
             Le chemin du dossier qui contient les fichiers `.json`.
-            Ne pas terminer avec un `/` ou `\`.
+            
+            À terminer avec un `/` ou `\`.
+        verbose (bool, optional): 
+            `True` pour afficher une barre de progrès et des messages.
+
+            Par défaut : `False`.
     
     Returns:
         pandas.dataframe: Dataframe pandas qui contient les tweets.
@@ -398,7 +637,10 @@ Ne pas terminer avec un <code>/</code> ou <code>\</code>.</dd>
     if path_list is None:
         path_list = folder_to_path_list(folder_path=folder)
 
-    print(&#34;La conversion des fichiers &#39;json&#39; a commencé, cela peut prendre du temps&#34;)
+    if verbose:
+        print(
+            &#34;La conversion des fichiers &#39;json&#39; a commencé, cela peut prendre du temps&#34;
+        )
 
     # Contient la liste des tweets en json
     tweets_list = []
@@ -411,28 +653,13 @@ Ne pas terminer avec un <code>/</code> ou <code>\</code>.</dd>
                 if tweet:
                     tweet_obj = json.loads(tweet)
                     tweets_list.append(tweet_obj)
-                utils.progressBar(j, tweet_total, file=i + 1, total_file=file_total)
-        print(&#34;&#34;)
+                if verbose:
+                    utils.progressBar(j, tweet_total, file=i + 1, total_file=file_total)
+        if verbose:
+            print(&#34;&#34;)
 
     # Créer une DataFrame à partir de `tweets_list`
     df_tweets = pd.DataFrame(tweets_list)
-
-    # # Store the user screen name in &#39;user-screen_name&#39;
-    # df_tweets[&#34;user-screen_name&#34;] = df_tweets[&#34;user&#34;][&#34;screen_name&#34;]
-
-    # # Check if this is a 140+ character tweet
-    # if &#34;extended_tweet&#34; in df_tweets:
-    #     # Store the extended tweet text in &#39;extended_tweet-full_text&#39;
-    #     df_tweets[&#34;extended_tweet-full_text&#34;] = df_tweets[&#34;extended_tweet&#34;][&#34;full_text&#34;]
-
-    # Drop all the text duplicate (Est ce qu&#39;on a vraiment envie de supprimer les RT ?)
-    # df_tweets = df_tweets.drop_duplicates(subset=[&#34;text&#34;])
-
-    # Convert the created_at column to np.datetime object
-    df_tweets[&#34;created_at&#34;] = pd.to_datetime(df_tweets[&#34;created_at&#34;])
-
-    # Set the index of df_tweets to id
-    df_tweets = df_tweets.set_index(&#34;id&#34;)
 
     return df_tweets</code></pre>
 </details>
@@ -455,7 +682,7 @@ Ne pas terminer avec un <code>/</code> ou <code>\</code>.</dd>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="projet.processing.filter_df" href="#projet.processing.filter_df">filter_df</a></code></li>
+<li><code><a title="projet.processing.clean_df" href="#projet.processing.clean_df">clean_df</a></code></li>
 <li><code><a title="projet.processing.folder_to_path_list" href="#projet.processing.folder_to_path_list">folder_to_path_list</a></code></li>
 <li><code><a title="projet.processing.nlp" href="#projet.processing.nlp">nlp</a></code></li>
 <li><code><a title="projet.processing.select_time_range" href="#projet.processing.select_time_range">select_time_range</a></code></li>
