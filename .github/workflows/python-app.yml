@@ -12,7 +12,6 @@ on:
 jobs:
   build:
     name: Lint, test and doc
-    needs: check_python
     runs-on: ubuntu-latest
     steps:
       - name: A) Checkout code
