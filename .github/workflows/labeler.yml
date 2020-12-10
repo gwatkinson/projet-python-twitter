@@ -6,13 +6,16 @@
 # https://github.com/actions/labeler
 
 name: "Pull Request Labeler"
-on: [pull_request, workflow_dispatch]
+on:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   triage:
+    name: Label PR
     runs-on: ubuntu-latest
     steps:
-    - name: Labeler
-      uses: actions/labeler@2.2.0
-      with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Labeler
+        uses: actions/labeler@2.2.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
