@@ -95,35 +95,6 @@ def tweet_json_to_df(path_list=None, folder=None, verbose=False):
     return df_tweets
 
 
-def select_time_range(df, start, end, date_var="created_at"):
-    """
-    Filtre les tweets.
-    Garde les tweets créés entre les dates données. 
-
-    Args:
-        df (dataframe): La dataframe pandas qui contient les tweets.
-        start (str): La date de départ.
-
-            Au format: ``"YYYY-MM-DD HH:MM:SS"``.
-        end (str): La date de fin
-        
-            Au format: ``"YYYY-MM-DD HH:MM:SS"``.
-        date_var (str): Le nom de la colonne qui contient la date
-
-    Returns:
-        pandas.dataframe: La dataframe filtrée par le temps.
-
-    Examples:
-        select_time_range(df, "2020-11-03 08:15:00", "2021-01-03 22:30:00")
-    """
-    start_time = pd.to_datetime(start, "%Y-%m-%d %H:%M:%S")
-    end_time = pd.to_datetime(end, "%Y-%m-%d %H:%M:%S")
-
-    filtered_df = df[start_time < df[date_var] < end_time]
-
-    return filtered_df
-
-
 def clean_df(
     df,
     index="id",
@@ -136,10 +107,9 @@ def clean_df(
     Fonction pour nettoyer la df qui contient les tweets.
 
     Il s'agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse 
-    (text, full text, les counts, la localisation, on supprime retweeted_status et quoted_status).
+    (text, , les counts, la localisation, on supprime retweeted_status et quoted_status).
     Il faut peut etre récuperer les counts via l'API (car on récupère les nouveaux tweets et ils n"ont pas encore de likes).
     Il faudra peut etre utiliser des expr reg pour nettoyer les rt.
-    Mettre l'option de choisir le timespan.
 
     Args:
         df (pandas.dataframe): Dataframe non nettoyée qui contient les tweets.
@@ -232,6 +202,35 @@ def clean_df(
         print("")
 
     return clean_df
+
+
+def select_time_range(df, start, end, date_var="created_at"):
+    """
+    Filtre les tweets.
+    Garde les tweets créés entre les dates données. 
+
+    Args:
+        df (dataframe): La dataframe pandas qui contient les tweets.
+        start (str): La date de départ.
+
+            Au format: ``"YYYY-MM-DD HH:MM:SS"``.
+        end (str): La date de fin
+        
+            Au format: ``"YYYY-MM-DD HH:MM:SS"``.
+        date_var (str): Le nom de la colonne qui contient la date
+
+    Returns:
+        pandas.dataframe: La dataframe filtrée par le temps.
+
+    Examples:
+        select_time_range(df, "2020-11-03 08:15:00", "2021-01-03 22:30:00")
+    """
+    start_time = pd.to_datetime(start, "%Y-%m-%d %H:%M:%S")
+    end_time = pd.to_datetime(end, "%Y-%m-%d %H:%M:%S")
+
+    filtered_df = df[start_time < df[date_var] < end_time]
+
+    return filtered_df
 
 
 def nlp(df):
