@@ -22,7 +22,7 @@ def folder_to_path_list(folder_path):
 
     Args:
         folder_path (str): Chemin du dossier.
-        Ne pas terminer avec un `/` ou `\`.
+        À terminer avec un `/` ou `\`.
 
     Examples:
         folder_path("path/to/folder")
@@ -31,7 +31,7 @@ def folder_to_path_list(folder_path):
     Returns:
         list: Liste des fichiers `.json` dans le dossier.
     """
-    path_list = glob.glob(folder_path + "/*.json")
+    path_list = glob.glob(folder_path + "*.json")
 
     return path_list
 
@@ -46,7 +46,7 @@ def tweet_json_to_df(path_list=None, folder=None, verbose=False):
         folder (str, optional): 
             Le chemin du dossier qui contient les fichiers `.json`.
             
-            Ne pas terminer avec un `/` ou `\`.
+            À terminer avec un `/` ou `\`.
         verbose (bool, optional): 
             `True` pour afficher une barre de progrès et des messages.
 
