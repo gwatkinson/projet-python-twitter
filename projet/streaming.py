@@ -59,15 +59,13 @@ class CredentialsClass:
         ]
 
         # Vérifie si les clés existent bien
-        if (missing_keys := [key for key in key_names if key not in credentials]) :
+        missing_keys = [key for key in key_names if key not in credentials]
+        if missing_keys:
             raise utils.MissingKey(missing_keys=missing_keys)
 
         # Vérifie le type des clés
-        if (
-            wrong_keys := [
-                key for key in key_names if type(credentials[key]) is not str
-            ]
-        ) :
+        wrong_keys = [key for key in key_names if type(credentials[key]) is not str]
+        if wrong_keys:
             raise utils.CredentialsKeyType(wrong_keys=wrong_keys)
 
         # Utilise les clés fournies dans le dictionnaire 'credentials'
@@ -317,7 +315,8 @@ def start_stream(
 
             Par défaut : `False`.
     """
-    if (wrong_words := [mot for mot in liste_mots if type(mot) is not str]) :
+    wrong_words = [mot for mot in liste_mots if type(mot) is not str]
+    if wrong_words:
         raise utils.WordType(wrong_words=wrong_words)
 
     if not isinstance(credentials, CredentialsClass):
