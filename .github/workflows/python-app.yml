@@ -1,6 +1,4 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-# and https://github.community/t/run-job-only-if-folder-changed/118292
 
 name: Python application
 
@@ -12,38 +10,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_python:
-    name: Check the python files
-    outputs:
-      run_job: ${{ steps.check_files_python.outputs.run_job }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: A) Checkout code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-
-      - name: B) Check modified files
-        id: check_files_python
-        run: |
-          echo "=============== list modified files ==============="
-          git diff --name-only HEAD^ HEAD
-
-          git diff --name-only HEAD^ HEAD > files.txt
-          while IFS= read -r file
-          do
-            echo "::set-output name=run_job::false"
-            if [[ $file != projet/* && $file != test/* ]]; then
-              echo "::set-output name=run_job::true"
-              break
-            fi
-          done < files.txt
-
   build:
     name: Lint, test and doc
     needs: check_python
     runs-on: ubuntu-latest
-    if: needs.check_python.outputs.run_job == 'true'
     steps:
       - name: A) Checkout code
         uses: actions/checkout@v2
@@ -77,30 +47,11 @@ jobs:
         run: |
           pytest --cov="." test/
 
-      - name: E)(1/5) Generate documentation
+      - name: E)(1/4) Generate documentation
         run: |
           pdoc --html -f --output-dir docs projet
-          # mv docs/projet/* docs
-          # rmdir docs/projet
 
-      - name: E)(2/5) Check if docs files changed
-        id: check_files_docs
-        run: |
-          echo "=============== list modified files ==============="
-          git status --porcelain | cut -c4-
-
-          git status --porcelain | cut -c4- > files.txt
-          while IFS= read -r file
-          do
-            echo "::set-output name=run_doc::false"
-            if [[ $file == docs/* ]]; then
-              echo "::set-output name=run_doc::true"
-              break
-            fi
-          done < files.txt
-
-      - name: E)(3/5) Get branch name
-        if: steps.check_files_docs.outputs.run_doc == 'true'
+      - name: E)(2/4) Get branch name
         id: branch_name
         env:
           GITHUB_REF: ${{ github.ref }}
@@ -120,8 +71,7 @@ jobs:
             echo "workflow_dispatch : the branch is 'refs/heads/master'"
           fi
 
-      - name: E)(4/5) Commit files
-        if: steps.check_files_docs.outputs.run_doc == 'true'
+      - name: E)(3/4) Commit files
         run: |
           git checkout ${{ steps.branch_name.outputs.branch }}
           git config --local user.email "action@github.com"
@@ -129,8 +79,7 @@ jobs:
           git add -f docs/*
           git commit -m "Automatic commit : Update documentation"
 
-      - name: E)(5/5) Push changes
-        if: steps.check_files_docs.outputs.run_doc == 'true' && steps.branch_name.outputs.branch != 'refs/heads/master'
+      - name: E)(4/4) Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
