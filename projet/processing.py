@@ -5,7 +5,6 @@ import json
 import pandas as pd
 import numpy as np
 import glob
-import datetime as dt
 
 # Import les listes de variables
 import projet.listes_variables
@@ -26,7 +25,7 @@ def folder_to_path_list(folder_path):
     Examples:
         folder_path("path/to/folder")
         folder_path(r"path\to\folder")
-    
+
     Returns:
         list: Liste des fichiers `.json` dans le dossier.
     """
