@@ -26,26 +26,31 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">## Fonctions auxiliaires
+<pre><code class="python"># Fonctions auxiliaires
 
 # Affichage du progrès
-def progressBar(current, total, prefix=None, file=None, total_file=None, barLength=20):
+def progressBar(
+    current, total, prefix=None, file=None, total_file=None, barLength=20, verbose=False
+):
     &#34;&#34;&#34; Affiche une barre de progrès &#34;&#34;&#34;
-    percent = float(current) * 100 / total
-    arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
-    spaces = &#34; &#34; * (barLength - len(arrow) - 1)
-    if prefix is None:
-        prefix = (
-            f&#34;File {file}/{total_file}&#34;
-            if file is not None and total_file is not None
-            else &#34;Progress&#34;
-        )
-    print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)
+    if verbose:
+        percent = float(current) * 100 / total
+        arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
+        spaces = &#34; &#34; * (barLength - len(arrow) - 1)
+        if prefix is None:
+            prefix = (
+                f&#34;File {file}/{total_file}&#34;
+                if file is not None and total_file is not None
+                else &#34;Progress&#34;
+            )
+        print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)
+        if current == total:
+            print(&#34;&#34;)
 
 
-### Les erreurs du projet
+# Les erreurs du projet
 
-## Erreurs de streaming.py
+# Erreurs de streaming.py
 class CredentialsType(Exception):
     &#34;&#34;&#34;Erreur à lever si `credentials` n&#39;est pas un dictionnaire.&#34;&#34;&#34;
 
@@ -110,7 +115,7 @@ class WordType(Exception):
         return f&#34;{str(self.wrong_words)} {self.msg}&#34;
 
 
-## Erreurs de processing.py
+# Erreurs de processing.py
 class WrongColumnName(Exception):
     &#34;&#34;&#34;Erreur à lever si la variable donnée n&#39;est pas dans la dataframe&#34;&#34;&#34;
 
@@ -131,7 +136,7 @@ class WrongColumnName(Exception):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="projet.projet_utils.progressBar"><code class="name flex">
-<span>def <span class="ident">progressBar</span></span>(<span>current, total, prefix=None, file=None, total_file=None, barLength=20)</span>
+<span>def <span class="ident">progressBar</span></span>(<span>current, total, prefix=None, file=None, total_file=None, barLength=20, verbose=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Affiche une barre de progrès</p></div>
@@ -139,18 +144,23 @@ class WrongColumnName(Exception):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def progressBar(current, total, prefix=None, file=None, total_file=None, barLength=20):
+<pre><code class="python">def progressBar(
+    current, total, prefix=None, file=None, total_file=None, barLength=20, verbose=False
+):
     &#34;&#34;&#34; Affiche une barre de progrès &#34;&#34;&#34;
-    percent = float(current) * 100 / total
-    arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
-    spaces = &#34; &#34; * (barLength - len(arrow) - 1)
-    if prefix is None:
-        prefix = (
-            f&#34;File {file}/{total_file}&#34;
-            if file is not None and total_file is not None
-            else &#34;Progress&#34;
-        )
-    print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)</code></pre>
+    if verbose:
+        percent = float(current) * 100 / total
+        arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
+        spaces = &#34; &#34; * (barLength - len(arrow) - 1)
+        if prefix is None:
+            prefix = (
+                f&#34;File {file}/{total_file}&#34;
+                if file is not None and total_file is not None
+                else &#34;Progress&#34;
+            )
+        print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)
+        if current == total:
+            print(&#34;&#34;)</code></pre>
 </details>
 </dd>
 </dl>
