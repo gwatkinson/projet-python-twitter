@@ -143,24 +143,16 @@ def clean_df(
         columns.append(extra)
 
     # Vérifie que toute les variables données existent dans df
-    cols = list(df)
-    wrong_var = []
-    if index and index not in cols:
-        wrong_var.append(index)
-    if date and date not in cols:
-        wrong_var.append(date)
-    for var in columns:
-        if isinstance(var, list):
-            if var[0] not in cols:
-                wrong_var.append(var[0])
-        elif isinstance(var, str):
-            if var not in cols:
-                wrong_var.append(var)
+    wrong_var = [
+        list(var)[0] for var in [index, date] + columns if var and var not in list(df)
+    ]
     if wrong_var:
         raise utils.WrongColumnName(var=wrong_var)
 
-    print("Le nettoyage a commencé")
     total = len(columns) + 3
+
+    if verbose:
+        print("Le nettoyage a commencé")
 
     # Initialise la df
     clean_df = pd.DataFrame()
@@ -172,9 +164,9 @@ def clean_df(
 
     # Ajoute les variables
     for i, var in enumerate(columns):
+        var_name = "-".join(var)
+        new_col = df[list(var)[0]]
         if isinstance(var, list):
-            var_name = "-".join(var)
-            new_col = df[var[0]]
             for i in range(1, len(var)):
                 new_col = [
                     new_col[j].get(var[i], np.nan)
@@ -182,9 +174,7 @@ def clean_df(
                     else np.nan
                     for j in range(len(new_col))
                 ]
-            clean_df[var_name] = new_col
-        elif isinstance(var, str):
-            clean_df[var] = df[var]
+        clean_df[var_name] = new_col
         utils.progressBar(current=i + 2, total=total, verbose=verbose)
 
     # Convertit la date de création des accounts
