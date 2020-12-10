@@ -99,9 +99,9 @@ def clean_df(
     df,
     index="id",
     date="created_at",
-    vars=projet.listes_variables.liste_1,
-    extra=None,
     verbose=False,
+    extra=None,
+    vars=projet.listes_variables.liste_1,
 ):
     """
     Fonction pour nettoyer la df qui contient les tweets.
@@ -165,16 +165,14 @@ def clean_df(
         print("Le nettoyage a commencé")
         total = len(columns) + 3
 
-    # Initialise la df avec les index
-    clean_df = pd.DataFrame(index=index)
-    if verbose:
-        utils.progressBar(current=1, total=total)
+    # Initialise la df
+    clean_df = pd.DataFrame()
 
     # Ajoute la date au format datetime
     if date:
         clean_df[date] = pd.to_datetime(df[date])
     if verbose:
-        utils.progressBar(current=2, total=total)
+        utils.progressBar(current=1, total=total)
 
     # Ajoute les variables
     for i, var in enumerate(columns):
@@ -183,18 +181,26 @@ def clean_df(
             new_col = df[var[0]]
             for i in range(1, len(var)):
                 new_col = [
-                    new_col[j].get(var[i]) if new_col[j] else None
+                    new_col[j].get(var[i], np.nan)
+                    if isinstance(new_col[j], dict)
+                    else np.nan
                     for j in range(len(new_col))
                 ]
             clean_df[var_name] = new_col
         elif isinstance(var, str):
             clean_df[var] = df[var]
         if verbose:
-            utils.progressBar(current=3 + i, total=total)
+            utils.progressBar(current=i + 2, total=total)
 
     # Convertit la date de création des accounts
     if "user-created_at" in clean_df:
         clean_df["user-created_at"] = pd.to_datetime(clean_df["user-created_at"])
+    if verbose:
+        utils.progressBar(current=total - 1, total=total)
+
+    # Ajoute les index
+    if index:
+        clean_df = clean_df.set_index(df[index])
     if verbose:
         utils.progressBar(current=total, total=total)
 
