@@ -1,16 +1,16 @@
-## Récupère les tweets avec l'API Twitter
+# Module pour récupèrer les tweets avec l'API Twitter
 
-
-## Import les modules
 # Import les modules utilisés
-import time, sys
+import time
+import sys
 import json
 import tweepy
 
-# Erreurs du projet
+# Import les erreurs du projet
 import projet.projet_utils as utils
 
-## Authentification et connexion avec l'API
+
+# Authentification et connexion avec l'API
 class CredentialsClass:
     def __init__(self, credentials, **kwargs):
         """
@@ -92,7 +92,7 @@ class CredentialsClass:
         return auth, api
 
 
-## Stream des Tweets
+# Stream des Tweets
 class SListener(tweepy.StreamListener):
     def __init__(
         self,
@@ -219,7 +219,9 @@ class SListener(tweepy.StreamListener):
 
         if self.verbose:
             if self.nb:
-                utils.progressBar(current=self.nb_tweets, total=self.nb)
+                utils.progressBar(
+                    current=self.nb_tweets, total=self.nb, verbose=self.verbose
+                )
             elif self.counter % 100 == 0:
                 print(["|", "/", "-", "\\"][self.counter // 100 % 4], end="\r")
 
@@ -283,7 +285,7 @@ def start_stream(
     Args:
         liste_mots (list): 
             Liste des mots à tracker.
-            
+
             Doit contenir des `str`.
         credentials: 
             Instance de `CredentialsClass` qui gère la connexion avec Twitter.
@@ -362,7 +364,7 @@ def start_stream(
             return
 
 
-## Lancement du stream
+# Lancement du stream
 if __name__ == "__main__":
     try:
         import projet.listes_mots as listes

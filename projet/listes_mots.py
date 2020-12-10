@@ -1,5 +1,4 @@
-### Liste des mots à tracker ###
-
+# Liste des mots à tracker
 
 # Liste 1 (trop longue et non utilisée)
 liste_1 = [

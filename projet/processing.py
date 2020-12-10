@@ -1,21 +1,20 @@
-## Process les tweets récupérés
+# Module pour process les tweets récupérés
 
-
-## Import les modules
 # Import les modules utilisés
 import json
 import pandas as pd
 import numpy as np
 import glob
+import datetime as dt
 
 # Import les listes de variables
 import projet.listes_variables
 
-# Utils du projet
+# Import les utils du projet
 import projet.projet_utils as utils
 
 
-## Convertit et nettoie les tweets
+# Convertit les fichiers json en dataframe
 def folder_to_path_list(folder_path):
     r"""
     Retourne la liste des fichiers `.json` dans le dossier donné.
@@ -38,20 +37,20 @@ def folder_to_path_list(folder_path):
 
 def tweet_json_to_df(path_list=None, folder=None, verbose=False):
     r"""
-    Converti les fichiers json en dataframe pandas.
+    Convertit les fichiers json en dataframe pandas.
 
     Args:
         path_list (list, optional): 
             Une liste des chemin vers les fichiers `.json`.
         folder (str, optional): 
             Le chemin du dossier qui contient les fichiers `.json`.
-            
+
             À terminer avec un `/` ou `\`.
         verbose (bool, optional): 
             `True` pour afficher une barre de progrès et des messages.
 
             Par défaut : `False`.
-    
+
     Returns:
         pandas.dataframe: Dataframe pandas qui contient les tweets.
     """
@@ -84,10 +83,9 @@ def tweet_json_to_df(path_list=None, folder=None, verbose=False):
                 if tweet:
                     tweet_obj = json.loads(tweet)
                     tweets_list.append(tweet_obj)
-                if verbose:
-                    utils.progressBar(j, tweet_total, file=i + 1, total_file=file_total)
-        if verbose:
-            print("")
+                utils.progressBar(
+                    j, tweet_total, file=i + 1, total_file=file_total, verbose=verbose
+                )
 
     # Créer une DataFrame à partir de `tweets_list`
     df_tweets = pd.DataFrame(tweets_list)
@@ -95,6 +93,7 @@ def tweet_json_to_df(path_list=None, folder=None, verbose=False):
     return df_tweets
 
 
+# Nettoie la dataframe
 def clean_df(
     df,
     index="id",
@@ -161,9 +160,8 @@ def clean_df(
     if wrong_var:
         raise utils.WrongColumnName(var=wrong_var)
 
-    if verbose:
-        print("Le nettoyage a commencé")
-        total = len(columns) + 3
+    print("Le nettoyage a commencé")
+    total = len(columns) + 3
 
     # Initialise la df
     clean_df = pd.DataFrame()
@@ -171,8 +169,7 @@ def clean_df(
     # Ajoute la date au format datetime
     if date:
         clean_df[date] = pd.to_datetime(df[date])
-    if verbose:
-        utils.progressBar(current=1, total=total)
+    utils.progressBar(current=1, total=total, verbose=verbose)
 
     # Ajoute les variables
     for i, var in enumerate(columns):
@@ -189,27 +186,22 @@ def clean_df(
             clean_df[var_name] = new_col
         elif isinstance(var, str):
             clean_df[var] = df[var]
-        if verbose:
-            utils.progressBar(current=i + 2, total=total)
+        utils.progressBar(current=i + 2, total=total, verbose=verbose)
 
     # Convertit la date de création des accounts
     if "user-created_at" in clean_df:
         clean_df["user-created_at"] = pd.to_datetime(clean_df["user-created_at"])
-    if verbose:
-        utils.progressBar(current=total - 1, total=total)
+    utils.progressBar(current=total - 1, total=total, verbose=verbose)
 
     # Ajoute les index
     if index:
         clean_df = clean_df.set_index(df[index])
-    if verbose:
-        utils.progressBar(current=total, total=total)
-
-    if verbose:
-        print("")
+    utils.progressBar(current=total, total=total, verbose=verbose)
 
     return clean_df
 
 
+# Fonctions pour filtrer la dataframe
 def select_time_range(df, start, end, date_var="created_at"):
     """
     Filtre les tweets.
@@ -219,26 +211,27 @@ def select_time_range(df, start, end, date_var="created_at"):
         df (dataframe): La dataframe pandas qui contient les tweets.
         start (str): La date de départ.
 
-            Au format: ``"YYYY-MM-DD HH:MM:SS"``.
+            Au format: `` "%Y-%m-%d %H:%M:%S%z"``.
         end (str): La date de fin
-        
-            Au format: ``"YYYY-MM-DD HH:MM:SS"``.
+
+            Au format: `` "%Y-%m-%d %H:%M:%S%z"``.
         date_var (str): Le nom de la colonne qui contient la date
 
     Returns:
         pandas.dataframe: La dataframe filtrée par le temps.
 
     Examples:
-        select_time_range(df, "2020-11-03 08:15:00", "2021-01-03 22:30:00")
+        select_time_range(df, "2020-11-03 08:15:00+01:00", "2021-01-03 22:30:00+01:00")
     """
-    start_time = pd.to_datetime(start, "%Y-%m-%d %H:%M:%S")
-    end_time = pd.to_datetime(end, "%Y-%m-%d %H:%M:%S")
+    start_time = pd.to_datetime(start)
+    end_time = pd.to_datetime(end)
 
-    filtered_df = df[start_time < df[date_var] < end_time]
+    filtered_df = df[(start_time < df[date_var]) & (df[date_var] < end_time)]
 
     return filtered_df
 
 
+# Fonctions pour ajouter le sentiment analysis
 def nlp(df):
     """
     Fonction pour ajouter la ou les colonnes de nlp (à l'aide de nltk ou TextBlob ou les deux)

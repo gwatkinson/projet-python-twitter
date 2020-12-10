@@ -1,3 +1,6 @@
+# Listes des variables à garder
+
+# Liste 1 (celle par défaut)
 liste_1 = [
     "text",
     "lang",
@@ -43,4 +46,3 @@ liste_1 = [
     ["place", "bounding_box", "coordinates"],
     # "entities",
 ]
-
