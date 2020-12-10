@@ -93,8 +93,8 @@ jobs:
           git checkout ${{ steps.branch_name.outputs.branch }}
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/*
-          git commit -f -m "Automatic commit : Update documentation"
+          git add -f docs/*
+          git commit -m "Automatic commit : Update documentation"
 
       - name: E)(5/5) Push changes
         if: steps.check_files_docs.outputs.run_doc == 'true' && steps.branch_name.outputs.branch != 'refs/heads/master'
