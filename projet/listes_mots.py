@@ -1,5 +1,8 @@
 # Liste des mots à tracker
 
+# Liste 0 (pour avoir le bon nombre de listes)
+liste_0 = []
+
 # Liste 1 (trop longue et non utilisée)
 liste_1 = [
     "JoeBiden",
@@ -55,3 +58,5 @@ liste_5 = [
     "presidential",
     "electionnight",
 ]
+
+listes_mots = [liste_0, liste_1, liste_2, liste_3, liste_4, liste_5]

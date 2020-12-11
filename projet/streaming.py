@@ -370,16 +370,6 @@ if __name__ == "__main__":
         import projet.listes_mots as listes
         import projet._credentials as _credentials
 
-        credentials = CredentialsClass(_credentials.credentials)
-
-        start_stream(
-            credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien
-            liste_mots=listes.liste_5,  # Liste de mots à tracker (voir `projet.listes_mots`)
-            nb=100,  # Nombre de tweets à recupérer
-            fprefix="liste_5",  # À modifier en fonction de la liste selectionnée
-            path="C:/Users/gabri/OneDrive/Desktop/temp/",  # À modifier selon l'utilisateur
-            verbose=True,  # Selon les préférences
-        )
     except ModuleNotFoundError as e:
         print(
             "Erreur : " + str(e),
@@ -387,3 +377,53 @@ if __name__ == "__main__":
             "Vérifier que '_credentials.py' existe bien et est dans le bon dossier ('projet/')",
             sep="\n",
         )
+
+    else:
+        import argparse
+
+        parser = argparse.ArgumentParser(description="Demarre le stream.")
+        parser.add_argument("-n", "--nb", type=int, help="Le nombre maximal de tweets.")
+        parser.add_argument(
+            "-t", "--timeout", type=float, help="Le temps maximal du stream.",
+        )
+        parser.add_argument(
+            "-q",
+            "--quiet",
+            dest="verbose",
+            action="store_false",
+            help="Affichage réduit.",
+        )
+        parser.add_argument(
+            "-p",
+            "--path",
+            default="./data/json/",
+            help="Le dossier où enregistrer les fichiers.",
+        )
+        parser.add_argument(
+            "-l",
+            "--liste",
+            required=True,
+            type=int,
+            choices=list(range(len(listes.listes_mots))),
+            help="Le numero de la liste de 'listes_mots' à utiliser.",
+        )
+        parser.add_argument("--prefix", help="Le prefix du noms des fichiers.")
+        args = parser.parse_args()
+
+        credentials = CredentialsClass(_credentials.credentials)
+
+        start_stream(
+            credentials=credentials,  # Vérifier que '_twitter_credentials" existe bien
+            liste_mots=listes.listes_mots[
+                args.liste
+            ],  # Liste de mots à tracker (voir `projet.listes_mots`)
+            nb=args.nb,  # Nombre de tweets à recupérer
+            timeout=args.timeout,  # Temps maximal du stream
+            fprefix=args.prefix
+            if args.prefix
+            else "liste_"
+            + str(args.liste),  # À modifier en fonction de la liste selectionnée
+            path=args.path,  # À modifier selon l'utilisateur
+            verbose=args.verbose,  # Selon les préférences
+        )
+
