@@ -1,4 +1,4 @@
-# Module pour récupèrer les tweets avec l'API Twitter
+"""Module pour récupèrer les tweets avec l'API Twitter"""
 
 # Import les modules utilisés
 import time

@@ -1,4 +1,4 @@
-# Listes des variables à garder
+"""Listes des variables à garder"""
 
 # Liste 1 (celle par défaut)
 liste_1 = [

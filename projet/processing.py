@@ -1,4 +1,4 @@
-# Module pour process les tweets récupérés
+"""Process les tweets récupérés"""
 
 # Import les modules utilisés
 import json

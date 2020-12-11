@@ -1,4 +1,4 @@
-# Liste des mots à tracker
+"""Liste des mots à tracker"""
 
 # Liste 0 (pour avoir le bon nombre de listes)
 liste_0 = []

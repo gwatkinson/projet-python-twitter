@@ -1,4 +1,4 @@
-# Fonctions auxiliaires
+"""Fonctions auxiliaires"""
 
 # Affichage du progrès
 def progressBar(
