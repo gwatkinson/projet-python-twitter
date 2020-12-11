@@ -5,6 +5,10 @@ import json
 import pandas as pd
 import numpy as np
 import glob
+import nltk
+
+nltk.download("vader_lexicon")
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 # Import les listes de variables
 import projet.listes_variables
@@ -85,6 +89,8 @@ def tweet_json_to_df(path_list=None, folder=None, verbose=False):
                 utils.progressBar(
                     j, tweet_total, file=i + 1, total_file=file_total, verbose=verbose
                 )
+        if verbose:
+            print("")
 
     # Créer une DataFrame à partir de `tweets_list`
     df_tweets = pd.DataFrame(tweets_list)
@@ -144,7 +150,9 @@ def clean_df(
 
     # Vérifie que toute les variables données existent dans df
     wrong_var = [
-        list(var)[0] for var in [index, date] + columns if var and var not in list(df)
+        list(var)[0]
+        for var in [[index], [date]] + columns
+        if var and list(var)[0] not in list(df)
     ]
     if wrong_var:
         raise utils.WrongColumnName(var=wrong_var)
@@ -166,14 +174,13 @@ def clean_df(
     for i, var in enumerate(columns):
         var_name = "-".join(var)
         new_col = df[list(var)[0]]
-        if isinstance(var, list):
-            for i in range(1, len(var)):
-                new_col = [
-                    new_col[j].get(var[i], np.nan)
-                    if isinstance(new_col[j], dict)
-                    else np.nan
-                    for j in range(len(new_col))
-                ]
+        for i in range(1, len(var)):
+            new_col = [
+                new_col[j].get(var[i], np.nan)
+                if isinstance(new_col[j], dict)
+                else np.nan
+                for j in range(len(new_col))
+            ]
         clean_df[var_name] = new_col
         utils.progressBar(current=i + 2, total=total, verbose=verbose)
 
@@ -187,7 +194,126 @@ def clean_df(
         clean_df = clean_df.set_index(df[index])
     utils.progressBar(current=total, total=total, verbose=verbose)
 
+    if verbose:
+        print("")
+
     return clean_df
+
+
+# Fonctions pour ajouter des colonnes
+def create_full_text(df):
+    """
+    Fonction pour ajouter le texte entier et gérer les RT.
+    
+    Args:
+        df (pandas.dataframe): 
+            Une dataframe pandas du type `clean_df`.
+
+    Returns:
+        pandas.dataframe: Une df avec une nouvelle colonne `full_text`.
+    """
+    new_col = []
+    for i in range(len(df)):
+        if df["extended_tweet-full_text"].iloc[i] is not np.nan:
+            t = df["extended_tweet-full_text"].iloc[i]
+        elif df["retweeted_status-extended_tweet-full_text"].iloc[i] is not np.nan:
+            t = df["retweeted_status-extended_tweet-full_text"].iloc[i]
+        elif df["retweeted_status-text"].iloc[i] is not np.nan:
+            t = df["retweeted_status-text"].iloc[i]
+        elif df["text"].iloc[i] is not np.nan:
+            t = df["text"].iloc[i]
+        new_col.append(t)
+
+    df["full_text"] = new_col
+
+    return df
+
+
+def add_sentiment(df):
+    """
+    Fonction pour ajouter la ou les colonnes de sentiment analysis (à l'aide de nltk ou TextBlob ou les deux).
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    """
+    sid = SentimentIntensityAnalyzer()
+
+    # Generate sentiment scores
+    df["full_text-sentiment"] = df["full_text"].apply(sid.polarity_scores)
+    df["full_text-sentiment-compound"] = df["full_text-sentiment"].apply(
+        lambda s: s.get("compound")
+    )
+    df["user-description-sentiment"] = (
+        df["user-description"].fillna(value="").apply(sid.polarity_scores)
+    )
+    df["user-description-sentiment-compound"] = df["user-description-sentiment"].apply(
+        lambda s: s.get("compound")
+    )
+
+    return df
+
+
+def add_politics(df):
+    """
+    Fonction pour ajouter une colonne pour la présence ou non de Trump et une pour Biden.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    """
+    Trump_word = "(Trump|Donald|realDonaldTrump|republican)"
+    Biden_word = "(Biden|Joe|JoeBiden|democrat)"
+    df["contains_trump"] = df["full_text"].str.contains(Trump_word, case=False)
+    df["contains_biden"] = df["full_text"].str.contains(Biden_word, case=False)
+    df["user-description-contains_trump"] = df["user-description"].str.contains(
+        Trump_word, case=False
+    )
+    df["user-description-contains_biden"] = df["user-description"].str.contains(
+        Biden_word, case=False
+    )
+
+    return df
+
+
+def sentiment_class(
+    df,
+    vars=["full_text", "user-description"],
+    choices=["tneg", "neg", "neutre", "pos", "tpos"],
+):
+    """
+    Fonction pour ajouter une colonne pour les valeurs discrétisées de sentiment_analysis.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    """
+    conditions = lambda s: [
+        (df[s + "-sentiment-compound"].lt(-0.7)),
+        (
+            df[s + "-sentiment-compound"].ge(-0.7)
+            & df[s + "-sentiment-compound"].lt(-0.2)
+        ),
+        (
+            df[s + "-sentiment-compound"].ge(-0.2)
+            & df[s + "-sentiment-compound"].lt(0.2)
+        ),
+        (df[s + "-sentiment-compound"].ge(0.2) & df[s + "-sentiment-compound"].lt(0.7)),
+        (df[s + "-sentiment-compound"].ge(0.7)),
+    ]
+
+    for var in vars:
+        df[var + "-sentiment-class"] = np.select(conditions(var), choices)
+
+    return df
+
+
+def add_category(df):
+    """
+    Fonction pour ajouter une colonne pour les valeurs discrétisées de sentiment_analysis.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    """
+    conditions = [()]
+    pass
 
 
 # Fonctions pour filtrer la dataframe
@@ -218,14 +344,3 @@ def select_time_range(df, start, end, date_var="created_at"):
     filtered_df = df[(start_time < df[date_var]) & (df[date_var] < end_time)]
 
     return filtered_df
-
-
-# Fonctions pour ajouter le sentiment analysis
-def nlp(df):
-    """
-    Fonction pour ajouter la ou les colonnes de nlp (à l'aide de nltk ou TextBlob ou les deux)
-
-    Args:
-        df ([type]): [description]
-    """
-    pass
