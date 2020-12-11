@@ -35,8 +35,6 @@ import pandas as pd
 import numpy as np
 import glob
 import nltk
-
-nltk.download(&#34;vader_lexicon&#34;)
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 # Import les listes de variables
@@ -44,6 +42,9 @@ import projet.listes_variables
 
 # Import les utils du projet
 import projet.projet_utils as utils
+
+# Download librairie nltk
+nltk.download(&#34;vader_lexicon&#34;)
 
 
 # Convertit les fichiers json en dataframe
@@ -233,7 +234,7 @@ def clean_df(
 def create_full_text(df):
     &#34;&#34;&#34;
     Fonction pour ajouter le texte entier et gérer les RT.
-    
+
     Args:
         df (pandas.dataframe): 
             Une dataframe pandas du type `clean_df`.
@@ -314,22 +315,27 @@ def sentiment_class(
     Args:
         df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
     &#34;&#34;&#34;
-    conditions = lambda s: [
-        (df[s + &#34;-sentiment-compound&#34;].lt(-0.7)),
-        (
-            df[s + &#34;-sentiment-compound&#34;].ge(-0.7)
-            &amp; df[s + &#34;-sentiment-compound&#34;].lt(-0.2)
-        ),
-        (
-            df[s + &#34;-sentiment-compound&#34;].ge(-0.2)
-            &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.2)
-        ),
-        (df[s + &#34;-sentiment-compound&#34;].ge(0.2) &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.7)),
-        (df[s + &#34;-sentiment-compound&#34;].ge(0.7)),
-    ]
+
+    def _conditions(s):
+        return [
+            (df[s + &#34;-sentiment-compound&#34;].lt(-0.7)),
+            (
+                df[s + &#34;-sentiment-compound&#34;].ge(-0.7)
+                &amp; df[s + &#34;-sentiment-compound&#34;].lt(-0.2)
+            ),
+            (
+                df[s + &#34;-sentiment-compound&#34;].ge(-0.2)
+                &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.2)
+            ),
+            (
+                df[s + &#34;-sentiment-compound&#34;].ge(0.2)
+                &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.7)
+            ),
+            (df[s + &#34;-sentiment-compound&#34;].ge(0.7)),
+        ]
 
     for var in vars:
-        df[var + &#34;-sentiment-class&#34;] = np.select(conditions(var), choices)
+        df[var + &#34;-sentiment-class&#34;] = np.select(_conditions(var), choices)
 
     return df
 
@@ -341,7 +347,7 @@ def add_category(df):
     Args:
         df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
     &#34;&#34;&#34;
-    conditions = [()]
+    # conditions = [()]
     pass
 
 
@@ -403,7 +409,7 @@ def select_time_range(df, start, end, date_var=&#34;created_at&#34;):
     Args:
         df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
     &#34;&#34;&#34;
-    conditions = [()]
+    # conditions = [()]
     pass</code></pre>
 </details>
 </dd>
@@ -650,7 +656,7 @@ Il faudra peut etre utiliser des expr reg pour nettoyer les rt.</p>
 <pre><code class="python">def create_full_text(df):
     &#34;&#34;&#34;
     Fonction pour ajouter le texte entier et gérer les RT.
-    
+
     Args:
         df (pandas.dataframe): 
             Une dataframe pandas du type `clean_df`.
@@ -806,22 +812,27 @@ Garde les tweets créés entre les dates données. </p>
     Args:
         df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
     &#34;&#34;&#34;
-    conditions = lambda s: [
-        (df[s + &#34;-sentiment-compound&#34;].lt(-0.7)),
-        (
-            df[s + &#34;-sentiment-compound&#34;].ge(-0.7)
-            &amp; df[s + &#34;-sentiment-compound&#34;].lt(-0.2)
-        ),
-        (
-            df[s + &#34;-sentiment-compound&#34;].ge(-0.2)
-            &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.2)
-        ),
-        (df[s + &#34;-sentiment-compound&#34;].ge(0.2) &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.7)),
-        (df[s + &#34;-sentiment-compound&#34;].ge(0.7)),
-    ]
+
+    def _conditions(s):
+        return [
+            (df[s + &#34;-sentiment-compound&#34;].lt(-0.7)),
+            (
+                df[s + &#34;-sentiment-compound&#34;].ge(-0.7)
+                &amp; df[s + &#34;-sentiment-compound&#34;].lt(-0.2)
+            ),
+            (
+                df[s + &#34;-sentiment-compound&#34;].ge(-0.2)
+                &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.2)
+            ),
+            (
+                df[s + &#34;-sentiment-compound&#34;].ge(0.2)
+                &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.7)
+            ),
+            (df[s + &#34;-sentiment-compound&#34;].ge(0.7)),
+        ]
 
     for var in vars:
-        df[var + &#34;-sentiment-class&#34;] = np.select(conditions(var), choices)
+        df[var + &#34;-sentiment-class&#34;] = np.select(_conditions(var), choices)
 
     return df</code></pre>
 </details>
