@@ -398,22 +398,61 @@ if __name__ == &#34;__main__&#34;:
         import projet.listes_mots as listes
         import projet._credentials as _credentials
 
-        credentials = CredentialsClass(_credentials.credentials)
-
-        start_stream(
-            credentials=credentials,  # Vérifier que &#39;_twitter_credentials&#34; existe bien
-            liste_mots=listes.liste_5,  # Liste de mots à tracker (voir `projet.listes_mots`)
-            nb=100,  # Nombre de tweets à recupérer
-            fprefix=&#34;liste_5&#34;,  # À modifier en fonction de la liste selectionnée
-            path=&#34;C:/Users/gabri/OneDrive/Desktop/temp/&#34;,  # À modifier selon l&#39;utilisateur
-            verbose=True,  # Selon les préférences
-        )
     except ModuleNotFoundError as e:
         print(
             &#34;Erreur : &#34; + str(e),
             &#34;&#34;,
             &#34;Vérifier que &#39;_credentials.py&#39; existe bien et est dans le bon dossier (&#39;projet/&#39;)&#34;,
             sep=&#34;\n&#34;,
+        )
+
+    else:
+        import argparse
+
+        parser = argparse.ArgumentParser(description=&#34;Demarre le stream.&#34;)
+        parser.add_argument(&#34;-n&#34;, &#34;--nb&#34;, type=int, help=&#34;Le nombre maximal de tweets.&#34;)
+        parser.add_argument(
+            &#34;-t&#34;, &#34;--timeout&#34;, type=float, help=&#34;Le temps maximal du stream.&#34;,
+        )
+        parser.add_argument(
+            &#34;-q&#34;,
+            &#34;--quiet&#34;,
+            dest=&#34;verbose&#34;,
+            action=&#34;store_false&#34;,
+            help=&#34;Affichage réduit.&#34;,
+        )
+        parser.add_argument(
+            &#34;-p&#34;,
+            &#34;--path&#34;,
+            default=&#34;./data/json/&#34;,
+            help=&#34;Le dossier où enregistrer les fichiers.&#34;,
+        )
+        parser.add_argument(
+            &#34;-l&#34;,
+            &#34;--liste&#34;,
+            required=True,
+            type=int,
+            choices=list(range(len(listes.listes_mots))),
+            help=&#34;Le numero de la liste de &#39;listes_mots&#39; à utiliser.&#34;,
+        )
+        parser.add_argument(&#34;--prefix&#34;, help=&#34;Le prefix du noms des fichiers.&#34;)
+        args = parser.parse_args()
+
+        credentials = CredentialsClass(_credentials.credentials)
+
+        start_stream(
+            credentials=credentials,  # Vérifier que &#39;_twitter_credentials&#34; existe bien
+            liste_mots=listes.listes_mots[
+                args.liste
+            ],  # Liste de mots à tracker (voir `projet.listes_mots`)
+            nb=args.nb,  # Nombre de tweets à recupérer
+            timeout=args.timeout,  # Temps maximal du stream
+            fprefix=args.prefix
+            if args.prefix
+            else &#34;liste_&#34;
+            + str(args.liste),  # À modifier en fonction de la liste selectionnée
+            path=args.path,  # À modifier selon l&#39;utilisateur
+            verbose=args.verbose,  # Selon les préférences
         )</code></pre>
 </details>
 </section>
