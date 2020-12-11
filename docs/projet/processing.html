@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>projet.processing API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Process les tweets récupérés" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,17 +22,22 @@
 <h1 class="title">Module <code>projet.processing</code></h1>
 </header>
 <section id="section-intro">
+<p>Process les tweets récupérés</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># Module pour process les tweets récupérés
+<pre><code class="python">&#34;&#34;&#34;Process les tweets récupérés&#34;&#34;&#34;
 
 # Import les modules utilisés
 import json
 import pandas as pd
 import numpy as np
 import glob
+import nltk
+
+nltk.download(&#34;vader_lexicon&#34;)
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 # Import les listes de variables
 import projet.listes_variables
@@ -113,6 +118,8 @@ def tweet_json_to_df(path_list=None, folder=None, verbose=False):
                 utils.progressBar(
                     j, tweet_total, file=i + 1, total_file=file_total, verbose=verbose
                 )
+        if verbose:
+            print(&#34;&#34;)
 
     # Créer une DataFrame à partir de `tweets_list`
     df_tweets = pd.DataFrame(tweets_list)
@@ -172,7 +179,9 @@ def clean_df(
 
     # Vérifie que toute les variables données existent dans df
     wrong_var = [
-        list(var)[0] for var in [index, date] + columns if var and var not in list(df)
+        list(var)[0]
+        for var in [[index], [date]] + columns
+        if var and list(var)[0] not in list(df)
     ]
     if wrong_var:
         raise utils.WrongColumnName(var=wrong_var)
@@ -194,14 +203,13 @@ def clean_df(
     for i, var in enumerate(columns):
         var_name = &#34;-&#34;.join(var)
         new_col = df[list(var)[0]]
-        if isinstance(var, list):
-            for i in range(1, len(var)):
-                new_col = [
-                    new_col[j].get(var[i], np.nan)
-                    if isinstance(new_col[j], dict)
-                    else np.nan
-                    for j in range(len(new_col))
-                ]
+        for i in range(1, len(var)):
+            new_col = [
+                new_col[j].get(var[i], np.nan)
+                if isinstance(new_col[j], dict)
+                else np.nan
+                for j in range(len(new_col))
+            ]
         clean_df[var_name] = new_col
         utils.progressBar(current=i + 2, total=total, verbose=verbose)
 
@@ -215,7 +223,126 @@ def clean_df(
         clean_df = clean_df.set_index(df[index])
     utils.progressBar(current=total, total=total, verbose=verbose)
 
+    if verbose:
+        print(&#34;&#34;)
+
     return clean_df
+
+
+# Fonctions pour ajouter des colonnes
+def create_full_text(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter le texte entier et gérer les RT.
+    
+    Args:
+        df (pandas.dataframe): 
+            Une dataframe pandas du type `clean_df`.
+
+    Returns:
+        pandas.dataframe: Une df avec une nouvelle colonne `full_text`.
+    &#34;&#34;&#34;
+    new_col = []
+    for i in range(len(df)):
+        if df[&#34;extended_tweet-full_text&#34;].iloc[i] is not np.nan:
+            t = df[&#34;extended_tweet-full_text&#34;].iloc[i]
+        elif df[&#34;retweeted_status-extended_tweet-full_text&#34;].iloc[i] is not np.nan:
+            t = df[&#34;retweeted_status-extended_tweet-full_text&#34;].iloc[i]
+        elif df[&#34;retweeted_status-text&#34;].iloc[i] is not np.nan:
+            t = df[&#34;retweeted_status-text&#34;].iloc[i]
+        elif df[&#34;text&#34;].iloc[i] is not np.nan:
+            t = df[&#34;text&#34;].iloc[i]
+        new_col.append(t)
+
+    df[&#34;full_text&#34;] = new_col
+
+    return df
+
+
+def add_sentiment(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter la ou les colonnes de sentiment analysis (à l&#39;aide de nltk ou TextBlob ou les deux).
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    &#34;&#34;&#34;
+    sid = SentimentIntensityAnalyzer()
+
+    # Generate sentiment scores
+    df[&#34;full_text-sentiment&#34;] = df[&#34;full_text&#34;].apply(sid.polarity_scores)
+    df[&#34;full_text-sentiment-compound&#34;] = df[&#34;full_text-sentiment&#34;].apply(
+        lambda s: s.get(&#34;compound&#34;)
+    )
+    df[&#34;user-description-sentiment&#34;] = (
+        df[&#34;user-description&#34;].fillna(value=&#34;&#34;).apply(sid.polarity_scores)
+    )
+    df[&#34;user-description-sentiment-compound&#34;] = df[&#34;user-description-sentiment&#34;].apply(
+        lambda s: s.get(&#34;compound&#34;)
+    )
+
+    return df
+
+
+def add_politics(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne pour la présence ou non de Trump et une pour Biden.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    &#34;&#34;&#34;
+    Trump_word = &#34;(Trump|Donald|realDonaldTrump|republican)&#34;
+    Biden_word = &#34;(Biden|Joe|JoeBiden|democrat)&#34;
+    df[&#34;contains_trump&#34;] = df[&#34;full_text&#34;].str.contains(Trump_word, case=False)
+    df[&#34;contains_biden&#34;] = df[&#34;full_text&#34;].str.contains(Biden_word, case=False)
+    df[&#34;user-description-contains_trump&#34;] = df[&#34;user-description&#34;].str.contains(
+        Trump_word, case=False
+    )
+    df[&#34;user-description-contains_biden&#34;] = df[&#34;user-description&#34;].str.contains(
+        Biden_word, case=False
+    )
+
+    return df
+
+
+def sentiment_class(
+    df,
+    vars=[&#34;full_text&#34;, &#34;user-description&#34;],
+    choices=[&#34;tneg&#34;, &#34;neg&#34;, &#34;neutre&#34;, &#34;pos&#34;, &#34;tpos&#34;],
+):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne pour les valeurs discrétisées de sentiment_analysis.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    &#34;&#34;&#34;
+    conditions = lambda s: [
+        (df[s + &#34;-sentiment-compound&#34;].lt(-0.7)),
+        (
+            df[s + &#34;-sentiment-compound&#34;].ge(-0.7)
+            &amp; df[s + &#34;-sentiment-compound&#34;].lt(-0.2)
+        ),
+        (
+            df[s + &#34;-sentiment-compound&#34;].ge(-0.2)
+            &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.2)
+        ),
+        (df[s + &#34;-sentiment-compound&#34;].ge(0.2) &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.7)),
+        (df[s + &#34;-sentiment-compound&#34;].ge(0.7)),
+    ]
+
+    for var in vars:
+        df[var + &#34;-sentiment-class&#34;] = np.select(conditions(var), choices)
+
+    return df
+
+
+def add_category(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne pour les valeurs discrétisées de sentiment_analysis.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    &#34;&#34;&#34;
+    conditions = [()]
+    pass
 
 
 # Fonctions pour filtrer la dataframe
@@ -245,18 +372,7 @@ def select_time_range(df, start, end, date_var=&#34;created_at&#34;):
 
     filtered_df = df[(start_time &lt; df[date_var]) &amp; (df[date_var] &lt; end_time)]
 
-    return filtered_df
-
-
-# Fonctions pour ajouter le sentiment analysis
-def nlp(df):
-    &#34;&#34;&#34;
-    Fonction pour ajouter la ou les colonnes de nlp (à l&#39;aide de nltk ou TextBlob ou les deux)
-
-    Args:
-        df ([type]): [description]
-    &#34;&#34;&#34;
-    pass</code></pre>
+    return filtered_df</code></pre>
 </details>
 </section>
 <section>
@@ -266,8 +382,106 @@ def nlp(df):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="projet.processing.add_category"><code class="name flex">
+<span>def <span class="ident">add_category</span></span>(<span>df)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fonction pour ajouter une colonne pour les valeurs discrétisées de sentiment_analysis.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>Une dataframe pandas du type <code><a title="projet.processing.create_full_text" href="#projet.processing.create_full_text">create_full_text()</a></code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_category(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne pour les valeurs discrétisées de sentiment_analysis.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    &#34;&#34;&#34;
+    conditions = [()]
+    pass</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.add_politics"><code class="name flex">
+<span>def <span class="ident">add_politics</span></span>(<span>df)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fonction pour ajouter une colonne pour la présence ou non de Trump et une pour Biden.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>Une dataframe pandas du type <code><a title="projet.processing.create_full_text" href="#projet.processing.create_full_text">create_full_text()</a></code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_politics(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne pour la présence ou non de Trump et une pour Biden.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    &#34;&#34;&#34;
+    Trump_word = &#34;(Trump|Donald|realDonaldTrump|republican)&#34;
+    Biden_word = &#34;(Biden|Joe|JoeBiden|democrat)&#34;
+    df[&#34;contains_trump&#34;] = df[&#34;full_text&#34;].str.contains(Trump_word, case=False)
+    df[&#34;contains_biden&#34;] = df[&#34;full_text&#34;].str.contains(Biden_word, case=False)
+    df[&#34;user-description-contains_trump&#34;] = df[&#34;user-description&#34;].str.contains(
+        Trump_word, case=False
+    )
+    df[&#34;user-description-contains_biden&#34;] = df[&#34;user-description&#34;].str.contains(
+        Biden_word, case=False
+    )
+
+    return df</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.add_sentiment"><code class="name flex">
+<span>def <span class="ident">add_sentiment</span></span>(<span>df)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fonction pour ajouter la ou les colonnes de sentiment analysis (à l'aide de nltk ou TextBlob ou les deux).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>Une dataframe pandas du type <code><a title="projet.processing.create_full_text" href="#projet.processing.create_full_text">create_full_text()</a></code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_sentiment(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter la ou les colonnes de sentiment analysis (à l&#39;aide de nltk ou TextBlob ou les deux).
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    &#34;&#34;&#34;
+    sid = SentimentIntensityAnalyzer()
+
+    # Generate sentiment scores
+    df[&#34;full_text-sentiment&#34;] = df[&#34;full_text&#34;].apply(sid.polarity_scores)
+    df[&#34;full_text-sentiment-compound&#34;] = df[&#34;full_text-sentiment&#34;].apply(
+        lambda s: s.get(&#34;compound&#34;)
+    )
+    df[&#34;user-description-sentiment&#34;] = (
+        df[&#34;user-description&#34;].fillna(value=&#34;&#34;).apply(sid.polarity_scores)
+    )
+    df[&#34;user-description-sentiment-compound&#34;] = df[&#34;user-description-sentiment&#34;].apply(
+        lambda s: s.get(&#34;compound&#34;)
+    )
+
+    return df</code></pre>
+</details>
+</dd>
 <dt id="projet.processing.clean_df"><code class="name flex">
-<span>def <span class="ident">clean_df</span></span>(<span>df, index='id', date='created_at', verbose=False, extra=None, vars=['text', 'lang', 'quote_count', 'reply_count', 'retweet_count', 'favorite_count', ['user', 'id'], ['user', 'name'], ['user', 'screen_name'], ['user', 'location'], ['user', 'description'], ['user', 'protected'], ['user', 'verified'], ['user', 'followers_count'], ['user', 'friends_count'], ['user', 'listed_count'], ['user', 'favourites_count'], ['user', 'statuses_count'], ['user', 'created_at'], ['user', 'contributors_enabled'], ['user', 'geo_enabled'], ['user', 'profile_background_color'], ['user', 'profile_sidebar_border_color'], ['user', 'profile_sidebar_fill_color'], ['user', 'profile_text_color'], ['user', 'profile_use_background_image'], ['user', 'default_profile'], ['user', 'description'], ['place', 'name'], ['place', 'full_name'], ['place', 'place_type'], ['place', 'country_code'], ['place', 'country'], ['place', 'bounding_box'], ['place', 'bounding_box', 'type'], ['place', 'bounding_box', 'coordinates']])</span>
+<span>def <span class="ident">clean_df</span></span>(<span>df, index='id', date='created_at', verbose=False, extra=None, vars=[['text'], ['extended_tweet', 'full_text'], ['lang'], ['retweeted_status', 'user', 'screen_name'], ['retweeted_status', 'text'], ['retweeted_status', 'extended_tweet', 'full_text'], ['user', 'id'], ['user', 'name'], ['user', 'screen_name'], ['user', 'location'], ['user', 'description'], ['place', 'name'], ['place', 'full_name'], ['place', 'place_type'], ['place', 'country_code'], ['place', 'country'], ['place', 'bounding_box', 'type'], ['place', 'bounding_box', 'coordinates']])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Fonction pour nettoyer la df qui contient les tweets.</p>
@@ -364,7 +578,9 @@ Il faudra peut etre utiliser des expr reg pour nettoyer les rt.</p>
 
     # Vérifie que toute les variables données existent dans df
     wrong_var = [
-        list(var)[0] for var in [index, date] + columns if var and var not in list(df)
+        list(var)[0]
+        for var in [[index], [date]] + columns
+        if var and list(var)[0] not in list(df)
     ]
     if wrong_var:
         raise utils.WrongColumnName(var=wrong_var)
@@ -386,14 +602,13 @@ Il faudra peut etre utiliser des expr reg pour nettoyer les rt.</p>
     for i, var in enumerate(columns):
         var_name = &#34;-&#34;.join(var)
         new_col = df[list(var)[0]]
-        if isinstance(var, list):
-            for i in range(1, len(var)):
-                new_col = [
-                    new_col[j].get(var[i], np.nan)
-                    if isinstance(new_col[j], dict)
-                    else np.nan
-                    for j in range(len(new_col))
-                ]
+        for i in range(1, len(var)):
+            new_col = [
+                new_col[j].get(var[i], np.nan)
+                if isinstance(new_col[j], dict)
+                else np.nan
+                for j in range(len(new_col))
+            ]
         clean_df[var_name] = new_col
         utils.progressBar(current=i + 2, total=total, verbose=verbose)
 
@@ -407,7 +622,57 @@ Il faudra peut etre utiliser des expr reg pour nettoyer les rt.</p>
         clean_df = clean_df.set_index(df[index])
     utils.progressBar(current=total, total=total, verbose=verbose)
 
+    if verbose:
+        print(&#34;&#34;)
+
     return clean_df</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.create_full_text"><code class="name flex">
+<span>def <span class="ident">create_full_text</span></span>(<span>df)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fonction pour ajouter le texte entier et gérer les RT.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>Une dataframe pandas du type <code><a title="projet.processing.clean_df" href="#projet.processing.clean_df">clean_df()</a></code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>Une df avec une nouvelle colonne <code>full_text</code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_full_text(df):
+    &#34;&#34;&#34;
+    Fonction pour ajouter le texte entier et gérer les RT.
+    
+    Args:
+        df (pandas.dataframe): 
+            Une dataframe pandas du type `clean_df`.
+
+    Returns:
+        pandas.dataframe: Une df avec une nouvelle colonne `full_text`.
+    &#34;&#34;&#34;
+    new_col = []
+    for i in range(len(df)):
+        if df[&#34;extended_tweet-full_text&#34;].iloc[i] is not np.nan:
+            t = df[&#34;extended_tweet-full_text&#34;].iloc[i]
+        elif df[&#34;retweeted_status-extended_tweet-full_text&#34;].iloc[i] is not np.nan:
+            t = df[&#34;retweeted_status-extended_tweet-full_text&#34;].iloc[i]
+        elif df[&#34;retweeted_status-text&#34;].iloc[i] is not np.nan:
+            t = df[&#34;retweeted_status-text&#34;].iloc[i]
+        elif df[&#34;text&#34;].iloc[i] is not np.nan:
+            t = df[&#34;text&#34;].iloc[i]
+        new_col.append(t)
+
+    df[&#34;full_text&#34;] = new_col
+
+    return df</code></pre>
 </details>
 </dd>
 <dt id="projet.processing.folder_to_path_list"><code class="name flex">
@@ -451,30 +716,6 @@ folder_path(r"path\to\folder")</p>
     path_list = glob.glob(folder_path + &#34;*.json&#34;)
 
     return path_list</code></pre>
-</details>
-</dd>
-<dt id="projet.processing.nlp"><code class="name flex">
-<span>def <span class="ident">nlp</span></span>(<span>df)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Fonction pour ajouter la ou les colonnes de nlp (à l'aide de nltk ou TextBlob ou les deux)</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>df</code></strong> :&ensp;<code>[type]</code></dt>
-<dd>[description]</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def nlp(df):
-    &#34;&#34;&#34;
-    Fonction pour ajouter la ou les colonnes de nlp (à l&#39;aide de nltk ou TextBlob ou les deux)
-
-    Args:
-        df ([type]): [description]
-    &#34;&#34;&#34;
-    pass</code></pre>
 </details>
 </dd>
 <dt id="projet.processing.select_time_range"><code class="name flex">
@@ -538,6 +779,51 @@ Garde les tweets créés entre les dates données. </p>
     filtered_df = df[(start_time &lt; df[date_var]) &amp; (df[date_var] &lt; end_time)]
 
     return filtered_df</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.sentiment_class"><code class="name flex">
+<span>def <span class="ident">sentiment_class</span></span>(<span>df, vars=['full_text', 'user-description'], choices=['tneg', 'neg', 'neutre', 'pos', 'tpos'])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fonction pour ajouter une colonne pour les valeurs discrétisées de sentiment_analysis.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>Une dataframe pandas du type <code><a title="projet.processing.create_full_text" href="#projet.processing.create_full_text">create_full_text()</a></code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sentiment_class(
+    df,
+    vars=[&#34;full_text&#34;, &#34;user-description&#34;],
+    choices=[&#34;tneg&#34;, &#34;neg&#34;, &#34;neutre&#34;, &#34;pos&#34;, &#34;tpos&#34;],
+):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne pour les valeurs discrétisées de sentiment_analysis.
+
+    Args:
+        df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
+    &#34;&#34;&#34;
+    conditions = lambda s: [
+        (df[s + &#34;-sentiment-compound&#34;].lt(-0.7)),
+        (
+            df[s + &#34;-sentiment-compound&#34;].ge(-0.7)
+            &amp; df[s + &#34;-sentiment-compound&#34;].lt(-0.2)
+        ),
+        (
+            df[s + &#34;-sentiment-compound&#34;].ge(-0.2)
+            &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.2)
+        ),
+        (df[s + &#34;-sentiment-compound&#34;].ge(0.2) &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.7)),
+        (df[s + &#34;-sentiment-compound&#34;].ge(0.7)),
+    ]
+
+    for var in vars:
+        df[var + &#34;-sentiment-class&#34;] = np.select(conditions(var), choices)
+
+    return df</code></pre>
 </details>
 </dd>
 <dt id="projet.processing.tweet_json_to_df"><code class="name flex">
@@ -620,6 +906,8 @@ Garde les tweets créés entre les dates données. </p>
                 utils.progressBar(
                     j, tweet_total, file=i + 1, total_file=file_total, verbose=verbose
                 )
+        if verbose:
+            print(&#34;&#34;)
 
     # Créer une DataFrame à partir de `tweets_list`
     df_tweets = pd.DataFrame(tweets_list)
@@ -644,11 +932,15 @@ Garde les tweets créés entre les dates données. </p>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="projet.processing.add_category" href="#projet.processing.add_category">add_category</a></code></li>
+<li><code><a title="projet.processing.add_politics" href="#projet.processing.add_politics">add_politics</a></code></li>
+<li><code><a title="projet.processing.add_sentiment" href="#projet.processing.add_sentiment">add_sentiment</a></code></li>
 <li><code><a title="projet.processing.clean_df" href="#projet.processing.clean_df">clean_df</a></code></li>
+<li><code><a title="projet.processing.create_full_text" href="#projet.processing.create_full_text">create_full_text</a></code></li>
 <li><code><a title="projet.processing.folder_to_path_list" href="#projet.processing.folder_to_path_list">folder_to_path_list</a></code></li>
-<li><code><a title="projet.processing.nlp" href="#projet.processing.nlp">nlp</a></code></li>
 <li><code><a title="projet.processing.select_time_range" href="#projet.processing.select_time_range">select_time_range</a></code></li>
+<li><code><a title="projet.processing.sentiment_class" href="#projet.processing.sentiment_class">sentiment_class</a></code></li>
 <li><code><a title="projet.processing.tweet_json_to_df" href="#projet.processing.tweet_json_to_df">tweet_json_to_df</a></code></li>
 </ul>
 </li>

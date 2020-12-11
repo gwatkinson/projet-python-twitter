@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>projet.listes_variables API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Listes des variables à garder" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,57 +22,107 @@
 <h1 class="title">Module <code>projet.listes_variables</code></h1>
 </header>
 <section id="section-intro">
+<p>Listes des variables à garder</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># Listes des variables à garder
+<pre><code class="python">&#34;&#34;&#34;Listes des variables à garder&#34;&#34;&#34;
 
-# Liste 1 (celle par défaut)
+# Liste 1 (celle par défaut, courte)
 liste_1 = [
-    &#34;text&#34;,
-    &#34;lang&#34;,
-    &#34;quote_count&#34;,
-    &#34;reply_count&#34;,
-    &#34;retweet_count&#34;,
-    &#34;favorite_count&#34;,
+    [&#34;text&#34;],
+    [&#34;extended_tweet&#34;, &#34;full_text&#34;],
+    [&#34;lang&#34;],
+    [&#34;retweeted_status&#34;, &#34;user&#34;, &#34;screen_name&#34;],
+    [&#34;retweeted_status&#34;, &#34;text&#34;],
+    [&#34;retweeted_status&#34;, &#34;extended_tweet&#34;, &#34;full_text&#34;],
+    # [&#34;quote_count&#34;], # =0 pour tous (à récupérer) et juste pour pondérer
+    # [&#34;reply_count&#34;],
+    # [&#34;retweet_count&#34;],
+    # [&#34;favorite_count&#34;],
     [&#34;user&#34;, &#34;id&#34;],
     [&#34;user&#34;, &#34;name&#34;],
     [&#34;user&#34;, &#34;screen_name&#34;],
     [&#34;user&#34;, &#34;location&#34;],
     [&#34;user&#34;, &#34;description&#34;],
-    [&#34;user&#34;, &#34;protected&#34;],
-    [&#34;user&#34;, &#34;verified&#34;],
+    # [&#34;user&#34;, &#34;followers_count&#34;], Pas utilisé mais utile pour pondéré ?
+    # [&#34;user&#34;, &#34;friends_count&#34;],
+    # [&#34;user&#34;, &#34;listed_count&#34;],
+    # [&#34;user&#34;, &#34;favourites_count&#34;],
+    # [&#34;user&#34;, &#34;statuses_count&#34;],
+    # [&#34;user&#34;, &#34;created_at&#34;],
+    # [&#34;user&#34;, &#34;profile_background_color&#34;], Inutilisés
+    # [&#34;user&#34;, &#34;profile_sidebar_border_color&#34;],
+    # [&#34;user&#34;, &#34;profile_sidebar_fill_color&#34;],
+    # [&#34;user&#34;, &#34;profile_text_color&#34;],
+    # [&#34;user&#34;, &#34;profile_use_background_image&#34;],
+    # [&#34;user&#34;, &#34;default_profile&#34;],
+    [&#34;place&#34;, &#34;name&#34;],
+    [&#34;place&#34;, &#34;full_name&#34;],
+    [&#34;place&#34;, &#34;place_type&#34;],
+    [&#34;place&#34;, &#34;country_code&#34;],
+    [&#34;place&#34;, &#34;country&#34;],
+    [&#34;place&#34;, &#34;bounding_box&#34;, &#34;type&#34;],
+    [&#34;place&#34;, &#34;bounding_box&#34;, &#34;coordinates&#34;],
+    # [&#34;place&#34;, &#34;bounding_box&#34;],  # À enlever après vérification
+    # [&#34;entities&#34;], # Inutiles
+    # [&#34;quoted_status&#34;, &#34;extended_tweet&#34;, &#34;full_text&#34;],
+    # [&#34;quoted_status&#34;, &#34;text&#34;],
+    # [&#34;user&#34;, &#34;protected&#34;],
+    # [&#34;user&#34;, &#34;verified&#34;],
+    # [&#34;user&#34;, &#34;contributors_enabled&#34;],
+    # [&#34;user&#34;, &#34;geo_enabled&#34;],
+    # [&#34;user&#34;, &#34;utc_offset&#34;], # Tjrs null
+    # [&#34;user&#34;, &#34;time_zone&#34;],
+    # [&#34;user&#34;, &#34;lang&#34;],
+    # [&#34;user&#34;, &#34;following&#34;],
+    # [&#34;user&#34;, &#34;follow_request_sent&#34;],
+    # [&#34;user&#34;, &#34;notifications&#34;],
+]
+
+
+# Liste 2 (plus longue)
+liste_2 = [
+    [&#34;text&#34;],
+    [&#34;extended_tweet&#34;, &#34;full_text&#34;],
+    [&#34;lang&#34;],
+    [&#34;retweeted_status&#34;, &#34;user&#34;, &#34;screen_name&#34;],
+    [&#34;retweeted_status&#34;, &#34;text&#34;],
+    [&#34;retweeted_status&#34;, &#34;extended_tweet&#34;, &#34;full_text&#34;],
+    # [&#34;quote_count&#34;], # =0 pour tous et juste pour pondérer
+    # [&#34;reply_count&#34;],
+    # [&#34;retweet_count&#34;],
+    # [&#34;favorite_count&#34;],
+    [&#34;user&#34;, &#34;id&#34;],
+    [&#34;user&#34;, &#34;name&#34;],
+    [&#34;user&#34;, &#34;screen_name&#34;],
+    [&#34;user&#34;, &#34;location&#34;],
+    [&#34;user&#34;, &#34;description&#34;],
     [&#34;user&#34;, &#34;followers_count&#34;],
     [&#34;user&#34;, &#34;friends_count&#34;],
     [&#34;user&#34;, &#34;listed_count&#34;],
     [&#34;user&#34;, &#34;favourites_count&#34;],
     [&#34;user&#34;, &#34;statuses_count&#34;],
     [&#34;user&#34;, &#34;created_at&#34;],
-    # [&#34;user&#34;, &#34;utc_offset&#34;], # tjrs null
-    # [&#34;user&#34;, &#34;time_zone&#34;], # tjrs null
-    [&#34;user&#34;, &#34;contributors_enabled&#34;],
-    [&#34;user&#34;, &#34;geo_enabled&#34;],
     [&#34;user&#34;, &#34;profile_background_color&#34;],
     [&#34;user&#34;, &#34;profile_sidebar_border_color&#34;],
     [&#34;user&#34;, &#34;profile_sidebar_fill_color&#34;],
     [&#34;user&#34;, &#34;profile_text_color&#34;],
     [&#34;user&#34;, &#34;profile_use_background_image&#34;],
     [&#34;user&#34;, &#34;default_profile&#34;],
-    # [&#34;user&#34;, &#34;lang&#34;],
-    # [&#34;user&#34;, &#34;following&#34;],
-    # [&#34;user&#34;, &#34;follow_request_sent&#34;],
-    # [&#34;user&#34;, &#34;notifications&#34;],
-    [&#34;user&#34;, &#34;description&#34;],
     [&#34;place&#34;, &#34;name&#34;],
     [&#34;place&#34;, &#34;full_name&#34;],
     [&#34;place&#34;, &#34;place_type&#34;],
     [&#34;place&#34;, &#34;country_code&#34;],
     [&#34;place&#34;, &#34;country&#34;],
-    [&#34;place&#34;, &#34;bounding_box&#34;],  # À enlever après vérification
     [&#34;place&#34;, &#34;bounding_box&#34;, &#34;type&#34;],
     [&#34;place&#34;, &#34;bounding_box&#34;, &#34;coordinates&#34;],
-    # &#34;entities&#34;,
+    [&#34;entities&#34;],
+    [&#34;user&#34;, &#34;protected&#34;],
+    [&#34;user&#34;, &#34;verified&#34;],
+    [&#34;user&#34;, &#34;contributors_enabled&#34;],
+    [&#34;user&#34;, &#34;geo_enabled&#34;],
 ]</code></pre>
 </details>
 </section>
