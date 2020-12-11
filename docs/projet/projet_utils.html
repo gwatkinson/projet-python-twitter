@@ -45,8 +45,6 @@ def progressBar(
                 else &#34;Progress&#34;
             )
         print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)
-        if current == total:
-            print(&#34;&#34;)
 
 
 # Les erreurs du projet
@@ -126,7 +124,7 @@ class WrongColumnName(Exception):
         super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{str(self.msg)} {self.msg}&#34;</code></pre>
+        return f&#34;{str(self.var)} {self.msg}&#34;</code></pre>
 </details>
 </section>
 <section>
@@ -159,9 +157,7 @@ class WrongColumnName(Exception):
                 if file is not None and total_file is not None
                 else &#34;Progress&#34;
             )
-        print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)
-        if current == total:
-            print(&#34;&#34;)</code></pre>
+        print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -327,7 +323,7 @@ class WrongColumnName(Exception):
         super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{str(self.msg)} {self.msg}&#34;</code></pre>
+        return f&#34;{str(self.var)} {self.msg}&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
