@@ -17,11 +17,11 @@ liste_1 = [
     ["user", "screen_name"],
     ["user", "location"],
     ["user", "description"],
-    # ["user", "followers_count"], Pas utilisé mais utile pour pondéré ?
-    # ["user", "friends_count"],
-    # ["user", "listed_count"],
-    # ["user", "favourites_count"],
-    # ["user", "statuses_count"],
+    ["user", "followers_count"],
+    ["user", "friends_count"],
+    ["user", "listed_count"],
+    ["user", "favourites_count"],
+    ["user", "statuses_count"],
     # ["user", "created_at"],
     # ["user", "profile_background_color"], Inutilisés
     # ["user", "profile_sidebar_border_color"],
