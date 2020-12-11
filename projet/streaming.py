@@ -426,4 +426,3 @@ if __name__ == "__main__":
             path=args.path,  # À modifier selon l'utilisateur
             verbose=args.verbose,  # Selon les préférences
         )
-

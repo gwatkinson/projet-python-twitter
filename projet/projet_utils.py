@@ -1,5 +1,6 @@
 """Fonctions auxiliaires"""
 
+
 # Affichage du progrès
 def progressBar(
     current, total, prefix=None, file=None, total_file=None, barLength=20, verbose=False

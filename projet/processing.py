@@ -6,8 +6,6 @@ import pandas as pd
 import numpy as np
 import glob
 import nltk
-
-nltk.download("vader_lexicon")
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 # Import les listes de variables
@@ -15,6 +13,9 @@ import projet.listes_variables
 
 # Import les utils du projet
 import projet.projet_utils as utils
+
+# Download librairie nltk
+nltk.download("vader_lexicon")
 
 
 # Convertit les fichiers json en dataframe
@@ -204,7 +205,7 @@ def clean_df(
 def create_full_text(df):
     """
     Fonction pour ajouter le texte entier et gérer les RT.
-    
+
     Args:
         df (pandas.dataframe): 
             Une dataframe pandas du type `clean_df`.
@@ -285,22 +286,27 @@ def sentiment_class(
     Args:
         df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
     """
-    conditions = lambda s: [
-        (df[s + "-sentiment-compound"].lt(-0.7)),
-        (
-            df[s + "-sentiment-compound"].ge(-0.7)
-            & df[s + "-sentiment-compound"].lt(-0.2)
-        ),
-        (
-            df[s + "-sentiment-compound"].ge(-0.2)
-            & df[s + "-sentiment-compound"].lt(0.2)
-        ),
-        (df[s + "-sentiment-compound"].ge(0.2) & df[s + "-sentiment-compound"].lt(0.7)),
-        (df[s + "-sentiment-compound"].ge(0.7)),
-    ]
+
+    def _conditions(s):
+        return [
+            (df[s + "-sentiment-compound"].lt(-0.7)),
+            (
+                df[s + "-sentiment-compound"].ge(-0.7)
+                & df[s + "-sentiment-compound"].lt(-0.2)
+            ),
+            (
+                df[s + "-sentiment-compound"].ge(-0.2)
+                & df[s + "-sentiment-compound"].lt(0.2)
+            ),
+            (
+                df[s + "-sentiment-compound"].ge(0.2)
+                & df[s + "-sentiment-compound"].lt(0.7)
+            ),
+            (df[s + "-sentiment-compound"].ge(0.7)),
+        ]
 
     for var in vars:
-        df[var + "-sentiment-class"] = np.select(conditions(var), choices)
+        df[var + "-sentiment-class"] = np.select(_conditions(var), choices)
 
     return df
 
@@ -312,7 +318,7 @@ def add_category(df):
     Args:
         df (pandas.dataframe): Une dataframe pandas du type `create_full_text`.
     """
-    conditions = [()]
+    # conditions = [()]
     pass
 
 
