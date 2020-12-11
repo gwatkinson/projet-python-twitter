@@ -16,8 +16,6 @@ def progressBar(
                 else "Progress"
             )
         print(f"{prefix}: [{arrow}{spaces}] {percent:.0f} %", end="\r")
-        if current == total:
-            print("")
 
 
 # Les erreurs du projet
@@ -97,4 +95,4 @@ class WrongColumnName(Exception):
         super().__init__(self.msg)
 
     def __str__(self):
-        return f"{str(self.msg)} {self.msg}"
+        return f"{str(self.var)} {self.msg}"
