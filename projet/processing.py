@@ -276,7 +276,7 @@ def add_politics(
             Par défaut : `["full_text", "user-description"]`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les colonnes de présence ou non
+        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant les colonnes de présence ou non
             de Trump et Biden et la renvoie.
     """
     for var in text_vars:
@@ -309,7 +309,7 @@ def add_sentiment(
             Par défaut : `False`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les colonnes de sentiment analysis et la renvoie.
+        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant les colonnes de sentiment analysis et la renvoie.
     """
     sid = SentimentIntensityAnalyzer()
 
@@ -354,7 +354,7 @@ def sentiment_class(
             Par défaut : `"class"`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les classes des sentiment compounds et la renvoie.
+        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant les classes des sentiment compounds et la renvoie.
     """
     for var in compound_vars:
         conditions = [(df[var].ge(cat[1]) & df[var].lt(cat[2])) for cat in categories]
@@ -411,7 +411,7 @@ def add_label(
             Par défaut : `"full_text-sentiment-class"`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les labels et la renvoie.
+        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant les labels et la renvoie.
     """
     conditions = [
         (df[trump_var[0]] & df[biden_var[0]]),
