@@ -201,7 +201,8 @@ def get_full_text(
             Par défaut : `True`.
 
     Returns:
-        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant la colonne de texte et en supprimant les autres colonnes (si `drop_vars=True`) et la renvoie.
+        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant la colonne de texte et en supprimant les autres colonnes 
+            (si `drop_vars=True`) et la renvoie.
     """
     conditions = [(~df[var].isnull()) for var in text_vars]
     choices = [df[var] for var in text_vars]
@@ -256,7 +257,8 @@ def add_politics(
     text_vars=["full_text", "user-description"],
 ):
     """
-    Fonction pour ajouter une colonne pour Trump et une pour Biden selon leur présence ou non dans le 'full_text' et la description (par défaut).
+    Fonction pour ajouter une colonne pour Trump et une pour Biden selon leur présence ou non,
+    dans le 'full_text' et la description (par défaut).
 
     Args:
         df (pandas.dataframe): Une dataframe pandas avec une colonne de texte, par exemple celle créée après `get_full_text`.
@@ -274,7 +276,8 @@ def add_politics(
             Par défaut : `["full_text", "user-description"]`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les colonnes de présence ou non de Trump et Biden et la renvoie.
+        (pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les colonnes de présence ou non
+            de Trump et Biden et la renvoie.
     """
     for var in text_vars:
         df[var + "-" + trump_var] = df[var].str.contains(trump_word, case=case)
@@ -301,7 +304,8 @@ def add_sentiment(
             Par défaut : `"sentiment"`.
         compound_var (str, optional): Nom à donner à la variable qui contient le compound du sentiment analysis.
             Par défaut : `"compound"`.
-        keep_dict (bool, optional): Si `True`, on ajoute une colonne qui contient le dictionnaire, sinon, on garde seulement le compound.
+        keep_dict (bool, optional): Si `True`, on ajoute une colonne qui contient le dictionnaire,
+            sinon, on garde seulement le compound.
             Par défaut : `False`.
 
     Returns:
@@ -340,7 +344,8 @@ def sentiment_class(
     Fonction pour discrétiser la colonne du sentiment compound.
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas avec des colonnes de sentiment compound, par exemple celle créée après `add_sentiment`.
+        df (pandas.dataframe): Une dataframe pandas avec des colonnes de sentiment compound,
+            par exemple celle créée après `add_sentiment`.
         categories (list, optional): Liste pour nommer les classes et les intervalles correspondant. 
             Par défaut : `[("tneg", -1, -0.7), ("neg", -0.7, -0.2), ("neutre", -0.2, 0.2), ("pos", 0.2, 0.7), ("tpos", 0.7, 1)]`.
         compound_vars (list, optional): Liste des variables de compound à classifier.
@@ -392,7 +397,7 @@ def add_label(
     Fonction pour ajouter un label selon la présence de Trump et/ou Biden et de la classe du compound.
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas avec les colonnes de présences de Trump, Biden et les classes des compounds.
+        df (pandas.dataframe): Une dataframe avec les colonnes de présences de Trump, Biden et les classes des compounds.
             Par exemple celle créée après `add_politics` et `sentiment_class`.
         label_var (str, optional): Nom à donner à la colonne qui contient les labels.
             Par défaut : `"label"`.
