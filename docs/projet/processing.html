@@ -305,7 +305,7 @@ def add_politics(
             Par défaut : `[&#34;full_text&#34;, &#34;user-description&#34;]`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d&#39;entrée en ajoutant les colonnes de présence ou non
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant les colonnes de présence ou non
             de Trump et Biden et la renvoie.
     &#34;&#34;&#34;
     for var in text_vars:
@@ -338,7 +338,7 @@ def add_sentiment(
             Par défaut : `False`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d&#39;entrée en ajoutant les colonnes de sentiment analysis et la renvoie.
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant les colonnes de sentiment analysis et la renvoie.
     &#34;&#34;&#34;
     sid = SentimentIntensityAnalyzer()
 
@@ -383,7 +383,7 @@ def sentiment_class(
             Par défaut : `&#34;class&#34;`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d&#39;entrée en ajoutant les classes des sentiment compounds et la renvoie.
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant les classes des sentiment compounds et la renvoie.
     &#34;&#34;&#34;
     for var in compound_vars:
         conditions = [(df[var].ge(cat[1]) &amp; df[var].lt(cat[2])) for cat in categories]
@@ -440,7 +440,7 @@ def add_label(
             Par défaut : `&#34;full_text-sentiment-class&#34;`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d&#39;entrée en ajoutant les labels et la renvoie.
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant les labels et la renvoie.
     &#34;&#34;&#34;
     conditions = [
         (df[trump_var[0]] &amp; df[biden_var[0]]),
@@ -522,7 +522,10 @@ Par défaut : <code>"N"</code>.</dd>
 Par défaut : <code>"full_text-sentiment-class"</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>(pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les labels et la renvoie.</p></div>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>Modifie la dataframe d'entrée en ajoutant les labels et la renvoie.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -553,7 +556,7 @@ Par défaut : <code>"full_text-sentiment-class"</code>.</dd>
             Par défaut : `&#34;full_text-sentiment-class&#34;`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d&#39;entrée en ajoutant les labels et la renvoie.
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant les labels et la renvoie.
     &#34;&#34;&#34;
     conditions = [
         (df[trump_var[0]] &amp; df[biden_var[0]]),
@@ -599,8 +602,11 @@ Par défaut : <code>"contains_biden"</code>.</dd>
 Par défaut : <code>["full_text", "user-description"]</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>(pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les colonnes de présence ou non
-de Trump et Biden et la renvoie.</p></div>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>Modifie la dataframe d'entrée en ajoutant les colonnes de présence ou non
+de Trump et Biden et la renvoie.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -634,7 +640,7 @@ de Trump et Biden et la renvoie.</p></div>
             Par défaut : `[&#34;full_text&#34;, &#34;user-description&#34;]`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d&#39;entrée en ajoutant les colonnes de présence ou non
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant les colonnes de présence ou non
             de Trump et Biden et la renvoie.
     &#34;&#34;&#34;
     for var in text_vars:
@@ -668,7 +674,10 @@ sinon, on garde seulement le compound.
 Par défaut : <code>False</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>(pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les colonnes de sentiment analysis et la renvoie.</p></div>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>Modifie la dataframe d'entrée en ajoutant les colonnes de sentiment analysis et la renvoie.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -696,7 +705,7 @@ Par défaut : <code>False</code>.</dd>
             Par défaut : `False`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d&#39;entrée en ajoutant les colonnes de sentiment analysis et la renvoie.
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant les colonnes de sentiment analysis et la renvoie.
     &#34;&#34;&#34;
     sid = SentimentIntensityAnalyzer()
 
@@ -1029,7 +1038,10 @@ Par défaut : <code>["full_text-sentiment-compound", "user-description-sentiment
 Par défaut : <code>"class"</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>(pandas.dataframe): Modifie la dataframe d'entrée en ajoutant les classes des sentiment compounds et la renvoie.</p></div>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>Modifie la dataframe d'entrée en ajoutant les classes des sentiment compounds et la renvoie.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1063,7 +1075,7 @@ Par défaut : <code>"class"</code>.</dd>
             Par défaut : `&#34;class&#34;`.
 
     Returns:
-        (pandas.dataframe): Modifie la dataframe d&#39;entrée en ajoutant les classes des sentiment compounds et la renvoie.
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant les classes des sentiment compounds et la renvoie.
     &#34;&#34;&#34;
     for var in compound_vars:
         conditions = [(df[var].ge(cat[1]) &amp; df[var].lt(cat[2])) for cat in categories]
