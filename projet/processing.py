@@ -6,6 +6,9 @@ import pandas as pd
 import numpy as np
 import glob
 import us
+from geotext import GeoText
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
@@ -428,8 +431,35 @@ def add_label(
     return df
 
 
-def get_states(df):
-    states = us.states.STATES
+def get_states(df, text_var="user-location", state_var="state"):
+    """
+    Fonction pour ajouter une colonne contenant l'état de l'user à partir de 'user-location".
+
+    Args:
+        df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
+        text_var (str, optional): Le nom de la variable de texte où regarder.
+            Par défaut : `"user-location"`.        
+        state_var (str, optional): Nom à donner à la nouvelle variable.
+            Par défaut : `"state"`.
+
+    Returns:
+        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant une colonne pour l'état.
+    """
+    geolocator = Nominatim(timeout=2, user_agent="projet-python-twitter")
+    def _reg1(row):
+        places = GeoText(row)
+        lat_lon = []
+        for city in places.cities:
+            try:
+                loc = geolocator.geocode(city, language="en-US")
+                if loc:
+                    print(city, loc.latitude, loc.longitude)
+                    lat_lon.append(loc)
+            except GeocoderTimedOut as e:
+                print("Error: geocode failed on input %s with message %s"(city, e))
+
+
+    states = us.STATES
     full_names = [state.name for state in states]
     abbreviation = [state.abbr for state in states]
     state_metaphone = [state.name_metaphone for state in states]
@@ -439,9 +469,16 @@ def get_states(df):
     assert all(len(var) == n for var in full_list)
     regs = ["(" + "|".join(var[i] for var in full_list) + ")" for i in range(n)]
 
-    [df["user-location"].str.contains(reg) for reg in regs]
+    def _reg2(row):
+        l = [row[text_var].str.contains(reg) for reg in regs]           # Contient une liste de 50 bool pour chaque ligne
+        match = np.array(full_names)[l]                                 # Garde les noms où c'est True
+        if match:
+            return np.random.choice(match)                              # Renvoie un des matchs aléatoirement
+        return np.nan
 
-    pass
+    df[] = df.apply(_reg, axis=1)
+
+    return df
 
 
 # Fonctions pour filtrer la dataframe
