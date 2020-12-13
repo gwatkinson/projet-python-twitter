@@ -3,7 +3,6 @@
 # Import les modules utilisés
 import pandas as pd
 import numpy as np
-import glob
 import nltk
 import sklearn
 import matplotlib.pyplot as plt
