@@ -5,6 +5,7 @@ import json
 import pandas as pd
 import numpy as np
 import glob
+import us
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
@@ -122,7 +123,7 @@ def clean_df(
             Voir `projet/listes_variables` pour des exemples de listes.
 
     Returns:
-        pandas.dataframe: Modifie la dataframe d'entrée nettoyée et la renvoie.
+        pandas.dataframe: Renvoie une dataframe filtrée et nettoyée.
     """
     # Vérifie que toute les variables données existent dans df
     wrong_var = [
@@ -428,6 +429,18 @@ def add_label(
 
 
 def get_states(df):
+    states = us.states.STATES
+    full_names = [state.name for state in states]
+    abbreviation = [state.abbr for state in states]
+    state_metaphone = [state.name_metaphone for state in states]
+    # capitals = [state.capital for state in states]
+    full_list = [full_names, abbreviation, state_metaphone]
+    n = len(full_names)
+    assert all(len(var) == n for var in full_list)
+    regs = ["(" + "|".join(var[i] for var in full_list) + ")" for i in range(n)]
+
+    [df["user-location"].str.contains(reg) for reg in regs]
+
     pass
 
 
