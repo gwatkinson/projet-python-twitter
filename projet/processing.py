@@ -320,7 +320,7 @@ def add_sentiment(
 
     # Generate sentiment scores
     for var in text_vars:
-        new_col = df[var].apply(sid.polarity_scores)
+        new_col = df[var].fillna("").apply(sid.polarity_scores)
         if keep_dict:
             df[var + "-" + sent_var] = new_col
         df[var + "-" + sent_var + "-" + compound_var] = new_col.apply(
