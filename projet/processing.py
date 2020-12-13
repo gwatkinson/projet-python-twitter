@@ -320,7 +320,7 @@ def add_sentiment(
 
     # Generate sentiment scores
     for var in text_vars:
-        new_col = df[var].fillna("").apply(sid.polarity_scores)
+        new_col = df[var].fillna(value="").apply(sid.polarity_scores)
         if keep_dict:
             df[var + "-" + sent_var] = new_col
         df[var + "-" + sent_var + "-" + compound_var] = new_col.apply(
@@ -393,10 +393,10 @@ def sentiment_class(
 def add_label(
     df,
     label_var="label",
-    trump_var=("full_text-countains_trump", "T"),
-    biden_var=("full_text-countains_biden", "B"),
+    trump_var=("full_text-contains_trump", "T"),
+    biden_var=("full_text-contains_biden", "B"),
     missing_var="N",
-    class_var="full_text-sentiment-class",
+    class_var="full_text-sentiment-compound-class",
 ):
     """
     Fonction pour ajouter un label selon la présence de Trump et/ou Biden et de la classe du compound.
