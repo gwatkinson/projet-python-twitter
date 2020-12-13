@@ -45,8 +45,8 @@ import projet.projet_utils as utils
 
 
 # Fonctions pour le K-means
-def get_numeric(df):
-    return list(df.select_dtypes(include=[np.number, bool]))
+def get_numeric(df, drop_vars=[&#34;user-id&#34;]):
+    return list(df.drop(drop_vars, axis=1).select_dtypes(include=[np.number, bool]))
 
 
 def standardize(df, vars):
@@ -67,30 +67,68 @@ def standardize(df, vars):
     return pd.DataFrame(scaled_features, columns=new_df.columns)
 
 
-def add_group(df, max_cluster=10):
+def KM(
+    df,
+    n_cluster=None,  # Prend la valeur optimal
+    label_var=&#34;kmlabel&#34;,
+    vars=None,
+    drop_vars=[&#34;user-id&#34;],
+    n_init=10,
+    max_iter=300,
+    max_cluster=10,
+    random_state=40,
+    plot=False,
+):
+
+    if vars is None:
+        vars = get_numeric(df, drop_vars)
+    df2 = standardize(df, vars=vars)
+
     kmeans_kwargs = {
         &#34;init&#34;: &#34;random&#34;,
-        &#34;n_init&#34;: 10,
-        &#34;max_iter&#34;: 300,
-        &#34;random_state&#34;: 42,
+        &#34;n_init&#34;: n_init,
+        &#34;max_iter&#34;: max_iter,
+        &#34;random_state&#34;: random_state,
     }
 
     # A list holds the SSE values for each k
-    sse = []
-    for k in range(1, max_cluster + 1):
-        kmeans = KMeans(n_clusters=k, **kmeans_kwargs)
-        kmeans.fit(df)
-        sse.append(kmeans.inertia_)
+    if n_cluster is None:
+        sse = []
+        for k in range(1, max_cluster + 1):
+            kmeans = KMeans(n_clusters=k, **kmeans_kwargs)
+            kmeans.fit(df2)
+            sse.append(kmeans.inertia_)
 
-    kl = KneeLocator(
-        range(1, max_cluster + 1), sse, curve=&#34;convex&#34;, direction=&#34;decreasing&#34;
-    )
+        kl = KneeLocator(
+            range(1, max_cluster + 1), sse, curve=&#34;convex&#34;, direction=&#34;decreasing&#34;
+        )
 
-    print(kl.elbow)
+        n_cluster = kl.elbow
 
-    kmeans = KMeans(n_clusters=kl.elbow, **kmeans_kwargs)
+        if plot:
+            plt.style.use(&#34;fivethirtyeight&#34;)
+            plt.plot(range(1, max_cluster + 1), sse, label=&#34;SSE&#34;)
+            plt.vlines(
+                n_cluster,
+                min(sse),
+                max(sse),
+                colors=&#34;r&#34;,
+                linestyles=&#34;dotted&#34;,
+                label=&#34;Nombre de clusters&#34;,
+            )
+            plt.xticks(range(1, max_cluster + 1))
+            plt.xlabel(&#34;Number of Clusters&#34;)
+            plt.ylabel(&#34;SSE&#34;)
+            plt.legend()
+            plt.show()
 
-    return kmeans.fit(df), sse</code></pre>
+    kmeans = KMeans(n_clusters=n_cluster, **kmeans_kwargs)
+
+    km = kmeans.fit(df2)
+
+    df[label_var] = km.labels_
+
+    return df</code></pre>
 </details>
 </section>
 <section>
@@ -100,8 +138,8 @@ def add_group(df, max_cluster=10):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="projet.modelisation.add_group"><code class="name flex">
-<span>def <span class="ident">add_group</span></span>(<span>df, max_cluster=10)</span>
+<dt id="projet.modelisation.KM"><code class="name flex">
+<span>def <span class="ident">KM</span></span>(<span>df, n_cluster=None, label_var='kmlabel', vars=None, drop_vars=['user-id'], n_init=10, max_iter=300, max_cluster=10, random_state=40, plot=False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -109,34 +147,72 @@ def add_group(df, max_cluster=10):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_group(df, max_cluster=10):
+<pre><code class="python">def KM(
+    df,
+    n_cluster=None,  # Prend la valeur optimal
+    label_var=&#34;kmlabel&#34;,
+    vars=None,
+    drop_vars=[&#34;user-id&#34;],
+    n_init=10,
+    max_iter=300,
+    max_cluster=10,
+    random_state=40,
+    plot=False,
+):
+
+    if vars is None:
+        vars = get_numeric(df, drop_vars)
+    df2 = standardize(df, vars=vars)
+
     kmeans_kwargs = {
         &#34;init&#34;: &#34;random&#34;,
-        &#34;n_init&#34;: 10,
-        &#34;max_iter&#34;: 300,
-        &#34;random_state&#34;: 42,
+        &#34;n_init&#34;: n_init,
+        &#34;max_iter&#34;: max_iter,
+        &#34;random_state&#34;: random_state,
     }
 
     # A list holds the SSE values for each k
-    sse = []
-    for k in range(1, max_cluster + 1):
-        kmeans = KMeans(n_clusters=k, **kmeans_kwargs)
-        kmeans.fit(df)
-        sse.append(kmeans.inertia_)
+    if n_cluster is None:
+        sse = []
+        for k in range(1, max_cluster + 1):
+            kmeans = KMeans(n_clusters=k, **kmeans_kwargs)
+            kmeans.fit(df2)
+            sse.append(kmeans.inertia_)
 
-    kl = KneeLocator(
-        range(1, max_cluster + 1), sse, curve=&#34;convex&#34;, direction=&#34;decreasing&#34;
-    )
+        kl = KneeLocator(
+            range(1, max_cluster + 1), sse, curve=&#34;convex&#34;, direction=&#34;decreasing&#34;
+        )
 
-    print(kl.elbow)
+        n_cluster = kl.elbow
 
-    kmeans = KMeans(n_clusters=kl.elbow, **kmeans_kwargs)
+        if plot:
+            plt.style.use(&#34;fivethirtyeight&#34;)
+            plt.plot(range(1, max_cluster + 1), sse, label=&#34;SSE&#34;)
+            plt.vlines(
+                n_cluster,
+                min(sse),
+                max(sse),
+                colors=&#34;r&#34;,
+                linestyles=&#34;dotted&#34;,
+                label=&#34;Nombre de clusters&#34;,
+            )
+            plt.xticks(range(1, max_cluster + 1))
+            plt.xlabel(&#34;Number of Clusters&#34;)
+            plt.ylabel(&#34;SSE&#34;)
+            plt.legend()
+            plt.show()
 
-    return kmeans.fit(df), sse</code></pre>
+    kmeans = KMeans(n_clusters=n_cluster, **kmeans_kwargs)
+
+    km = kmeans.fit(df2)
+
+    df[label_var] = km.labels_
+
+    return df</code></pre>
 </details>
 </dd>
 <dt id="projet.modelisation.get_numeric"><code class="name flex">
-<span>def <span class="ident">get_numeric</span></span>(<span>df)</span>
+<span>def <span class="ident">get_numeric</span></span>(<span>df, drop_vars=['user-id'])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -144,8 +220,8 @@ def add_group(df, max_cluster=10):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_numeric(df):
-    return list(df.select_dtypes(include=[np.number, bool]))</code></pre>
+<pre><code class="python">def get_numeric(df, drop_vars=[&#34;user-id&#34;]):
+    return list(df.drop(drop_vars, axis=1).select_dtypes(include=[np.number, bool]))</code></pre>
 </details>
 </dd>
 <dt id="projet.modelisation.standardize"><code class="name flex">
@@ -205,7 +281,7 @@ def add_group(df, max_cluster=10):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="projet.modelisation.add_group" href="#projet.modelisation.add_group">add_group</a></code></li>
+<li><code><a title="projet.modelisation.KM" href="#projet.modelisation.KM">KM</a></code></li>
 <li><code><a title="projet.modelisation.get_numeric" href="#projet.modelisation.get_numeric">get_numeric</a></code></li>
 <li><code><a title="projet.modelisation.standardize" href="#projet.modelisation.standardize">standardize</a></code></li>
 </ul>
