@@ -5,6 +5,7 @@ import json
 import pandas as pd
 import numpy as np
 import glob
+import re
 import us
 from geotext import GeoText
 from geopy.geocoders import Nominatim
@@ -431,7 +432,7 @@ def add_label(
     return df
 
 
-def get_states(df, text_var="user-location", state_var="state"):
+def get_states1(df, text_var="user-location", state_var="state"):
     """
     Fonction pour ajouter une colonne contenant l'état de l'user à partir de 'user-location".
 
@@ -446,19 +447,36 @@ def get_states(df, text_var="user-location", state_var="state"):
         pandas.dataframe: Modifie la dataframe d'entrée en ajoutant une colonne pour l'état.
     """
     geolocator = Nominatim(timeout=2, user_agent="projet-python-twitter")
+    expr = re.compile(", .*, (.*), United States")
+
     def _reg1(row):
-        places = GeoText(row)
-        lat_lon = []
-        for city in places.cities:
-            try:
-                loc = geolocator.geocode(city, language="en-US")
-                if loc:
-                    print(city, loc.latitude, loc.longitude)
-                    lat_lon.append(loc)
-            except GeocoderTimedOut as e:
-                print("Error: geocode failed on input %s with message %s"(city, e))
+        if row["user-location"]:
+            places = GeoText(row["user-location"])
+            lat_lon = []
+            for city in places.cities:
+                try:
+                    loc = geolocator.geocode(city, language="en-US")
+                    if loc:
+                        l_state = expr.findall(loc.address)
+                        if l_state:
+                            st = l_state[0]
+                        else:
+                            st = np.nan
+                        lat_lon.append((st, loc.latitude, loc.longitude))
+                except GeocoderTimedOut as e:
+                    print("Error: geocode failed on input %s with message %s"(city, e))
+            if lat_lon:
+                return lat_lon[int(np.random.randint(len(lat_lon)))]
+        return np.nan, np.nan, np.nan
+
+    new_col = df.apply(_reg1, axis=1)
+    df["state1"] = [row[0] for row in new_col]
+    df["coord"] = [(row[1], row[2]) for row in new_col]
+
+    return df
 
 
+def get_states2(df):
     states = us.STATES
     full_names = [state.name for state in states]
     abbreviation = [state.abbr for state in states]
@@ -470,13 +488,15 @@ def get_states(df, text_var="user-location", state_var="state"):
     regs = ["(" + "|".join(var[i] for var in full_list) + ")" for i in range(n)]
 
     def _reg2(row):
-        l = [row[text_var].str.contains(reg) for reg in regs]           # Contient une liste de 50 bool pour chaque ligne
-        match = np.array(full_names)[l]                                 # Garde les noms où c'est True
-        if match:
-            return np.random.choice(match)                              # Renvoie un des matchs aléatoirement
+        if row["user-location"]:
+            comps = [re.compile(reg) for reg in regs]
+            l = [bool(comp.search(row["user-location"])) for comp in comps]
+            match = np.array(full_names)[l]  # Garde les noms où c'est True
+            if len(match) > 0:
+                return np.random.choice(match)  # Renvoie un des matchs aléatoirement
         return np.nan
 
-    df[] = df.apply(_reg, axis=1)
+    df["state2"] = df.apply(_reg2, axis=1)
 
     return df
 
@@ -507,3 +527,7 @@ def select_time_range(df, start, end, date_var="created_at"):
     filtered_df = df[(start_time < df[date_var]) & (df[date_var] < end_time)]
 
     return filtered_df
+
+
+def keep_states(df):
+    return df[~df["state2"].isnull()]
