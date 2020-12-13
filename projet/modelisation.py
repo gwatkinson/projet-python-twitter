@@ -1,4 +1,4 @@
-"""Modélisattion sur la df"""
+"""Modélisattion sur les données"""
 
 # Import les modules utilisés
 import pandas as pd
