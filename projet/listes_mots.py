@@ -3,7 +3,7 @@
 # Liste 0 (pour avoir le bon nombre de listes)
 liste_0 = []
 
-# Liste 1 (trop longue et non utilisée)
+
 liste_1 = [
     "JoeBiden",
     "realDonaldTrump",
@@ -20,8 +20,9 @@ liste_1 = [
     "uselection",
     "president",
 ]
+"""Liste 1 (trop longue et non utilisée)"""
 
-# Liste 2 (réduction de liste 1 mais toujours trop large)
+
 liste_2 = [
     "JoeBiden",
     "realDonaldTrump",
@@ -33,24 +34,27 @@ liste_2 = [
     "govote",
     "uselection",
 ]
+"""Liste 2 (réduction de liste 1 mais toujours trop large)"""
 
-# Liste 3 sur Trump et Biden uniquement (Mathias)
+
 liste_3 = [
     "biden",
     "trump",
     "JoeBiden",
     "realDonaldTrump",
 ]
+"""Liste 3 sur Trump et Biden uniquement"""
 
-# Liste 4 sur le thème 'vote' (Wilfried)
+
 liste_4 = [
     "iwillvote",
     "govote",
     "uselection",
     "vote",
 ]
+"""Liste 4 sur le thème 'vote'"""
 
-# Liste 5 sur le thème 'election' (Gabriel)
+
 liste_5 = [
     "uselection",
     "president",
@@ -58,5 +62,7 @@ liste_5 = [
     "presidential",
     "electionnight",
 ]
+"""Liste 5 sur le thème 'election'"""
+
 
 listes_mots = [liste_0, liste_1, liste_2, liste_3, liste_4, liste_5]

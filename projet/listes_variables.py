@@ -1,6 +1,5 @@
 """Listes des variables à garder"""
 
-# Liste 1 (celle par défaut, courte)
 liste_1 = [
     ["text"],
     ["extended_tweet", "full_text"],
@@ -51,9 +50,9 @@ liste_1 = [
     # ["user", "follow_request_sent"],
     # ["user", "notifications"],
 ]
+"""Liste 1 (celle par défaut, courte)"""
 
 
-# Liste 2 (plus longue)
 liste_2 = [
     ["text"],
     ["extended_tweet", "full_text"],
@@ -95,3 +94,4 @@ liste_2 = [
     ["user", "contributors_enabled"],
     ["user", "geo_enabled"],
 ]
+"""Liste 2 (plus longue)"""
