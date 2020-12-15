@@ -464,7 +464,7 @@ def get_states1(df, text_var="user-location", state_var="state"):
                             st = np.nan
                         lat_lon.append((st, loc.latitude, loc.longitude))
                 except GeocoderTimedOut as e:
-                    print("Error: geocode failed on input %s with message %s"(city, e))
+                    print(f"Error: geocode failed on input {city} with message {e}")
             if lat_lon:
                 return lat_lon[int(np.random.randint(len(lat_lon)))]
         return np.nan, np.nan, np.nan
