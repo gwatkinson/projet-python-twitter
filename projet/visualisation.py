@@ -69,7 +69,7 @@ def plot_hist(df_state, label="kmlabel"):
         <div>
             <div>
                 <img
-                    src="@hist_kmlabel" alt="No image" width="400" height="300"
+                    src="@hist_kmlabel" alt="No image" width="300" height="300"
                     style="float: left; margin: 0px 0px 0px 0px;"
                     border="0"
                 ></img>
@@ -80,7 +80,7 @@ def plot_hist(df_state, label="kmlabel"):
         <div>
             <div>
                 <img
-                    src="@hist_label" alt="No image" width="400" height="300"
+                    src="@hist_label" alt="No image" width="300" height="300"
                     style="float: left; margin: 0px 0px 0px 0px;"
                     border="0"
                 ></img>
