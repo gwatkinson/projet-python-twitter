@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>projet.processing API documentation</title>
 <meta name="description" content="Process les tweets récupérés" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -58,7 +58,7 @@ def folder_to_path_list(folder_path):
     Retourne la liste des fichiers `.json` dans le dossier donné.
 
     Args:
-        folder_path (str): Chemin du dossier.
+        folder_path (str): Chemin du dossier.    
             À terminer avec un `/` ou `\`.
 
     Examples:
@@ -79,9 +79,11 @@ def tweet_json_to_df(path_list=None, folder=None, verbose=False):
 
     Args:
         path_list (list, optional): Une liste des chemin vers les fichiers `.json`.
-        folder (str, optional): Le chemin du dossier qui contient les fichiers `.json`.
+
+        folder (str, optional): Le chemin du dossier qui contient les fichiers `.json`.    
             À terminer avec un `/` ou `\`.
-        verbose (bool, optional): `True` pour afficher une barre de progrès et des messages.
+
+        verbose (bool, optional): `True` pour afficher une barre de progrès et des messages.    
             Par défaut : `False`.
 
     Returns:
@@ -139,20 +141,26 @@ def clean_df(
     &#34;&#34;&#34;
     Fonction pour filtrer et nettoyer la dataframe qui contient les tweets.
 
-    Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse 
+    Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse
     (text, , les counts, la localisation, on supprime retweeted_status et quoted_status).
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas non filtrée ou nettoyée, par exemple celle créée après `tweet_json_to_df`.
-        index (str, optional): Nom de la colonne de `df` à mettre en index.
-            Mettre `None` pour ne pas avoir d&#39;index.
+        df (pandas.dataframe): Une dataframe pandas non filtrée ou nettoyée,
+            par exemple celle créée après `tweet_json_to_df`.
+
+        index (str, optional): Nom de la colonne de `df` à mettre en index.    
+            Mettre `None` pour ne pas avoir d&#39;index.    
             Par défaut : `id`.
-        date (str, optional): Nom de la variable de `df` qui contient la date.
-            Mettre `None` pour ne pas avoir de date.
+
+        date (str, optional): Nom de la variable de `df` qui contient la date.    
+            Mettre `None` pour ne pas avoir de date.    
             Par défaut : `created_at`.
-        verbose (bool, optional): `True` pour afficher une barre de progrès et des messages supplémentaires.
+
+        verbose (bool, optional): `True` pour afficher une barre de progrès
+            et des messages supplémentaires.    
             Par défaut : `False`.
-        columns (list, optional): Liste des variables à garder.
+
+        columns (list, optional): Liste des variables à garder.    
             Voir `projet/listes_variables` pour des exemples de listes.
 
     Returns:
@@ -226,12 +234,17 @@ def get_full_text(
     Fonction pour ajouter le texte entier et gérer les RT.
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas avec les variables d&#39;intérêt, par exemple celle créée après `clean_df`.
-        new_var (str, optional): Nom à donner à la variable qui contient le texte entier.
+        df (pandas.dataframe): Une dataframe pandas avec les variables d&#39;intérêt,
+            par exemple celle créée après `clean_df`.
+
+        new_var (str, optional): Nom à donner à la variable qui contient le texte entier.    
             Par défaut : `&#34;full_text&#34;`.
-        text_vars (list, optional): Liste des variables contenant du texte par ordre de priorité.
-            Par défaut : `[&#34;extended_tweet-full_text&#34;, &#34;retweeted_status-extended_tweet-full_text&#34;, &#34;retweeted_status-text&#34;, &#34;text&#34;]`.
-        drop_vars (bool, optional): Si `True`, supprime les variables dans `text_vars` pour ne garder que la nouvelle variable.
+
+        text_vars (list, optional): Liste des variables contenant du texte par ordre de priorité.    
+            Par défaut : `[&#34;extended_tweet-full_text&#34;, &#34;retweeted_status-extended_tweet-full_text&#34;,
+            &#34;retweeted_status-text&#34;, &#34;text&#34;]`.
+
+        drop_vars (bool, optional): Si `True`, supprime les variables dans `text_vars` pour ne garder que la nouvelle variable.    
             Par défaut : `True`.
 
     Returns:
@@ -244,41 +257,9 @@ def get_full_text(
     df[new_var] = np.select(conditions, choices)
 
     if drop_vars:
-        df = df.drop(text_vars, axis=1)
+        df.drop(text_vars, axis=1, inplace=True)
 
     return df
-
-    # conditions = [
-    #     (~df[&#34;extended_tweet-full_text&#34;].isnull()),
-    #     (~df[&#34;retweeted_status-extended_tweet-full_text&#34;].isnull()),
-    #     (~df[&#34;retweeted_status-text&#34;].isnull()),
-    #     (~df[&#34;text&#34;].isnull()),
-    # ]
-
-    # choices = [
-    #     df[&#34;extended_tweet-full_text&#34;],
-    #     df[&#34;retweeted_status-extended_tweet-full_text&#34;],
-    #     df[&#34;retweeted_status-text&#34;],
-    #     df[&#34;text&#34;],
-    # ]
-
-
-# def _create_full_text(df):
-#     new_col = []
-#     for i in range(len(df)):
-#         if df[&#34;extended_tweet-full_text&#34;].iloc[i] is not np.nan:
-#             t = df[&#34;extended_tweet-full_text&#34;].iloc[i]
-#         elif df[&#34;retweeted_status-extended_tweet-full_text&#34;].iloc[i] is not np.nan:
-#             t = df[&#34;retweeted_status-extended_tweet-full_text&#34;].iloc[i]
-#         elif df[&#34;retweeted_status-text&#34;].iloc[i] is not np.nan:
-#             t = df[&#34;retweeted_status-text&#34;].iloc[i]
-#         elif df[&#34;text&#34;].iloc[i] is not np.nan:
-#             t = df[&#34;text&#34;].iloc[i]
-#         new_col.append(t)
-
-#     df[&#34;full_text&#34;] = new_col
-
-#     return df
 
 
 def add_politics(
@@ -295,18 +276,25 @@ def add_politics(
     dans le &#39;full_text&#39; et la description (par défaut).
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas avec une colonne de texte, par exemple celle créée après `get_full_text`.
-        trump_word (str, optional): Expression régulière des mots à associer à la présence de Trump dans le tweet.
+        df (pandas.dataframe): Une dataframe pandas avec une colonne de texte,  
+            par exemple celle créée après `get_full_text`.
+
+        trump_word (str, optional): Expression régulière des mots à associer à la présence de Trump dans le tweet.    
             Par défaut : `&#34;(Trump|Donald|realDonaldTrump|republican)&#34;`.
-        biden_word (str, optional): Expression régulière des mots à associer à la présence de Trump dans le tweet.
+
+        biden_word (str, optional): Expression régulière des mots à associer à la présence de Trump dans le tweet.    
             Par défaut : `&#34;(Biden|Joe|JoeBiden|democrat)&#34;`.
-        case (bool, optional): `True` pour être case sensitive.
+
+        case (bool, optional): `True` pour être case sensitive.    
             Par défaut : `False`.
-        trump_var (str, optional): Le nom du suffix de la variable qui contient la présence de Trump.
+
+        trump_var (str, optional): Le nom du suffix de la variable qui contient la présence de Trump.    
             Par défaut : `&#34;contains_trump&#34;`.
-        biden_var (str, optional): Le nom du suffix de la variable qui contient la présence de Biden.
+
+        biden_var (str, optional): Le nom du suffix de la variable qui contient la présence de Biden.    
             Par défaut : `&#34;contains_biden&#34;`.
-        text_vars (list, optional): Liste des variables de textes à regarder.
+
+        text_vars (list, optional): Liste des variables de textes à regarder.  
             Par défaut : `[&#34;full_text&#34;, &#34;user-description&#34;]`.
 
     Returns:
@@ -331,15 +319,20 @@ def add_sentiment(
     Fonction pour ajouter la ou les colonnes de sentiment analysis (à l&#39;aide de nltk).
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas avec des colonnes de texte, par exemple celle créée après `get_full_text`.
-        text_vars (list, optional): Liste des variables de textes auquelles ajouter une colonnes de sentiment score.
+        df (pandas.dataframe): Une dataframe pandas avec des colonnes de texte,
+            par exemple celle créée après `get_full_text`.
+
+        text_vars (list, optional): Liste des variables de textes auquelles ajouter une colonnes de sentiment score.    
             Par défaut : `[&#34;full_text&#34;, &#34;user-description&#34;]`.
-        sent_var (str, optional): Nom à donner à la variable qui contient le dictionnaire du sentiment analysis.
+
+        sent_var (str, optional): Nom à donner à la variable qui contient le dictionnaire du sentiment analysis.    
             Par défaut : `&#34;sentiment&#34;`.
-        compound_var (str, optional): Nom à donner à la variable qui contient le compound du sentiment analysis.
+
+        compound_var (str, optional): Nom à donner à la variable qui contient le compound du sentiment analysis.    
             Par défaut : `&#34;compound&#34;`.
+
         keep_dict (bool, optional): Si `True`, on ajoute une colonne qui contient le dictionnaire,
-            sinon, on garde seulement le compound.
+            sinon, on garde seulement le compound.    
             Par défaut : `False`.
 
     Returns:
@@ -380,11 +373,15 @@ def sentiment_class(
     Args:
         df (pandas.dataframe): Une dataframe pandas avec des colonnes de sentiment compound,
             par exemple celle créée après `add_sentiment`.
-        categories (list, optional): Liste pour nommer les classes et les intervalles correspondant. 
-            Par défaut : `[(&#34;tneg&#34;, -1, -0.7), (&#34;neg&#34;, -0.7, -0.2), (&#34;neutre&#34;, -0.2, 0.2), (&#34;pos&#34;, 0.2, 0.7), (&#34;tpos&#34;, 0.7, 1)]`.
-        compound_vars (list, optional): Liste des variables de compound à classifier.
+
+        categories (list, optional): Liste pour nommer les classes et les intervalles correspondant.    
+            Par défaut : `[(&#34;tneg&#34;, -1, -0.7), (&#34;neg&#34;, -0.7, -0.2), (&#34;neutre&#34;, -0.2, 0.2), (&#34;pos&#34;, 0.2, 0.7), 
+            (&#34;tpos&#34;, 0.7, 1)]`.
+
+        compound_vars (list, optional): Liste des variables de compound à classifier.    
             Par défaut : `[&#34;full_text-sentiment-compound&#34;, &#34;user-description-sentiment-compound&#34;]`.
-        class_var (str, optional): Nom du suffixe à donner aux variables qui contiennent les classes de compound.
+
+        class_var (str, optional): Nom du suffixe à donner aux variables qui contiennent les classes de compound.    
             Par défaut : `&#34;class&#34;`.
 
     Returns:
@@ -396,27 +393,6 @@ def sentiment_class(
         df[var + &#34;-&#34; + class_var] = np.select(conditions, choices)
 
     return df
-
-    # def _conditions(s):
-    #     return [
-    #         (df[s + &#34;-sentiment-compound&#34;].lt(-0.7)),
-    #         (
-    #             df[s + &#34;-sentiment-compound&#34;].ge(-0.7)
-    #             &amp; df[s + &#34;-sentiment-compound&#34;].lt(-0.2)
-    #         ),
-    #         (
-    #             df[s + &#34;-sentiment-compound&#34;].ge(-0.2)
-    #             &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.2)
-    #         ),
-    #         (
-    #             df[s + &#34;-sentiment-compound&#34;].ge(0.2)
-    #             &amp; df[s + &#34;-sentiment-compound&#34;].lt(0.7)
-    #         ),
-    #         (df[s + &#34;-sentiment-compound&#34;].ge(0.7)),
-    #     ]
-
-    # for var in text_vars:
-    #     df[var + &#34;-sentiment-class&#34;] = np.select(_conditions(var), choices)
 
 
 def add_label(
@@ -431,17 +407,22 @@ def add_label(
     Fonction pour ajouter un label selon la présence de Trump et/ou Biden et de la classe du compound.
 
     Args:
-        df (pandas.dataframe): Une dataframe avec les colonnes de présences de Trump, Biden et les classes des compounds.
+        df (pandas.dataframe): Une dataframe avec les colonnes de présences de Trump, Biden et les classes des compounds.  
             Par exemple celle créée après `add_politics` et `sentiment_class`.
-        label_var (str, optional): Nom à donner à la colonne qui contient les labels.
+
+        label_var (str, optional): Nom à donner à la colonne qui contient les labels.  
             Par défaut : `&#34;label&#34;`.
-        trump_var (tuple, optional): (Nom de la variable qui contient la présence de Trump, Préfixe si Trump est présent).
+
+        trump_var (tuple, optional): (Nom de la variable qui contient la présence de Trump, Préfixe si Trump est présent).  
             Par défaut : `(&#34;full_text-countains_trump&#34;, &#34;T&#34;)`.
-        biden_var (tuple, optional): (Nom de la variable qui contient la présence de Biden, Préfixe si Biden est présent).
+
+        biden_var (tuple, optional): (Nom de la variable qui contient la présence de Biden, Préfixe si Biden est présent).  
             Par défaut : `(&#34;full_text-countains_biden&#34;, &#34;B&#34;)`.
-        missing_var (str, optional): Préfixe si Trump et Biden ne sont pas présent.
+
+        missing_var (str, optional): Préfixe si Trump et Biden ne sont pas présent.  
             Par défaut : `&#34;N&#34;`.
-        class_var (str, optional): Nom de la variable qui contient les classes du compound.
+
+        class_var (str, optional): Nom de la variable qui contient les classes du compound.  
             Par défaut : `&#34;full_text-sentiment-class&#34;`.
 
     Returns:
@@ -461,6 +442,46 @@ def add_label(
     return df
 
 
+def get_states(df, state_var=&#34;state&#34;, location_var=&#34;user-location&#34;):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne contenant l&#39;état de l&#39;user à partir de &#39;user-location&#34;.
+
+    Args:
+        df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
+
+        state_var (str, optional): Nom à donner à la nouvelle variable.    
+            Par défaut : `&#34;state&#34;`.
+
+        location_var (str, optional): Le nom de la variable de texte où regarder.    
+            Par défaut : `&#34;user-location&#34;`.
+
+    Returns:
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant une colonne pour l&#39;état.
+    &#34;&#34;&#34;
+    states = us.STATES
+    full_names = [state.name for state in states]
+    abbreviation = [state.abbr for state in states]
+    state_metaphone = [state.name_metaphone for state in states]
+    # capitals = [state.capital for state in states]
+    full_list = [full_names, abbreviation, state_metaphone]
+    n = len(full_names)
+    assert all(len(var) == n for var in full_list)
+    regs = [&#34;(&#34; + &#34;|&#34;.join(var[i] for var in full_list) + &#34;)&#34; for i in range(n)]
+
+    def _reg2(row):
+        if row[location_var]:
+            comps = [re.compile(reg) for reg in regs]
+            l = [bool(comp.search(row[location_var])) for comp in comps]
+            match = np.array(full_names)[l]  # Garde les noms où c&#39;est True
+            if len(match) &gt; 0:
+                return np.random.choice(match)  # Renvoie un des matchs aléatoirement
+        return np.nan
+
+    df[state_var] = df.apply(_reg2, axis=1)
+
+    return df
+
+
 def get_states1(
     df, location_var=&#34;user-location&#34;, state_var=&#34;state2&#34;, coord_var=&#34;coord&#34;
 ):
@@ -469,9 +490,11 @@ def get_states1(
 
     Args:
         df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
-        text_var (str, optional): Le nom de la variable de texte où regarder.
-            Par défaut : `&#34;user-location&#34;`.        
-        state_var (str, optional): Nom à donner à la nouvelle variable.
+
+        text_var (str, optional): Le nom de la variable de texte où regarder.    
+            Par défaut : `&#34;user-location&#34;`.
+
+        state_var (str, optional): Nom à donner à la nouvelle variable.    
             Par défaut : `&#34;state&#34;`.
 
     Returns:
@@ -507,44 +530,6 @@ def get_states1(
     return df
 
 
-def get_states(df, state_var=&#34;state&#34;, location_var=&#34;user-location&#34;):
-    &#34;&#34;&#34;
-    Fonction pour ajouter une colonne contenant l&#39;état de l&#39;user à partir de &#39;user-location&#34;.
-
-    Args:
-        df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
-        state_var (str, optional): Nom à donner à la nouvelle variable.  
-            Par défaut : `&#34;state&#34;`.
-        location_var (str, optional): Le nom de la variable de texte où regarder.  
-            Par défaut : `&#34;user-location&#34;`.
-
-    Returns:
-        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant une colonne pour l&#39;état.
-    &#34;&#34;&#34;
-    states = us.STATES
-    full_names = [state.name for state in states]
-    abbreviation = [state.abbr for state in states]
-    state_metaphone = [state.name_metaphone for state in states]
-    # capitals = [state.capital for state in states]
-    full_list = [full_names, abbreviation, state_metaphone]
-    n = len(full_names)
-    assert all(len(var) == n for var in full_list)
-    regs = [&#34;(&#34; + &#34;|&#34;.join(var[i] for var in full_list) + &#34;)&#34; for i in range(n)]
-
-    def _reg2(row):
-        if row[location_var]:
-            comps = [re.compile(reg) for reg in regs]
-            l = [bool(comp.search(row[location_var])) for comp in comps]
-            match = np.array(full_names)[l]  # Garde les noms où c&#39;est True
-            if len(match) &gt; 0:
-                return np.random.choice(match)  # Renvoie un des matchs aléatoirement
-        return np.nan
-
-    df[state_var] = df.apply(_reg2, axis=1)
-
-    return df
-
-
 # Fonctions pour filtrer la dataframe
 def select_time_range(df, start, end, date_var=&#34;created_at&#34;):
     &#34;&#34;&#34;
@@ -552,11 +537,14 @@ def select_time_range(df, start, end, date_var=&#34;created_at&#34;):
 
     Args:
         df (dataframe): La dataframe pandas qui contient les tweets ainsi qu&#39;une variable datetime.
-        start (str): La date de départ.
+
+        start (str): La date de départ.    
             Au format: `` &#34;%Y-%m-%d %H:%M:%S%z&#34;``.
-        end (str): La date de fin.
+
+        end (str): La date de fin.    
             Au format: `` &#34;%Y-%m-%d %H:%M:%S%z&#34;``.
-        date_var (str): Le nom de la colonne qui contient la date.
+
+        date_var (str, optional): Le nom de la colonne qui contient la date.    
             Par défaut : &#34;created_at&#34;.
 
     Returns:
@@ -573,8 +561,55 @@ def select_time_range(df, start, end, date_var=&#34;created_at&#34;):
     return filtered_df
 
 
-def keep_states(df):
-    return df[~df[&#34;state2&#34;].isnull()]</code></pre>
+def remove_null(df, var=&#34;full_text-sentiment-compound&#34;):
+    &#34;&#34;&#34;
+    Filtre la dataframe pour garder les tweets où var est non nulle.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas qui contient les tweets qui contient la variable var.
+
+        var (str, optional): Nom de la variable à évaluer.    
+            Par défaut : `&#34;full_text-sentiment-compound&#34;`.
+
+    Returns:
+        pandas.dataframe: La dataframe sans valeurs nulles dans var.
+    &#34;&#34;&#34;
+    return df[df[var]!=0]
+
+
+def keep_lang(df, lang_var=&#34;lang&#34;, language=&#34;en&#34;):
+    &#34;&#34;&#34;
+    Filtre la dataframe pour garder les tweets dans la langue donnée.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas qui contient les tweets ainsi qu&#39;une variable lang.
+
+        lang_var (str, optional): La variable qui contient la langue du tweet.    
+            Par défaut : `&#34;lang&#34;`.
+
+        language (str, optional): La langue à garder.    
+            Par défaut : `&#34;en&#34;`.
+
+    Returns:
+        pandas.dataframe: La dataframe filtrée par la langue.
+    &#34;&#34;&#34;
+    return df[df[lang_var]==language]
+
+
+def keep_states(df, state_var=&#34;state&#34;):
+    &#34;&#34;&#34;
+    Filtre la dataframe pour garder les tweets où l&#39;on associe un état.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas qui contient les tweets ainsi qu&#39;une variable state.
+
+        state_var (str, optional): Nom de la variable qui contient l&#39;état.    
+            Par défaut : `&#34;state&#34;`.
+
+    Returns:
+        pandas.dataframe: La dataframe où tous les tweets ont un état.
+    &#34;&#34;&#34;
+    return df[~df[state_var].isnull()]</code></pre>
 </details>
 </section>
 <section>
@@ -592,22 +627,22 @@ def keep_states(df):
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
-<dd>Une dataframe avec les colonnes de présences de Trump, Biden et les classes des compounds.
+<dd>Une dataframe avec les colonnes de présences de Trump, Biden et les classes des compounds.<br>
 Par exemple celle créée après <code><a title="projet.processing.add_politics" href="#projet.processing.add_politics">add_politics()</a></code> et <code><a title="projet.processing.sentiment_class" href="#projet.processing.sentiment_class">sentiment_class()</a></code>.</dd>
 <dt><strong><code>label_var</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Nom à donner à la colonne qui contient les labels.
+<dd>Nom à donner à la colonne qui contient les labels.<br>
 Par défaut : <code>"label"</code>.</dd>
 <dt><strong><code>trump_var</code></strong> :&ensp;<code>tuple</code>, optional</dt>
-<dd>(Nom de la variable qui contient la présence de Trump, Préfixe si Trump est présent).
+<dd>(Nom de la variable qui contient la présence de Trump, Préfixe si Trump est présent).<br>
 Par défaut : <code>("full_text-countains_trump", "T")</code>.</dd>
 <dt><strong><code>biden_var</code></strong> :&ensp;<code>tuple</code>, optional</dt>
-<dd>(Nom de la variable qui contient la présence de Biden, Préfixe si Biden est présent).
+<dd>(Nom de la variable qui contient la présence de Biden, Préfixe si Biden est présent).<br>
 Par défaut : <code>("full_text-countains_biden", "B")</code>.</dd>
 <dt><strong><code>missing_var</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Préfixe si Trump et Biden ne sont pas présent.
+<dd>Préfixe si Trump et Biden ne sont pas présent.<br>
 Par défaut : <code>"N"</code>.</dd>
 <dt><strong><code>class_var</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Nom de la variable qui contient les classes du compound.
+<dd>Nom de la variable qui contient les classes du compound.<br>
 Par défaut : <code>"full_text-sentiment-class"</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -631,17 +666,22 @@ Par défaut : <code>"full_text-sentiment-class"</code>.</dd>
     Fonction pour ajouter un label selon la présence de Trump et/ou Biden et de la classe du compound.
 
     Args:
-        df (pandas.dataframe): Une dataframe avec les colonnes de présences de Trump, Biden et les classes des compounds.
+        df (pandas.dataframe): Une dataframe avec les colonnes de présences de Trump, Biden et les classes des compounds.  
             Par exemple celle créée après `add_politics` et `sentiment_class`.
-        label_var (str, optional): Nom à donner à la colonne qui contient les labels.
+
+        label_var (str, optional): Nom à donner à la colonne qui contient les labels.  
             Par défaut : `&#34;label&#34;`.
-        trump_var (tuple, optional): (Nom de la variable qui contient la présence de Trump, Préfixe si Trump est présent).
+
+        trump_var (tuple, optional): (Nom de la variable qui contient la présence de Trump, Préfixe si Trump est présent).  
             Par défaut : `(&#34;full_text-countains_trump&#34;, &#34;T&#34;)`.
-        biden_var (tuple, optional): (Nom de la variable qui contient la présence de Biden, Préfixe si Biden est présent).
+
+        biden_var (tuple, optional): (Nom de la variable qui contient la présence de Biden, Préfixe si Biden est présent).  
             Par défaut : `(&#34;full_text-countains_biden&#34;, &#34;B&#34;)`.
-        missing_var (str, optional): Préfixe si Trump et Biden ne sont pas présent.
+
+        missing_var (str, optional): Préfixe si Trump et Biden ne sont pas présent.  
             Par défaut : `&#34;N&#34;`.
-        class_var (str, optional): Nom de la variable qui contient les classes du compound.
+
+        class_var (str, optional): Nom de la variable qui contient les classes du compound.  
             Par défaut : `&#34;full_text-sentiment-class&#34;`.
 
     Returns:
@@ -670,24 +710,30 @@ dans le 'full_text' et la description (par défaut).</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
-<dd>Une dataframe pandas avec une colonne de texte, par exemple celle créée après <code><a title="projet.processing.get_full_text" href="#projet.processing.get_full_text">get_full_text()</a></code>.</dd>
+<dd>Une dataframe pandas avec une colonne de texte,<br>
+par exemple celle créée après <code><a title="projet.processing.get_full_text" href="#projet.processing.get_full_text">get_full_text()</a></code>.</dd>
 <dt><strong><code>trump_word</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Expression régulière des mots à associer à la présence de Trump dans le tweet.
+<br>
 Par défaut : <code>"(Trump|Donald|realDonaldTrump|republican)"</code>.</dd>
 <dt><strong><code>biden_word</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Expression régulière des mots à associer à la présence de Trump dans le tweet.
+<br>
 Par défaut : <code>"(Biden|Joe|JoeBiden|democrat)"</code>.</dd>
 <dt><strong><code>case</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd><code>True</code> pour être case sensitive.
+<br>
 Par défaut : <code>False</code>.</dd>
 <dt><strong><code>trump_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Le nom du suffix de la variable qui contient la présence de Trump.
+<br>
 Par défaut : <code>"contains_trump"</code>.</dd>
 <dt><strong><code>biden_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Le nom du suffix de la variable qui contient la présence de Biden.
+<br>
 Par défaut : <code>"contains_biden"</code>.</dd>
 <dt><strong><code>text_vars</code></strong> :&ensp;<code>list</code>, optional</dt>
-<dd>Liste des variables de textes à regarder.
+<dd>Liste des variables de textes à regarder.<br>
 Par défaut : <code>["full_text", "user-description"]</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -714,18 +760,25 @@ de Trump et Biden et la renvoie.</dd>
     dans le &#39;full_text&#39; et la description (par défaut).
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas avec une colonne de texte, par exemple celle créée après `get_full_text`.
-        trump_word (str, optional): Expression régulière des mots à associer à la présence de Trump dans le tweet.
+        df (pandas.dataframe): Une dataframe pandas avec une colonne de texte,  
+            par exemple celle créée après `get_full_text`.
+
+        trump_word (str, optional): Expression régulière des mots à associer à la présence de Trump dans le tweet.    
             Par défaut : `&#34;(Trump|Donald|realDonaldTrump|republican)&#34;`.
-        biden_word (str, optional): Expression régulière des mots à associer à la présence de Trump dans le tweet.
+
+        biden_word (str, optional): Expression régulière des mots à associer à la présence de Trump dans le tweet.    
             Par défaut : `&#34;(Biden|Joe|JoeBiden|democrat)&#34;`.
-        case (bool, optional): `True` pour être case sensitive.
+
+        case (bool, optional): `True` pour être case sensitive.    
             Par défaut : `False`.
-        trump_var (str, optional): Le nom du suffix de la variable qui contient la présence de Trump.
+
+        trump_var (str, optional): Le nom du suffix de la variable qui contient la présence de Trump.    
             Par défaut : `&#34;contains_trump&#34;`.
-        biden_var (str, optional): Le nom du suffix de la variable qui contient la présence de Biden.
+
+        biden_var (str, optional): Le nom du suffix de la variable qui contient la présence de Biden.    
             Par défaut : `&#34;contains_biden&#34;`.
-        text_vars (list, optional): Liste des variables de textes à regarder.
+
+        text_vars (list, optional): Liste des variables de textes à regarder.  
             Par défaut : `[&#34;full_text&#34;, &#34;user-description&#34;]`.
 
     Returns:
@@ -747,19 +800,24 @@ de Trump et Biden et la renvoie.</dd>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
-<dd>Une dataframe pandas avec des colonnes de texte, par exemple celle créée après <code><a title="projet.processing.get_full_text" href="#projet.processing.get_full_text">get_full_text()</a></code>.</dd>
+<dd>Une dataframe pandas avec des colonnes de texte,
+par exemple celle créée après <code><a title="projet.processing.get_full_text" href="#projet.processing.get_full_text">get_full_text()</a></code>.</dd>
 <dt><strong><code>text_vars</code></strong> :&ensp;<code>list</code>, optional</dt>
 <dd>Liste des variables de textes auquelles ajouter une colonnes de sentiment score.
+<br>
 Par défaut : <code>["full_text", "user-description"]</code>.</dd>
 <dt><strong><code>sent_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Nom à donner à la variable qui contient le dictionnaire du sentiment analysis.
+<br>
 Par défaut : <code>"sentiment"</code>.</dd>
 <dt><strong><code>compound_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Nom à donner à la variable qui contient le compound du sentiment analysis.
+<br>
 Par défaut : <code>"compound"</code>.</dd>
 <dt><strong><code>keep_dict</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>Si <code>True</code>, on ajoute une colonne qui contient le dictionnaire,
 sinon, on garde seulement le compound.
+<br>
 Par défaut : <code>False</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -782,15 +840,20 @@ Par défaut : <code>False</code>.</dd>
     Fonction pour ajouter la ou les colonnes de sentiment analysis (à l&#39;aide de nltk).
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas avec des colonnes de texte, par exemple celle créée après `get_full_text`.
-        text_vars (list, optional): Liste des variables de textes auquelles ajouter une colonnes de sentiment score.
+        df (pandas.dataframe): Une dataframe pandas avec des colonnes de texte,
+            par exemple celle créée après `get_full_text`.
+
+        text_vars (list, optional): Liste des variables de textes auquelles ajouter une colonnes de sentiment score.    
             Par défaut : `[&#34;full_text&#34;, &#34;user-description&#34;]`.
-        sent_var (str, optional): Nom à donner à la variable qui contient le dictionnaire du sentiment analysis.
+
+        sent_var (str, optional): Nom à donner à la variable qui contient le dictionnaire du sentiment analysis.    
             Par défaut : `&#34;sentiment&#34;`.
-        compound_var (str, optional): Nom à donner à la variable qui contient le compound du sentiment analysis.
+
+        compound_var (str, optional): Nom à donner à la variable qui contient le compound du sentiment analysis.    
             Par défaut : `&#34;compound&#34;`.
+
         keep_dict (bool, optional): Si `True`, on ajoute une colonne qui contient le dictionnaire,
-            sinon, on garde seulement le compound.
+            sinon, on garde seulement le compound.    
             Par défaut : `False`.
 
     Returns:
@@ -820,20 +883,28 @@ Par défaut : <code>False</code>.</dd>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
-<dd>Une dataframe pandas non filtrée ou nettoyée, par exemple celle créée après <code><a title="projet.processing.tweet_json_to_df" href="#projet.processing.tweet_json_to_df">tweet_json_to_df()</a></code>.</dd>
+<dd>Une dataframe pandas non filtrée ou nettoyée,
+par exemple celle créée après <code><a title="projet.processing.tweet_json_to_df" href="#projet.processing.tweet_json_to_df">tweet_json_to_df()</a></code>.</dd>
 <dt><strong><code>index</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Nom de la colonne de <code>df</code> à mettre en index.
+<br>
 Mettre <code>None</code> pour ne pas avoir d'index.
+<br>
 Par défaut : <code>id</code>.</dd>
 <dt><strong><code>date</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Nom de la variable de <code>df</code> qui contient la date.
+<br>
 Mettre <code>None</code> pour ne pas avoir de date.
+<br>
 Par défaut : <code>created_at</code>.</dd>
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd><code>True</code> pour afficher une barre de progrès et des messages supplémentaires.
+<dd><code>True</code> pour afficher une barre de progrès
+et des messages supplémentaires.
+<br>
 Par défaut : <code>False</code>.</dd>
 <dt><strong><code>columns</code></strong> :&ensp;<code>list</code>, optional</dt>
 <dd>Liste des variables à garder.
+<br>
 Voir <code>projet/listes_variables</code> pour des exemples de listes.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -855,20 +926,26 @@ Voir <code>projet/listes_variables</code> pour des exemples de listes.</dd>
     &#34;&#34;&#34;
     Fonction pour filtrer et nettoyer la dataframe qui contient les tweets.
 
-    Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse 
+    Il s&#39;agit de selectionner les variables (donc garder que certaines colonnes) qui nous interresse
     (text, , les counts, la localisation, on supprime retweeted_status et quoted_status).
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas non filtrée ou nettoyée, par exemple celle créée après `tweet_json_to_df`.
-        index (str, optional): Nom de la colonne de `df` à mettre en index.
-            Mettre `None` pour ne pas avoir d&#39;index.
+        df (pandas.dataframe): Une dataframe pandas non filtrée ou nettoyée,
+            par exemple celle créée après `tweet_json_to_df`.
+
+        index (str, optional): Nom de la colonne de `df` à mettre en index.    
+            Mettre `None` pour ne pas avoir d&#39;index.    
             Par défaut : `id`.
-        date (str, optional): Nom de la variable de `df` qui contient la date.
-            Mettre `None` pour ne pas avoir de date.
+
+        date (str, optional): Nom de la variable de `df` qui contient la date.    
+            Mettre `None` pour ne pas avoir de date.    
             Par défaut : `created_at`.
-        verbose (bool, optional): `True` pour afficher une barre de progrès et des messages supplémentaires.
+
+        verbose (bool, optional): `True` pour afficher une barre de progrès
+            et des messages supplémentaires.    
             Par défaut : `False`.
-        columns (list, optional): Liste des variables à garder.
+
+        columns (list, optional): Liste des variables à garder.    
             Voir `projet/listes_variables` pour des exemples de listes.
 
     Returns:
@@ -935,6 +1012,7 @@ Voir <code>projet/listes_variables</code> pour des exemples de listes.</dd>
 <dl>
 <dt><strong><code>folder_path</code></strong> :&ensp;<code>str</code></dt>
 <dd>Chemin du dossier.
+<br>
 À terminer avec un <code>/</code> ou <code>\</code>.</dd>
 </dl>
 <h2 id="examples">Examples</h2>
@@ -954,7 +1032,7 @@ folder_path(r"path\to\folder")</p>
     Retourne la liste des fichiers `.json` dans le dossier donné.
 
     Args:
-        folder_path (str): Chemin du dossier.
+        folder_path (str): Chemin du dossier.    
             À terminer avec un `/` ou `\`.
 
     Examples:
@@ -977,15 +1055,20 @@ folder_path(r"path\to\folder")</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
-<dd>Une dataframe pandas avec les variables d'intérêt, par exemple celle créée après <code><a title="projet.processing.clean_df" href="#projet.processing.clean_df">clean_df()</a></code>.</dd>
+<dd>Une dataframe pandas avec les variables d'intérêt,
+par exemple celle créée après <code><a title="projet.processing.clean_df" href="#projet.processing.clean_df">clean_df()</a></code>.</dd>
 <dt><strong><code>new_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Nom à donner à la variable qui contient le texte entier.
+<br>
 Par défaut : <code>"full_text"</code>.</dd>
 <dt><strong><code>text_vars</code></strong> :&ensp;<code>list</code>, optional</dt>
 <dd>Liste des variables contenant du texte par ordre de priorité.
-Par défaut : <code>["extended_tweet-full_text", "retweeted_status-extended_tweet-full_text", "retweeted_status-text", "text"]</code>.</dd>
+<br>
+Par défaut : <code>["extended_tweet-full_text", "retweeted_status-extended_tweet-full_text",
+"retweeted_status-text", "text"]</code>.</dd>
 <dt><strong><code>drop_vars</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd>Si <code>True</code>, supprime les variables dans <code>text_vars</code> pour ne garder que la nouvelle variable.
+<br>
 Par défaut : <code>True</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1013,12 +1096,17 @@ Par défaut : <code>True</code>.</dd>
     Fonction pour ajouter le texte entier et gérer les RT.
 
     Args:
-        df (pandas.dataframe): Une dataframe pandas avec les variables d&#39;intérêt, par exemple celle créée après `clean_df`.
-        new_var (str, optional): Nom à donner à la variable qui contient le texte entier.
+        df (pandas.dataframe): Une dataframe pandas avec les variables d&#39;intérêt,
+            par exemple celle créée après `clean_df`.
+
+        new_var (str, optional): Nom à donner à la variable qui contient le texte entier.    
             Par défaut : `&#34;full_text&#34;`.
-        text_vars (list, optional): Liste des variables contenant du texte par ordre de priorité.
-            Par défaut : `[&#34;extended_tweet-full_text&#34;, &#34;retweeted_status-extended_tweet-full_text&#34;, &#34;retweeted_status-text&#34;, &#34;text&#34;]`.
-        drop_vars (bool, optional): Si `True`, supprime les variables dans `text_vars` pour ne garder que la nouvelle variable.
+
+        text_vars (list, optional): Liste des variables contenant du texte par ordre de priorité.    
+            Par défaut : `[&#34;extended_tweet-full_text&#34;, &#34;retweeted_status-extended_tweet-full_text&#34;,
+            &#34;retweeted_status-text&#34;, &#34;text&#34;]`.
+
+        drop_vars (bool, optional): Si `True`, supprime les variables dans `text_vars` pour ne garder que la nouvelle variable.    
             Par défaut : `True`.
 
     Returns:
@@ -1031,7 +1119,7 @@ Par défaut : <code>True</code>.</dd>
     df[new_var] = np.select(conditions, choices)
 
     if drop_vars:
-        df = df.drop(text_vars, axis=1)
+        df.drop(text_vars, axis=1, inplace=True)
 
     return df</code></pre>
 </details>
@@ -1046,10 +1134,12 @@ Par défaut : <code>True</code>.</dd>
 <dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
 <dd>Une dataframe avec une colonne de texte de location.</dd>
 <dt><strong><code>state_var</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Nom à donner à la nouvelle variable.<br>
+<dd>Nom à donner à la nouvelle variable.
+<br>
 Par défaut : <code>"state"</code>.</dd>
 <dt><strong><code>location_var</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Le nom de la variable de texte où regarder.<br>
+<dd>Le nom de la variable de texte où regarder.
+<br>
 Par défaut : <code>"user-location"</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1067,9 +1157,11 @@ Par défaut : <code>"user-location"</code>.</dd>
 
     Args:
         df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
-        state_var (str, optional): Nom à donner à la nouvelle variable.  
+
+        state_var (str, optional): Nom à donner à la nouvelle variable.    
             Par défaut : `&#34;state&#34;`.
-        location_var (str, optional): Le nom de la variable de texte où regarder.  
+
+        location_var (str, optional): Le nom de la variable de texte où regarder.    
             Par défaut : `&#34;user-location&#34;`.
 
     Returns:
@@ -1110,10 +1202,11 @@ Par défaut : <code>"user-location"</code>.</dd>
 <dd>Une dataframe avec une colonne de texte de location.</dd>
 <dt><strong><code>text_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Le nom de la variable de texte où regarder.
-Par défaut : <code>"user-location"</code>.
-</dd>
+<br>
+Par défaut : <code>"user-location"</code>.</dd>
 <dt><strong><code>state_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Nom à donner à la nouvelle variable.
+<br>
 Par défaut : <code>"state"</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1133,9 +1226,11 @@ Par défaut : <code>"state"</code>.</dd>
 
     Args:
         df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
-        text_var (str, optional): Le nom de la variable de texte où regarder.
-            Par défaut : `&#34;user-location&#34;`.        
-        state_var (str, optional): Nom à donner à la nouvelle variable.
+
+        text_var (str, optional): Le nom de la variable de texte où regarder.    
+            Par défaut : `&#34;user-location&#34;`.
+
+        state_var (str, optional): Nom à donner à la nouvelle variable.    
             Par défaut : `&#34;state&#34;`.
 
     Returns:
@@ -1171,17 +1266,128 @@ Par défaut : <code>"state"</code>.</dd>
     return df</code></pre>
 </details>
 </dd>
-<dt id="projet.processing.keep_states"><code class="name flex">
-<span>def <span class="ident">keep_states</span></span>(<span>df)</span>
+<dt id="projet.processing.keep_lang"><code class="name flex">
+<span>def <span class="ident">keep_lang</span></span>(<span>df, lang_var='lang', language='en')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Filtre la dataframe pour garder les tweets dans la langue donnée.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>La dataframe pandas qui contient les tweets ainsi qu'une variable lang.</dd>
+<dt><strong><code>lang_var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>La variable qui contient la langue du tweet.
+<br>
+Par défaut : <code>"lang"</code>.</dd>
+<dt><strong><code>language</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>La langue à garder.
+<br>
+Par défaut : <code>"en"</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>La dataframe filtrée par la langue.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def keep_states(df):
-    return df[~df[&#34;state2&#34;].isnull()]</code></pre>
+<pre><code class="python">def keep_lang(df, lang_var=&#34;lang&#34;, language=&#34;en&#34;):
+    &#34;&#34;&#34;
+    Filtre la dataframe pour garder les tweets dans la langue donnée.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas qui contient les tweets ainsi qu&#39;une variable lang.
+
+        lang_var (str, optional): La variable qui contient la langue du tweet.    
+            Par défaut : `&#34;lang&#34;`.
+
+        language (str, optional): La langue à garder.    
+            Par défaut : `&#34;en&#34;`.
+
+    Returns:
+        pandas.dataframe: La dataframe filtrée par la langue.
+    &#34;&#34;&#34;
+    return df[df[lang_var]==language]</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.keep_states"><code class="name flex">
+<span>def <span class="ident">keep_states</span></span>(<span>df, state_var='state')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Filtre la dataframe pour garder les tweets où l'on associe un état.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>La dataframe pandas qui contient les tweets ainsi qu'une variable state.</dd>
+<dt><strong><code>state_var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable qui contient l'état.
+<br>
+Par défaut : <code>"state"</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>La dataframe où tous les tweets ont un état.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def keep_states(df, state_var=&#34;state&#34;):
+    &#34;&#34;&#34;
+    Filtre la dataframe pour garder les tweets où l&#39;on associe un état.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas qui contient les tweets ainsi qu&#39;une variable state.
+
+        state_var (str, optional): Nom de la variable qui contient l&#39;état.    
+            Par défaut : `&#34;state&#34;`.
+
+    Returns:
+        pandas.dataframe: La dataframe où tous les tweets ont un état.
+    &#34;&#34;&#34;
+    return df[~df[state_var].isnull()]</code></pre>
+</details>
+</dd>
+<dt id="projet.processing.remove_null"><code class="name flex">
+<span>def <span class="ident">remove_null</span></span>(<span>df, var='full_text-sentiment-compound')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Filtre la dataframe pour garder les tweets où var est non nulle.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>La dataframe pandas qui contient les tweets qui contient la variable var.</dd>
+<dt><strong><code>var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable à évaluer.
+<br>
+Par défaut : <code>"full_text-sentiment-compound"</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>La dataframe sans valeurs nulles dans var.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_null(df, var=&#34;full_text-sentiment-compound&#34;):
+    &#34;&#34;&#34;
+    Filtre la dataframe pour garder les tweets où var est non nulle.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas qui contient les tweets qui contient la variable var.
+
+        var (str, optional): Nom de la variable à évaluer.    
+            Par défaut : `&#34;full_text-sentiment-compound&#34;`.
+
+    Returns:
+        pandas.dataframe: La dataframe sans valeurs nulles dans var.
+    &#34;&#34;&#34;
+    return df[df[var]!=0]</code></pre>
 </details>
 </dd>
 <dt id="projet.processing.select_time_range"><code class="name flex">
@@ -1195,12 +1401,15 @@ Par défaut : <code>"state"</code>.</dd>
 <dd>La dataframe pandas qui contient les tweets ainsi qu'une variable datetime.</dd>
 <dt><strong><code>start</code></strong> :&ensp;<code>str</code></dt>
 <dd>La date de départ.
+<br>
 Au format: <code>"%Y-%m-%d %H:%M:%S%z"</code>.</dd>
 <dt><strong><code>end</code></strong> :&ensp;<code>str</code></dt>
 <dd>La date de fin.
+<br>
 Au format: <code>"%Y-%m-%d %H:%M:%S%z"</code>.</dd>
-<dt><strong><code>date_var</code></strong> :&ensp;<code>str</code></dt>
+<dt><strong><code>date_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Le nom de la colonne qui contient la date.
+<br>
 Par défaut : "created_at".</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1220,11 +1429,14 @@ Par défaut : "created_at".</dd>
 
     Args:
         df (dataframe): La dataframe pandas qui contient les tweets ainsi qu&#39;une variable datetime.
-        start (str): La date de départ.
+
+        start (str): La date de départ.    
             Au format: `` &#34;%Y-%m-%d %H:%M:%S%z&#34;``.
-        end (str): La date de fin.
+
+        end (str): La date de fin.    
             Au format: `` &#34;%Y-%m-%d %H:%M:%S%z&#34;``.
-        date_var (str): Le nom de la colonne qui contient la date.
+
+        date_var (str, optional): Le nom de la colonne qui contient la date.    
             Par défaut : &#34;created_at&#34;.
 
     Returns:
@@ -1253,12 +1465,16 @@ Par défaut : "created_at".</dd>
 par exemple celle créée après <code><a title="projet.processing.add_sentiment" href="#projet.processing.add_sentiment">add_sentiment()</a></code>.</dd>
 <dt><strong><code>categories</code></strong> :&ensp;<code>list</code>, optional</dt>
 <dd>Liste pour nommer les classes et les intervalles correspondant.
-Par défaut : <code>[("tneg", -1, -0.7), ("neg", -0.7, -0.2), ("neutre", -0.2, 0.2), ("pos", 0.2, 0.7), ("tpos", 0.7, 1)]</code>.</dd>
+<br>
+Par défaut : <code>[("tneg", -1, -0.7), ("neg", -0.7, -0.2), ("neutre", -0.2, 0.2), ("pos", 0.2, 0.7),
+("tpos", 0.7, 1)]</code>.</dd>
 <dt><strong><code>compound_vars</code></strong> :&ensp;<code>list</code>, optional</dt>
 <dd>Liste des variables de compound à classifier.
+<br>
 Par défaut : <code>["full_text-sentiment-compound", "user-description-sentiment-compound"]</code>.</dd>
 <dt><strong><code>class_var</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Nom du suffixe à donner aux variables qui contiennent les classes de compound.
+<br>
 Par défaut : <code>"class"</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1291,11 +1507,15 @@ Par défaut : <code>"class"</code>.</dd>
     Args:
         df (pandas.dataframe): Une dataframe pandas avec des colonnes de sentiment compound,
             par exemple celle créée après `add_sentiment`.
-        categories (list, optional): Liste pour nommer les classes et les intervalles correspondant. 
-            Par défaut : `[(&#34;tneg&#34;, -1, -0.7), (&#34;neg&#34;, -0.7, -0.2), (&#34;neutre&#34;, -0.2, 0.2), (&#34;pos&#34;, 0.2, 0.7), (&#34;tpos&#34;, 0.7, 1)]`.
-        compound_vars (list, optional): Liste des variables de compound à classifier.
+
+        categories (list, optional): Liste pour nommer les classes et les intervalles correspondant.    
+            Par défaut : `[(&#34;tneg&#34;, -1, -0.7), (&#34;neg&#34;, -0.7, -0.2), (&#34;neutre&#34;, -0.2, 0.2), (&#34;pos&#34;, 0.2, 0.7), 
+            (&#34;tpos&#34;, 0.7, 1)]`.
+
+        compound_vars (list, optional): Liste des variables de compound à classifier.    
             Par défaut : `[&#34;full_text-sentiment-compound&#34;, &#34;user-description-sentiment-compound&#34;]`.
-        class_var (str, optional): Nom du suffixe à donner aux variables qui contiennent les classes de compound.
+
+        class_var (str, optional): Nom du suffixe à donner aux variables qui contiennent les classes de compound.    
             Par défaut : `&#34;class&#34;`.
 
     Returns:
@@ -1320,9 +1540,11 @@ Par défaut : <code>"class"</code>.</dd>
 <dd>Une liste des chemin vers les fichiers <code>.json</code>.</dd>
 <dt><strong><code>folder</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Le chemin du dossier qui contient les fichiers <code>.json</code>.
+<br>
 À terminer avec un <code>/</code> ou <code>\</code>.</dd>
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
 <dd><code>True</code> pour afficher une barre de progrès et des messages.
+<br>
 Par défaut : <code>False</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -1340,9 +1562,11 @@ Par défaut : <code>False</code>.</dd>
 
     Args:
         path_list (list, optional): Une liste des chemin vers les fichiers `.json`.
-        folder (str, optional): Le chemin du dossier qui contient les fichiers `.json`.
+
+        folder (str, optional): Le chemin du dossier qui contient les fichiers `.json`.    
             À terminer avec un `/` ou `\`.
-        verbose (bool, optional): `True` pour afficher une barre de progrès et des messages.
+
+        verbose (bool, optional): `True` pour afficher une barre de progrès et des messages.    
             Par défaut : `False`.
 
     Returns:
@@ -1415,7 +1639,9 @@ Par défaut : <code>False</code>.</dd>
 <li><code><a title="projet.processing.get_full_text" href="#projet.processing.get_full_text">get_full_text</a></code></li>
 <li><code><a title="projet.processing.get_states" href="#projet.processing.get_states">get_states</a></code></li>
 <li><code><a title="projet.processing.get_states1" href="#projet.processing.get_states1">get_states1</a></code></li>
+<li><code><a title="projet.processing.keep_lang" href="#projet.processing.keep_lang">keep_lang</a></code></li>
 <li><code><a title="projet.processing.keep_states" href="#projet.processing.keep_states">keep_states</a></code></li>
+<li><code><a title="projet.processing.remove_null" href="#projet.processing.remove_null">remove_null</a></code></li>
 <li><code><a title="projet.processing.select_time_range" href="#projet.processing.select_time_range">select_time_range</a></code></li>
 <li><code><a title="projet.processing.sentiment_class" href="#projet.processing.sentiment_class">sentiment_class</a></code></li>
 <li><code><a title="projet.processing.tweet_json_to_df" href="#projet.processing.tweet_json_to_df">tweet_json_to_df</a></code></li>
@@ -1425,7 +1651,7 @@ Par défaut : <code>False</code>.</dd>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

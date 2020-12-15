@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>projet.visualisation API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -35,13 +35,24 @@ from bokeh.models import Slider, HoverTool
 from bokeh.layouts import widgetbox, row, column
 import json
 import numpy as np
+import pandas as pd
+import geopandas as gpd
+import us
+
+
+def create_gdf():
+    states = us.STATES
+    urls = [state.shapefile_urls(&#39;state&#39;) for state in states]
+    gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
+    return gdf[[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]]
+
 
 
 def save_hist(df, df_state, label=&#34;kmlabel&#34;):
     def _add_image(row):
         state = row[&#34;NAME10&#34;]
-        if any(df[&#34;state2&#34;] == state):
-            df2 = df[df[&#34;state2&#34;] == state].groupby(label).describe()
+        if any(df[&#34;state&#34;] == state):
+            df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
             fig = m.plot(
                 kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;, rot=0,
@@ -59,8 +70,8 @@ def save_hist(df, df_state, label=&#34;kmlabel&#34;):
 def add_max(df, df_state, label=&#34;kmlabel&#34;):
     def _add_max(row):
         state = row[&#34;NAME10&#34;]
-        if any(df[&#34;state2&#34;] == state):
-            df2 = df[df[&#34;state2&#34;] == state].groupby(label).describe()
+        if any(df[&#34;state&#34;] == state):
+            df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
             return m.idxmax()
         return np.nan
@@ -74,7 +85,7 @@ def add_stats_sentiment(df, df_state):
     df2 = df.groupby(&#34;state2&#34;).describe()[&#34;full_text-sentiment-compound&#34;][
         [&#34;count&#34;, &#34;mean&#34;, &#34;std&#34;]
     ]
-    df_state = df_state.merge(df2, how=&#34;left&#34;, left_on=[&#34;NAME10&#34;], right_on=[&#34;state2&#34;])
+    df_state = df_state.merge(df2, how=&#34;left&#34;, left_on=[&#34;NAME10&#34;], right_on=[&#34;state&#34;])
 
     return df_state
 
@@ -120,15 +131,6 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
     # Add hover tool
     hover = HoverTool(tooltips=tooltips_dict[label])
 
-    #             &lt;div&gt;
-    #                 &lt;span style=&#34;font-size: 17px; font-weight: bold;&#34;&gt;&lt;/span&gt;
-    #                 &lt;span style=&#34;font-size: 15px; color: #966;&#34;&gt;[$index]&lt;/span&gt;
-    #             &lt;/div&gt;
-    #             &lt;div&gt;
-    #                 &lt;span style=&#34;font-size: 15px;&#34;&gt;Location&lt;/span&gt;
-    #                 &lt;span style=&#34;font-size: 10px; color: #696;&#34;&gt;($x, $y)&lt;/span&gt;
-    #             &lt;/div&gt;
-
     # Create figure object.
     p = figure(
         title=f&#34;Histogramme de &#39;{label}&#39;&#34;,
@@ -152,9 +154,6 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         palette=palette, low=0, high=n, nan_color=&#34;#d9d9d9&#34;
     )
 
-    # #Define custom tick labels for color bar.
-    # tick_labels = {str(i): f&#34;Label {i}&#34; for i in range(n)}
-
     # Add patch renderer to figure.
     p.patches(
         &#34;xs&#34;,
@@ -165,6 +164,9 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         line_width=1,
         fill_alpha=1,
     )
+
+    # Save map in html
+    output_file(f&#34;images/maps/map_{label}&#34;)
 
     # Display figure inline in Jupyter Notebook.
     output_notebook()
@@ -192,8 +194,8 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 <pre><code class="python">def add_max(df, df_state, label=&#34;kmlabel&#34;):
     def _add_max(row):
         state = row[&#34;NAME10&#34;]
-        if any(df[&#34;state2&#34;] == state):
-            df2 = df[df[&#34;state2&#34;] == state].groupby(label).describe()
+        if any(df[&#34;state&#34;] == state):
+            df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
             return m.idxmax()
         return np.nan
@@ -216,9 +218,25 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
     df2 = df.groupby(&#34;state2&#34;).describe()[&#34;full_text-sentiment-compound&#34;][
         [&#34;count&#34;, &#34;mean&#34;, &#34;std&#34;]
     ]
-    df_state = df_state.merge(df2, how=&#34;left&#34;, left_on=[&#34;NAME10&#34;], right_on=[&#34;state2&#34;])
+    df_state = df_state.merge(df2, how=&#34;left&#34;, left_on=[&#34;NAME10&#34;], right_on=[&#34;state&#34;])
 
     return df_state</code></pre>
+</details>
+</dd>
+<dt id="projet.visualisation.create_gdf"><code class="name flex">
+<span>def <span class="ident">create_gdf</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_gdf():
+    states = us.STATES
+    urls = [state.shapefile_urls(&#39;state&#39;) for state in states]
+    gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
+    return gdf[[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]]</code></pre>
 </details>
 </dd>
 <dt id="projet.visualisation.plot_hist"><code class="name flex">
@@ -271,15 +289,6 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
     # Add hover tool
     hover = HoverTool(tooltips=tooltips_dict[label])
 
-    #             &lt;div&gt;
-    #                 &lt;span style=&#34;font-size: 17px; font-weight: bold;&#34;&gt;&lt;/span&gt;
-    #                 &lt;span style=&#34;font-size: 15px; color: #966;&#34;&gt;[$index]&lt;/span&gt;
-    #             &lt;/div&gt;
-    #             &lt;div&gt;
-    #                 &lt;span style=&#34;font-size: 15px;&#34;&gt;Location&lt;/span&gt;
-    #                 &lt;span style=&#34;font-size: 10px; color: #696;&#34;&gt;($x, $y)&lt;/span&gt;
-    #             &lt;/div&gt;
-
     # Create figure object.
     p = figure(
         title=f&#34;Histogramme de &#39;{label}&#39;&#34;,
@@ -303,9 +312,6 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         palette=palette, low=0, high=n, nan_color=&#34;#d9d9d9&#34;
     )
 
-    # #Define custom tick labels for color bar.
-    # tick_labels = {str(i): f&#34;Label {i}&#34; for i in range(n)}
-
     # Add patch renderer to figure.
     p.patches(
         &#34;xs&#34;,
@@ -316,6 +322,9 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         line_width=1,
         fill_alpha=1,
     )
+
+    # Save map in html
+    output_file(f&#34;images/maps/map_{label}&#34;)
 
     # Display figure inline in Jupyter Notebook.
     output_notebook()
@@ -336,8 +345,8 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 <pre><code class="python">def save_hist(df, df_state, label=&#34;kmlabel&#34;):
     def _add_image(row):
         state = row[&#34;NAME10&#34;]
-        if any(df[&#34;state2&#34;] == state):
-            df2 = df[df[&#34;state2&#34;] == state].groupby(label).describe()
+        if any(df[&#34;state&#34;] == state):
+            df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
             fig = m.plot(
                 kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;, rot=0,
@@ -372,6 +381,7 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 <ul class="">
 <li><code><a title="projet.visualisation.add_max" href="#projet.visualisation.add_max">add_max</a></code></li>
 <li><code><a title="projet.visualisation.add_stats_sentiment" href="#projet.visualisation.add_stats_sentiment">add_stats_sentiment</a></code></li>
+<li><code><a title="projet.visualisation.create_gdf" href="#projet.visualisation.create_gdf">create_gdf</a></code></li>
 <li><code><a title="projet.visualisation.plot_hist" href="#projet.visualisation.plot_hist">plot_hist</a></code></li>
 <li><code><a title="projet.visualisation.save_hist" href="#projet.visualisation.save_hist">save_hist</a></code></li>
 </ul>
@@ -380,7 +390,7 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>
