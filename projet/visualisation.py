@@ -1,4 +1,4 @@
-from bokeh.io import output_notebook, show, output_file
+from bokeh.io import output_notebook, show, output_file, save
 from bokeh.plotting import figure
 from bokeh.models import GeoJSONDataSource, LinearColorMapper, ColorBar
 from bokeh.palettes import brewer, d3
@@ -10,14 +10,14 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import us
+import matplotlib.pyplot as plt
 
 
 def create_gdf():
     states = us.STATES
-    urls = [state.shapefile_urls('state') for state in states]
+    urls = [state.shapefile_urls("state") for state in states]
     gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
     return gdf[["STUSPS10", "NAME10", "geometry"]]
-
 
 
 def save_hist(df, df_state, label="kmlabel"):
@@ -27,7 +27,7 @@ def save_hist(df, df_state, label="kmlabel"):
             df2 = df[df["state"] == state].groupby(label).describe()
             m = df2["user-id"]["count"]
             fig = m.plot(
-                kind="bar", title=f"Histogramme de {state}", x=label, y="Count", rot=0,
+                kind="bar", title=f"Histogramme de {state}", x=label, y="Count",
             ).get_figure()
             file = f"image/hist_{label}/hist_{label}_{state}.jpg"
             fig.savefig(file)
@@ -54,7 +54,7 @@ def add_max(df, df_state, label="kmlabel"):
 
 
 def add_stats_sentiment(df, df_state):
-    df2 = df.groupby("state2").describe()["full_text-sentiment-compound"][
+    df2 = df.groupby("state").describe()["full_text-sentiment-compound"][
         ["count", "mean", "std"]
     ]
     df_state = df_state.merge(df2, how="left", left_on=["NAME10"], right_on=["state"])
@@ -118,14 +118,13 @@ def plot_hist(df_state, label="kmlabel"):
 
     n = df_state[f"cluster_max_{label}"].nunique()
     if n > 10:
-        pal = d3["Category20"]
+        pal = brewer["YlGnBu"]
     else:
         pal = brewer["Set3"]
     palette = pal[n]
     color_mapper = LinearColorMapper(
         palette=palette, low=0, high=n, nan_color="#d9d9d9"
     )
-
     # Add patch renderer to figure.
     p.patches(
         "xs",
@@ -138,10 +137,12 @@ def plot_hist(df_state, label="kmlabel"):
     )
 
     # Save map in html
-    output_file(f"images/maps/map_{label}")
+    output_file(f"image/maps/map_{label}.html", mode="inline")
 
     # Display figure inline in Jupyter Notebook.
     output_notebook()
 
+    # Save figure.
+    # save(p)
     # Display figure.
     show(p)
