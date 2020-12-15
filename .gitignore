@@ -4,8 +4,8 @@ projet/_credentials.py
 
 ## The documentation and image folders
 docs/
-image/kmlabel/
-image/label/
+image/hist_kmlabel/*.jpg
+image/hist_label/*.jpg
 
 ## Template with Data, JupyterNotebboks, Python, vscode
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vscode,Data
