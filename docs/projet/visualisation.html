@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from bokeh.io import output_notebook, show, output_file
+<pre><code class="python">from bokeh.io import output_notebook, show, output_file, save
 from bokeh.plotting import figure
 from bokeh.models import GeoJSONDataSource, LinearColorMapper, ColorBar
 from bokeh.palettes import brewer, d3
@@ -38,14 +38,14 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import us
+import matplotlib.pyplot as plt
 
 
 def create_gdf():
     states = us.STATES
-    urls = [state.shapefile_urls(&#39;state&#39;) for state in states]
+    urls = [state.shapefile_urls(&#34;state&#34;) for state in states]
     gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
     return gdf[[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]]
-
 
 
 def save_hist(df, df_state, label=&#34;kmlabel&#34;):
@@ -55,7 +55,7 @@ def save_hist(df, df_state, label=&#34;kmlabel&#34;):
             df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
             fig = m.plot(
-                kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;, rot=0,
+                kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;,
             ).get_figure()
             file = f&#34;image/hist_{label}/hist_{label}_{state}.jpg&#34;
             fig.savefig(file)
@@ -82,7 +82,7 @@ def add_max(df, df_state, label=&#34;kmlabel&#34;):
 
 
 def add_stats_sentiment(df, df_state):
-    df2 = df.groupby(&#34;state2&#34;).describe()[&#34;full_text-sentiment-compound&#34;][
+    df2 = df.groupby(&#34;state&#34;).describe()[&#34;full_text-sentiment-compound&#34;][
         [&#34;count&#34;, &#34;mean&#34;, &#34;std&#34;]
     ]
     df_state = df_state.merge(df2, how=&#34;left&#34;, left_on=[&#34;NAME10&#34;], right_on=[&#34;state&#34;])
@@ -146,14 +146,13 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 
     n = df_state[f&#34;cluster_max_{label}&#34;].nunique()
     if n &gt; 10:
-        pal = d3[&#34;Category20&#34;]
+        pal = brewer[&#34;YlGnBu&#34;]
     else:
         pal = brewer[&#34;Set3&#34;]
     palette = pal[n]
     color_mapper = LinearColorMapper(
         palette=palette, low=0, high=n, nan_color=&#34;#d9d9d9&#34;
     )
-
     # Add patch renderer to figure.
     p.patches(
         &#34;xs&#34;,
@@ -166,11 +165,13 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
     )
 
     # Save map in html
-    output_file(f&#34;images/maps/map_{label}&#34;)
+    output_file(f&#34;image/maps/map_{label}.html&#34;, mode=&#34;inline&#34;)
 
     # Display figure inline in Jupyter Notebook.
     output_notebook()
 
+    # Save figure.
+    # save(p)
     # Display figure.
     show(p)</code></pre>
 </details>
@@ -215,7 +216,7 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_stats_sentiment(df, df_state):
-    df2 = df.groupby(&#34;state2&#34;).describe()[&#34;full_text-sentiment-compound&#34;][
+    df2 = df.groupby(&#34;state&#34;).describe()[&#34;full_text-sentiment-compound&#34;][
         [&#34;count&#34;, &#34;mean&#34;, &#34;std&#34;]
     ]
     df_state = df_state.merge(df2, how=&#34;left&#34;, left_on=[&#34;NAME10&#34;], right_on=[&#34;state&#34;])
@@ -234,7 +235,7 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 </summary>
 <pre><code class="python">def create_gdf():
     states = us.STATES
-    urls = [state.shapefile_urls(&#39;state&#39;) for state in states]
+    urls = [state.shapefile_urls(&#34;state&#34;) for state in states]
     gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
     return gdf[[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]]</code></pre>
 </details>
@@ -304,14 +305,13 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 
     n = df_state[f&#34;cluster_max_{label}&#34;].nunique()
     if n &gt; 10:
-        pal = d3[&#34;Category20&#34;]
+        pal = brewer[&#34;YlGnBu&#34;]
     else:
         pal = brewer[&#34;Set3&#34;]
     palette = pal[n]
     color_mapper = LinearColorMapper(
         palette=palette, low=0, high=n, nan_color=&#34;#d9d9d9&#34;
     )
-
     # Add patch renderer to figure.
     p.patches(
         &#34;xs&#34;,
@@ -324,11 +324,13 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
     )
 
     # Save map in html
-    output_file(f&#34;images/maps/map_{label}&#34;)
+    output_file(f&#34;image/maps/map_{label}.html&#34;, mode=&#34;inline&#34;)
 
     # Display figure inline in Jupyter Notebook.
     output_notebook()
 
+    # Save figure.
+    # save(p)
     # Display figure.
     show(p)</code></pre>
 </details>
@@ -349,7 +351,7 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
             df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
             fig = m.plot(
-                kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;, rot=0,
+                kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;,
             ).get_figure()
             file = f&#34;image/hist_{label}/hist_{label}_{state}.jpg&#34;
             fig.savefig(file)
