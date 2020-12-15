@@ -1,10 +1,12 @@
 import setuptools
+import io
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
+with io.open("requirements.txt","r", encoding='utf-16') as f:
+    requirements = f.read().split('\n')
+
 
 setuptools.setup(
     name="projet-python-twitter",
