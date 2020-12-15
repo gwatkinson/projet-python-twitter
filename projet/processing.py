@@ -432,7 +432,9 @@ def add_label(
     return df
 
 
-def get_states1(df, text_var="user-location", state_var="state"):
+def get_states1(
+    df, location_var="user-location", state_var="state2", coord_var="coord"
+):
     """
     Fonction pour ajouter une colonne contenant l'état de l'user à partir de 'user-location".
 
@@ -450,8 +452,8 @@ def get_states1(df, text_var="user-location", state_var="state"):
     expr = re.compile(", .*, (.*), United States")
 
     def _reg1(row):
-        if row["user-location"]:
-            places = GeoText(row["user-location"])
+        if row[location_var]:
+            places = GeoText(row[location_var])
             lat_lon = []
             for city in places.cities:
                 try:
@@ -470,13 +472,26 @@ def get_states1(df, text_var="user-location", state_var="state"):
         return np.nan, np.nan, np.nan
 
     new_col = df.apply(_reg1, axis=1)
-    df["state1"] = [row[0] for row in new_col]
-    df["coord"] = [(row[1], row[2]) for row in new_col]
+    df[state_var] = [row[0] for row in new_col]
+    df[coord_var] = [(row[1], row[2]) for row in new_col]
 
     return df
 
 
-def get_states2(df):
+def get_states(df, state_var="state", location_var="user-location"):
+    """
+    Fonction pour ajouter une colonne contenant l'état de l'user à partir de 'user-location".
+
+    Args:
+        df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
+        state_var (str, optional): Nom à donner à la nouvelle variable.  
+            Par défaut : `"state"`.
+        location_var (str, optional): Le nom de la variable de texte où regarder.  
+            Par défaut : `"user-location"`.
+
+    Returns:
+        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant une colonne pour l'état.
+    """
     states = us.STATES
     full_names = [state.name for state in states]
     abbreviation = [state.abbr for state in states]
@@ -488,15 +503,15 @@ def get_states2(df):
     regs = ["(" + "|".join(var[i] for var in full_list) + ")" for i in range(n)]
 
     def _reg2(row):
-        if row["user-location"]:
+        if row[location_var]:
             comps = [re.compile(reg) for reg in regs]
-            l = [bool(comp.search(row["user-location"])) for comp in comps]
+            l = [bool(comp.search(row[location_var])) for comp in comps]
             match = np.array(full_names)[l]  # Garde les noms où c'est True
             if len(match) > 0:
                 return np.random.choice(match)  # Renvoie un des matchs aléatoirement
         return np.nan
 
-    df["state2"] = df.apply(_reg2, axis=1)
+    df[state_var] = df.apply(_reg2, axis=1)
 
     return df
 
