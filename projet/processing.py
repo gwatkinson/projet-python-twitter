@@ -413,6 +413,46 @@ def add_label(
     return df
 
 
+def get_states(df, state_var="state", location_var="user-location"):
+    """
+    Fonction pour ajouter une colonne contenant l'état de l'user à partir de 'user-location".
+
+    Args:
+        df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
+
+        state_var (str, optional): Nom à donner à la nouvelle variable.    
+            Par défaut : `"state"`.
+
+        location_var (str, optional): Le nom de la variable de texte où regarder.    
+            Par défaut : `"user-location"`.
+
+    Returns:
+        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant une colonne pour l'état.
+    """
+    states = us.STATES
+    full_names = [state.name for state in states]
+    abbreviation = [state.abbr for state in states]
+    state_metaphone = [state.name_metaphone for state in states]
+    # capitals = [state.capital for state in states]
+    full_list = [full_names, abbreviation, state_metaphone]
+    n = len(full_names)
+    assert all(len(var) == n for var in full_list)
+    regs = ["(" + "|".join(var[i] for var in full_list) + ")" for i in range(n)]
+
+    def _reg2(row):
+        if row[location_var]:
+            comps = [re.compile(reg) for reg in regs]
+            l = [bool(comp.search(row[location_var])) for comp in comps]
+            match = np.array(full_names)[l]  # Garde les noms où c'est True
+            if len(match) > 0:
+                return np.random.choice(match)  # Renvoie un des matchs aléatoirement
+        return np.nan
+
+    df[state_var] = df.apply(_reg2, axis=1)
+
+    return df
+
+
 def get_states1(
     df, location_var="user-location", state_var="state2", coord_var="coord"
 ):
@@ -457,46 +497,6 @@ def get_states1(
     new_col = df.apply(_reg1, axis=1)
     df[state_var] = [row[0] for row in new_col]
     df[coord_var] = [(row[1], row[2]) for row in new_col]
-
-    return df
-
-
-def get_states(df, state_var="state", location_var="user-location"):
-    """
-    Fonction pour ajouter une colonne contenant l'état de l'user à partir de 'user-location".
-
-    Args:
-        df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
-
-        state_var (str, optional): Nom à donner à la nouvelle variable.    
-            Par défaut : `"state"`.
-
-        location_var (str, optional): Le nom de la variable de texte où regarder.    
-            Par défaut : `"user-location"`.
-
-    Returns:
-        pandas.dataframe: Modifie la dataframe d'entrée en ajoutant une colonne pour l'état.
-    """
-    states = us.STATES
-    full_names = [state.name for state in states]
-    abbreviation = [state.abbr for state in states]
-    state_metaphone = [state.name_metaphone for state in states]
-    # capitals = [state.capital for state in states]
-    full_list = [full_names, abbreviation, state_metaphone]
-    n = len(full_names)
-    assert all(len(var) == n for var in full_list)
-    regs = ["(" + "|".join(var[i] for var in full_list) + ")" for i in range(n)]
-
-    def _reg2(row):
-        if row[location_var]:
-            comps = [re.compile(reg) for reg in regs]
-            l = [bool(comp.search(row[location_var])) for comp in comps]
-            match = np.array(full_names)[l]  # Garde les noms où c'est True
-            if len(match) > 0:
-                return np.random.choice(match)  # Renvoie un des matchs aléatoirement
-        return np.nan
-
-    df[state_var] = df.apply(_reg2, axis=1)
 
     return df
 
