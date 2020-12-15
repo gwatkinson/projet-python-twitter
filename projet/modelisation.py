@@ -85,10 +85,10 @@ def KM(
                 max(sse),
                 colors="r",
                 linestyles="dotted",
-                label="Nombre de clusters",
+                label="Nombre de clusters optimal",
             )
             plt.xticks(range(1, max_cluster + 1))
-            plt.xlabel("Number of Clusters")
+            plt.xlabel("Nombre de clusters")
             plt.ylabel("SSE")
             plt.legend()
             plt.show()
