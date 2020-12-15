@@ -7,6 +7,17 @@ from bokeh.models import Slider, HoverTool
 from bokeh.layouts import widgetbox, row, column
 import json
 import numpy as np
+import pandas as pd
+import geopandas as gpd
+import us
+
+
+def create_gdf():
+    states = us.STATES
+    urls = [state.shapefile_urls('state') for state in states]
+    gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
+    return gdf[["STUSPS10", "NAME10", "geometry"]]
+
 
 
 def save_hist(df, df_state, label="kmlabel"):
