@@ -23,8 +23,8 @@ def create_gdf():
 def save_hist(df, df_state, label="kmlabel"):
     def _add_image(row):
         state = row["NAME10"]
-        if any(df["state2"] == state):
-            df2 = df[df["state2"] == state].groupby(label).describe()
+        if any(df["state"] == state):
+            df2 = df[df["state"] == state].groupby(label).describe()
             m = df2["user-id"]["count"]
             fig = m.plot(
                 kind="bar", title=f"Histogramme de {state}", x=label, y="Count", rot=0,
@@ -42,8 +42,8 @@ def save_hist(df, df_state, label="kmlabel"):
 def add_max(df, df_state, label="kmlabel"):
     def _add_max(row):
         state = row["NAME10"]
-        if any(df["state2"] == state):
-            df2 = df[df["state2"] == state].groupby(label).describe()
+        if any(df["state"] == state):
+            df2 = df[df["state"] == state].groupby(label).describe()
             m = df2["user-id"]["count"]
             return m.idxmax()
         return np.nan
@@ -57,7 +57,7 @@ def add_stats_sentiment(df, df_state):
     df2 = df.groupby("state2").describe()["full_text-sentiment-compound"][
         ["count", "mean", "std"]
     ]
-    df_state = df_state.merge(df2, how="left", left_on=["NAME10"], right_on=["state2"])
+    df_state = df_state.merge(df2, how="left", left_on=["NAME10"], right_on=["state"])
 
     return df_state
 
@@ -103,15 +103,6 @@ def plot_hist(df_state, label="kmlabel"):
     # Add hover tool
     hover = HoverTool(tooltips=tooltips_dict[label])
 
-    #             <div>
-    #                 <span style="font-size: 17px; font-weight: bold;"></span>
-    #                 <span style="font-size: 15px; color: #966;">[$index]</span>
-    #             </div>
-    #             <div>
-    #                 <span style="font-size: 15px;">Location</span>
-    #                 <span style="font-size: 10px; color: #696;">($x, $y)</span>
-    #             </div>
-
     # Create figure object.
     p = figure(
         title=f"Histogramme de '{label}'",
@@ -135,9 +126,6 @@ def plot_hist(df_state, label="kmlabel"):
         palette=palette, low=0, high=n, nan_color="#d9d9d9"
     )
 
-    # #Define custom tick labels for color bar.
-    # tick_labels = {str(i): f"Label {i}" for i in range(n)}
-
     # Add patch renderer to figure.
     p.patches(
         "xs",
@@ -149,9 +137,11 @@ def plot_hist(df_state, label="kmlabel"):
         fill_alpha=1,
     )
 
+    # Save map in html
+    output_file(f"images/maps/map_{label}")
+
     # Display figure inline in Jupyter Notebook.
     output_notebook()
 
     # Display figure.
     show(p)
-
