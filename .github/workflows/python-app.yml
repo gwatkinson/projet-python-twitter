@@ -1,6 +1,4 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-# and https://github.community/t/run-job-only-if-folder-changed/118292
 
 name: Python application
 
@@ -12,38 +10,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_python:
-    name: Check the python files
-    outputs:
-      run_job: ${{ steps.check_files_python.outputs.run_job }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: A) Checkout code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-
-      - name: B) Check modified files
-        id: check_files_python
-        run: |
-          echo "=============== list modified files ==============="
-          git diff --name-only HEAD^ HEAD
-
-          git diff --name-only HEAD^ HEAD > files.txt
-          while IFS= read -r file
-          do
-            echo "::set-output name=run_job::false"
-            if [[ $file != projet/* && $file != test/* ]]; then
-              echo "::set-output name=run_job::true"
-              break
-            fi
-          done < files.txt
-
   build:
     name: Lint, test and doc
-    needs: check_python
     runs-on: ubuntu-latest
-    if: needs.check_python.outputs.run_job == 'true'
     steps:
       - name: A) Checkout code
         uses: actions/checkout@v2
@@ -67,7 +36,7 @@ jobs:
           # stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          flake8 . --count --ignore=W291,W503 --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: D)(1/2) Test with pytest
         run: |
@@ -80,8 +49,6 @@ jobs:
       - name: E)(1/5) Generate documentation
         run: |
           pdoc --html -f --output-dir docs projet
-          # mv docs/projet/* docs
-          # rmdir docs/projet
 
       - name: E)(2/5) Check if docs files changed
         id: check_files_docs
@@ -126,8 +93,8 @@ jobs:
           git checkout ${{ steps.branch_name.outputs.branch }}
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/*
-          git commit -f -m "Automatic commit : Update documentation"
+          git add -f docs/*
+          git commit -m "Automatic commit : Update documentation"
 
       - name: E)(5/5) Push changes
         if: steps.check_files_docs.outputs.run_doc == 'true' && steps.branch_name.outputs.branch != 'refs/heads/master'

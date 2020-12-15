@@ -1,4 +1,4 @@
-## Import les modules
+# Import les modules
 import os
 import pytest
 import projet.streaming as stream
@@ -11,7 +11,7 @@ cred_file_exist = cred_file_exist = pytest.mark.skipif(
 )
 
 
-## Tests
+# Tests
 @pytest.fixture
 def file_credentials():
     """Retourne le dictionaire dans projet._credentials."""

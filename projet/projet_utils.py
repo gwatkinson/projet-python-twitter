@@ -1,23 +1,27 @@
-## Fonctions auxiliaires
+"""Fonctions auxiliaires"""
+
 
 # Affichage du progrès
-def progressBar(current, total, prefix=None, file=None, total_file=None, barLength=20):
+def progressBar(
+    current, total, prefix=None, file=None, total_file=None, barLength=20, verbose=False
+):
     """ Affiche une barre de progrès """
-    percent = float(current) * 100 / total
-    arrow = "-" * int(percent / 100 * barLength - 1) + ">"
-    spaces = " " * (barLength - len(arrow) - 1)
-    if prefix is None:
-        prefix = (
-            f"File {file}/{total_file}"
-            if file is not None and total_file is not None
-            else "Progress"
-        )
-    print(f"{prefix}: [{arrow}{spaces}] {percent:.0f} %", end="\r")
+    if verbose:
+        percent = float(current) * 100 / total
+        arrow = "-" * int(percent / 100 * barLength - 1) + ">"
+        spaces = " " * (barLength - len(arrow) - 1)
+        if prefix is None:
+            prefix = (
+                f"File {file}/{total_file}"
+                if file is not None and total_file is not None
+                else "Progress"
+            )
+        print(f"{prefix}: [{arrow}{spaces}] {percent:.0f} %", end="\r")
 
 
-### Les erreurs du projet
+# Les erreurs du projet
 
-## Erreurs de streaming.py
+# Erreurs de streaming.py
 class CredentialsType(Exception):
     """Erreur à lever si `credentials` n'est pas un dictionnaire."""
 
@@ -82,7 +86,7 @@ class WordType(Exception):
         return f"{str(self.wrong_words)} {self.msg}"
 
 
-## Erreurs de processing.py
+# Erreurs de processing.py
 class WrongColumnName(Exception):
     """Erreur à lever si la variable donnée n'est pas dans la dataframe"""
 
@@ -92,4 +96,4 @@ class WrongColumnName(Exception):
         super().__init__(self.msg)
 
     def __str__(self):
-        return f"{str(self.msg)} {self.msg}"
+        return f"{str(self.var)} {self.msg}"

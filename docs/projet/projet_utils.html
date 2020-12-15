@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>projet.projet_utils API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Fonctions auxiliaires" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,66 +22,69 @@
 <h1 class="title">Module <code>projet.projet_utils</code></h1>
 </header>
 <section id="section-intro">
+<p>Fonctions auxiliaires</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">## Fonctions auxiliaires
+<pre><code class="python">&#34;&#34;&#34;Fonctions auxiliaires&#34;&#34;&#34;
+
 
 # Affichage du progrès
-def progressBar(current, total, prefix=None, file=None, total_file=None, barLength=20):
+def progressBar(
+    current, total, prefix=None, file=None, total_file=None, barLength=20, verbose=False
+):
     &#34;&#34;&#34; Affiche une barre de progrès &#34;&#34;&#34;
-    percent = float(current) * 100 / total
-    arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
-    spaces = &#34; &#34; * (barLength - len(arrow) - 1)
-    if prefix is None:
-        prefix = (
-            f&#34;File {file}/{total_file}&#34;
-            if file is not None and total_file is not None
-            else &#34;Progress&#34;
-        )
-    print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)
+    if verbose:
+        percent = float(current) * 100 / total
+        arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
+        spaces = &#34; &#34; * (barLength - len(arrow) - 1)
+        if prefix is None:
+            prefix = (
+                f&#34;File {file}/{total_file}&#34;
+                if file is not None and total_file is not None
+                else &#34;Progress&#34;
+            )
+        print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)
 
 
-## Les erreurs du projet
+# Les erreurs du projet
 
-
+# Erreurs de streaming.py
 class CredentialsType(Exception):
     &#34;&#34;&#34;Erreur à lever si `credentials` n&#39;est pas un dictionnaire.&#34;&#34;&#34;
 
-    def __init__(self, type, message=&#34;&#39;credentials&#39; doit être un dictionnaire, pas un&#34;):
+    def __init__(self, type, msg=&#34;&#39;credentials&#39; doit être un dictionnaire, pas un&#34;):
         self.type = type
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{self.message} {str(self.type)}&#34;
+        return f&#34;{self.msg} {str(self.type)}&#34;
 
 
 class MissingKey(Exception):
     &#34;&#34;&#34;Erreur à lever s&#39;il manque des clés dans le dictionnaire.&#34;&#34;&#34;
 
-    def __init__(
-        self, missing_keys, message=&#34;Il manque des clés dans le dictionnaire.&#34;
-    ):
+    def __init__(self, missing_keys, msg=&#34;Il manque des clés dans le dictionnaire.&#34;):
         self.missing_keys = missing_keys
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{self.message} -&gt; {str(self.missing_keys)}&#34;
+        return f&#34;{self.msg} -&gt; {str(self.missing_keys)}&#34;
 
 
 class CredentialsKeyType(Exception):
     &#34;&#34;&#34;Erreur à lever si les clés ne sont pas des `str`.&#34;&#34;&#34;
 
-    def __init__(self, wrong_keys, message=&#34;doivent être des strings.&#34;):
+    def __init__(self, wrong_keys, msg=&#34;doivent être des strings.&#34;):
         self.wrong_keys = wrong_keys
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{str(self.wrong_keys)} {self.message}&#34;
+        return f&#34;{str(self.wrong_keys)} {self.msg}&#34;
 
 
 class CredentialsClassType(Exception):
@@ -90,26 +93,39 @@ class CredentialsClassType(Exception):
     def __init__(
         self,
         type,
-        message=&#34;&#39;credentials&#39; doit être une instance de &#39;credentials_class&#39;, pas un&#34;,
+        msg=&#34;&#39;credentials&#39; doit être une instance de &#39;credentials_class&#39;, pas un&#34;,
     ):
         self.type = type
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{self.message} {str(self.type)}&#34;
+        return f&#34;{self.msg} {str(self.type)}&#34;
 
 
 class WordType(Exception):
     &#34;&#34;&#34;Erreur à lever si les mots de la liste de mots à suivre ne sont pas des `str`.&#34;&#34;&#34;
 
-    def __init__(self, wrong_words, message=&#34;doivent être des strings.&#34;):
+    def __init__(self, wrong_words, msg=&#34;doivent être des strings.&#34;):
         self.wrong_words = wrong_words
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{str(self.wrong_words)} {self.message}&#34;</code></pre>
+        return f&#34;{str(self.wrong_words)} {self.msg}&#34;
+
+
+# Erreurs de processing.py
+class WrongColumnName(Exception):
+    &#34;&#34;&#34;Erreur à lever si la variable donnée n&#39;est pas dans la dataframe&#34;&#34;&#34;
+
+    def __init__(self, var, msg=&#34;n&#39;est pas une colonne de la dataframe&#34;):
+        self.var = var
+        self.msg = msg
+        super().__init__(self.msg)
+
+    def __str__(self):
+        return f&#34;{str(self.var)} {self.msg}&#34;</code></pre>
 </details>
 </section>
 <section>
@@ -120,7 +136,7 @@ class WordType(Exception):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="projet.projet_utils.progressBar"><code class="name flex">
-<span>def <span class="ident">progressBar</span></span>(<span>current, total, prefix=None, file=None, total_file=None, barLength=20)</span>
+<span>def <span class="ident">progressBar</span></span>(<span>current, total, prefix=None, file=None, total_file=None, barLength=20, verbose=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Affiche une barre de progrès</p></div>
@@ -128,18 +144,21 @@ class WordType(Exception):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def progressBar(current, total, prefix=None, file=None, total_file=None, barLength=20):
+<pre><code class="python">def progressBar(
+    current, total, prefix=None, file=None, total_file=None, barLength=20, verbose=False
+):
     &#34;&#34;&#34; Affiche une barre de progrès &#34;&#34;&#34;
-    percent = float(current) * 100 / total
-    arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
-    spaces = &#34; &#34; * (barLength - len(arrow) - 1)
-    if prefix is None:
-        prefix = (
-            f&#34;File {file}/{total_file}&#34;
-            if file is not None and total_file is not None
-            else &#34;Progress&#34;
-        )
-    print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)</code></pre>
+    if verbose:
+        percent = float(current) * 100 / total
+        arrow = &#34;-&#34; * int(percent / 100 * barLength - 1) + &#34;&gt;&#34;
+        spaces = &#34; &#34; * (barLength - len(arrow) - 1)
+        if prefix is None:
+            prefix = (
+                f&#34;File {file}/{total_file}&#34;
+                if file is not None and total_file is not None
+                else &#34;Progress&#34;
+            )
+        print(f&#34;{prefix}: [{arrow}{spaces}] {percent:.0f} %&#34;, end=&#34;\r&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -149,7 +168,7 @@ class WordType(Exception):
 <dl>
 <dt id="projet.projet_utils.CredentialsClassType"><code class="flex name class">
 <span>class <span class="ident">CredentialsClassType</span></span>
-<span>(</span><span>type, message="'credentials' doit être une instance de 'credentials_class', pas un")</span>
+<span>(</span><span>type, msg="'credentials' doit être une instance de 'credentials_class', pas un")</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Erreur à lever si <code>credentials</code> n'est pas une instance de <code>credentials_class</code>.</p></div>
@@ -163,14 +182,14 @@ class WordType(Exception):
     def __init__(
         self,
         type,
-        message=&#34;&#39;credentials&#39; doit être une instance de &#39;credentials_class&#39;, pas un&#34;,
+        msg=&#34;&#39;credentials&#39; doit être une instance de &#39;credentials_class&#39;, pas un&#34;,
     ):
         self.type = type
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{self.message} {str(self.type)}&#34;</code></pre>
+        return f&#34;{self.msg} {str(self.type)}&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -180,7 +199,7 @@ class WordType(Exception):
 </dd>
 <dt id="projet.projet_utils.CredentialsKeyType"><code class="flex name class">
 <span>class <span class="ident">CredentialsKeyType</span></span>
-<span>(</span><span>wrong_keys, message='doivent être des strings.')</span>
+<span>(</span><span>wrong_keys, msg='doivent être des strings.')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Erreur à lever si les clés ne sont pas des <code>str</code>.</p></div>
@@ -191,13 +210,13 @@ class WordType(Exception):
 <pre><code class="python">class CredentialsKeyType(Exception):
     &#34;&#34;&#34;Erreur à lever si les clés ne sont pas des `str`.&#34;&#34;&#34;
 
-    def __init__(self, wrong_keys, message=&#34;doivent être des strings.&#34;):
+    def __init__(self, wrong_keys, msg=&#34;doivent être des strings.&#34;):
         self.wrong_keys = wrong_keys
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{str(self.wrong_keys)} {self.message}&#34;</code></pre>
+        return f&#34;{str(self.wrong_keys)} {self.msg}&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -207,7 +226,7 @@ class WordType(Exception):
 </dd>
 <dt id="projet.projet_utils.CredentialsType"><code class="flex name class">
 <span>class <span class="ident">CredentialsType</span></span>
-<span>(</span><span>type, message="'credentials' doit être un dictionnaire, pas un")</span>
+<span>(</span><span>type, msg="'credentials' doit être un dictionnaire, pas un")</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Erreur à lever si <code>credentials</code> n'est pas un dictionnaire.</p></div>
@@ -218,13 +237,13 @@ class WordType(Exception):
 <pre><code class="python">class CredentialsType(Exception):
     &#34;&#34;&#34;Erreur à lever si `credentials` n&#39;est pas un dictionnaire.&#34;&#34;&#34;
 
-    def __init__(self, type, message=&#34;&#39;credentials&#39; doit être un dictionnaire, pas un&#34;):
+    def __init__(self, type, msg=&#34;&#39;credentials&#39; doit être un dictionnaire, pas un&#34;):
         self.type = type
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{self.message} {str(self.type)}&#34;</code></pre>
+        return f&#34;{self.msg} {str(self.type)}&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -234,7 +253,7 @@ class WordType(Exception):
 </dd>
 <dt id="projet.projet_utils.MissingKey"><code class="flex name class">
 <span>class <span class="ident">MissingKey</span></span>
-<span>(</span><span>missing_keys, message='Il manque des clés dans le dictionnaire.')</span>
+<span>(</span><span>missing_keys, msg='Il manque des clés dans le dictionnaire.')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Erreur à lever s'il manque des clés dans le dictionnaire.</p></div>
@@ -245,15 +264,13 @@ class WordType(Exception):
 <pre><code class="python">class MissingKey(Exception):
     &#34;&#34;&#34;Erreur à lever s&#39;il manque des clés dans le dictionnaire.&#34;&#34;&#34;
 
-    def __init__(
-        self, missing_keys, message=&#34;Il manque des clés dans le dictionnaire.&#34;
-    ):
+    def __init__(self, missing_keys, msg=&#34;Il manque des clés dans le dictionnaire.&#34;):
         self.missing_keys = missing_keys
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{self.message} -&gt; {str(self.missing_keys)}&#34;</code></pre>
+        return f&#34;{self.msg} -&gt; {str(self.missing_keys)}&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -263,7 +280,7 @@ class WordType(Exception):
 </dd>
 <dt id="projet.projet_utils.WordType"><code class="flex name class">
 <span>class <span class="ident">WordType</span></span>
-<span>(</span><span>wrong_words, message='doivent être des strings.')</span>
+<span>(</span><span>wrong_words, msg='doivent être des strings.')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Erreur à lever si les mots de la liste de mots à suivre ne sont pas des <code>str</code>.</p></div>
@@ -274,13 +291,40 @@ class WordType(Exception):
 <pre><code class="python">class WordType(Exception):
     &#34;&#34;&#34;Erreur à lever si les mots de la liste de mots à suivre ne sont pas des `str`.&#34;&#34;&#34;
 
-    def __init__(self, wrong_words, message=&#34;doivent être des strings.&#34;):
+    def __init__(self, wrong_words, msg=&#34;doivent être des strings.&#34;):
         self.wrong_words = wrong_words
-        self.message = message
-        super().__init__(self.message)
+        self.msg = msg
+        super().__init__(self.msg)
 
     def __str__(self):
-        return f&#34;{str(self.wrong_words)} {self.message}&#34;</code></pre>
+        return f&#34;{str(self.wrong_words)} {self.msg}&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="projet.projet_utils.WrongColumnName"><code class="flex name class">
+<span>class <span class="ident">WrongColumnName</span></span>
+<span>(</span><span>var, msg="n'est pas une colonne de la dataframe")</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Erreur à lever si la variable donnée n'est pas dans la dataframe</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class WrongColumnName(Exception):
+    &#34;&#34;&#34;Erreur à lever si la variable donnée n&#39;est pas dans la dataframe&#34;&#34;&#34;
+
+    def __init__(self, var, msg=&#34;n&#39;est pas une colonne de la dataframe&#34;):
+        self.var = var
+        self.msg = msg
+        super().__init__(self.msg)
+
+    def __str__(self):
+        return f&#34;{str(self.var)} {self.msg}&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -324,13 +368,16 @@ class WordType(Exception):
 <li>
 <h4><code><a title="projet.projet_utils.WordType" href="#projet.projet_utils.WordType">WordType</a></code></h4>
 </li>
+<li>
+<h4><code><a title="projet.projet_utils.WrongColumnName" href="#projet.projet_utils.WrongColumnName">WrongColumnName</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

@@ -2,8 +2,10 @@
 ## Config file with the API key
 projet/_credentials.py
 
-## The documentation folder
+## The documentation and image folders
 docs/
+image/hist_kmlabel/*.jpg
+image/hist_label/*.jpg
 
 ## Template with Data, JupyterNotebboks, Python, vscode
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vscode,Data
@@ -23,6 +25,7 @@ docs/
 *.vcf
 *.xml
 data/json/*.json
+data/*.json
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
@@ -176,11 +179,6 @@ dmypy.json
 .prof
 
 ### vscode ###
-.vscode/*
-# !.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.code-workspace
+.vscode/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,vscode,Data
