@@ -461,7 +461,9 @@ def add_label(
     return df
 
 
-def get_states1(df, text_var=&#34;user-location&#34;, state_var=&#34;state&#34;):
+def get_states1(
+    df, location_var=&#34;user-location&#34;, state_var=&#34;state2&#34;, coord_var=&#34;coord&#34;
+):
     &#34;&#34;&#34;
     Fonction pour ajouter une colonne contenant l&#39;état de l&#39;user à partir de &#39;user-location&#34;.
 
@@ -479,8 +481,8 @@ def get_states1(df, text_var=&#34;user-location&#34;, state_var=&#34;state&#34;)
     expr = re.compile(&#34;, .*, (.*), United States&#34;)
 
     def _reg1(row):
-        if row[&#34;user-location&#34;]:
-            places = GeoText(row[&#34;user-location&#34;])
+        if row[location_var]:
+            places = GeoText(row[location_var])
             lat_lon = []
             for city in places.cities:
                 try:
@@ -493,19 +495,32 @@ def get_states1(df, text_var=&#34;user-location&#34;, state_var=&#34;state&#34;)
                             st = np.nan
                         lat_lon.append((st, loc.latitude, loc.longitude))
                 except GeocoderTimedOut as e:
-                    print(&#34;Error: geocode failed on input %s with message %s&#34;(city, e))
+                    print(f&#34;Error: geocode failed on input {city} with message {e}&#34;)
             if lat_lon:
                 return lat_lon[int(np.random.randint(len(lat_lon)))]
         return np.nan, np.nan, np.nan
 
     new_col = df.apply(_reg1, axis=1)
-    df[&#34;state1&#34;] = [row[0] for row in new_col]
-    df[&#34;coord&#34;] = [(row[1], row[2]) for row in new_col]
+    df[state_var] = [row[0] for row in new_col]
+    df[coord_var] = [(row[1], row[2]) for row in new_col]
 
     return df
 
 
-def get_states2(df):
+def get_states(df, state_var=&#34;state&#34;, location_var=&#34;user-location&#34;):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne contenant l&#39;état de l&#39;user à partir de &#39;user-location&#34;.
+
+    Args:
+        df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
+        state_var (str, optional): Nom à donner à la nouvelle variable.  
+            Par défaut : `&#34;state&#34;`.
+        location_var (str, optional): Le nom de la variable de texte où regarder.  
+            Par défaut : `&#34;user-location&#34;`.
+
+    Returns:
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant une colonne pour l&#39;état.
+    &#34;&#34;&#34;
     states = us.STATES
     full_names = [state.name for state in states]
     abbreviation = [state.abbr for state in states]
@@ -517,15 +532,15 @@ def get_states2(df):
     regs = [&#34;(&#34; + &#34;|&#34;.join(var[i] for var in full_list) + &#34;)&#34; for i in range(n)]
 
     def _reg2(row):
-        if row[&#34;user-location&#34;]:
+        if row[location_var]:
             comps = [re.compile(reg) for reg in regs]
-            l = [bool(comp.search(row[&#34;user-location&#34;])) for comp in comps]
+            l = [bool(comp.search(row[location_var])) for comp in comps]
             match = np.array(full_names)[l]  # Garde les noms où c&#39;est True
             if len(match) &gt; 0:
                 return np.random.choice(match)  # Renvoie un des matchs aléatoirement
         return np.nan
 
-    df[&#34;state2&#34;] = df.apply(_reg2, axis=1)
+    df[state_var] = df.apply(_reg2, axis=1)
 
     return df
 
@@ -1021,8 +1036,71 @@ Par défaut : <code>True</code>.</dd>
     return df</code></pre>
 </details>
 </dd>
+<dt id="projet.processing.get_states"><code class="name flex">
+<span>def <span class="ident">get_states</span></span>(<span>df, state_var='state', location_var='user-location')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fonction pour ajouter une colonne contenant l'état de l'user à partir de 'user-location".</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>Une dataframe avec une colonne de texte de location.</dd>
+<dt><strong><code>state_var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom à donner à la nouvelle variable.<br>
+Par défaut : <code>"state"</code>.</dd>
+<dt><strong><code>location_var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Le nom de la variable de texte où regarder.<br>
+Par défaut : <code>"user-location"</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.dataframe</code></dt>
+<dd>Modifie la dataframe d'entrée en ajoutant une colonne pour l'état.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_states(df, state_var=&#34;state&#34;, location_var=&#34;user-location&#34;):
+    &#34;&#34;&#34;
+    Fonction pour ajouter une colonne contenant l&#39;état de l&#39;user à partir de &#39;user-location&#34;.
+
+    Args:
+        df (pandas.dataframe): Une dataframe avec une colonne de texte de location.
+        state_var (str, optional): Nom à donner à la nouvelle variable.  
+            Par défaut : `&#34;state&#34;`.
+        location_var (str, optional): Le nom de la variable de texte où regarder.  
+            Par défaut : `&#34;user-location&#34;`.
+
+    Returns:
+        pandas.dataframe: Modifie la dataframe d&#39;entrée en ajoutant une colonne pour l&#39;état.
+    &#34;&#34;&#34;
+    states = us.STATES
+    full_names = [state.name for state in states]
+    abbreviation = [state.abbr for state in states]
+    state_metaphone = [state.name_metaphone for state in states]
+    # capitals = [state.capital for state in states]
+    full_list = [full_names, abbreviation, state_metaphone]
+    n = len(full_names)
+    assert all(len(var) == n for var in full_list)
+    regs = [&#34;(&#34; + &#34;|&#34;.join(var[i] for var in full_list) + &#34;)&#34; for i in range(n)]
+
+    def _reg2(row):
+        if row[location_var]:
+            comps = [re.compile(reg) for reg in regs]
+            l = [bool(comp.search(row[location_var])) for comp in comps]
+            match = np.array(full_names)[l]  # Garde les noms où c&#39;est True
+            if len(match) &gt; 0:
+                return np.random.choice(match)  # Renvoie un des matchs aléatoirement
+        return np.nan
+
+    df[state_var] = df.apply(_reg2, axis=1)
+
+    return df</code></pre>
+</details>
+</dd>
 <dt id="projet.processing.get_states1"><code class="name flex">
-<span>def <span class="ident">get_states1</span></span>(<span>df, text_var='user-location', state_var='state')</span>
+<span>def <span class="ident">get_states1</span></span>(<span>df, location_var='user-location', state_var='state2', coord_var='coord')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Fonction pour ajouter une colonne contenant l'état de l'user à partir de 'user-location".</p>
@@ -1047,7 +1125,9 @@ Par défaut : <code>"state"</code>.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_states1(df, text_var=&#34;user-location&#34;, state_var=&#34;state&#34;):
+<pre><code class="python">def get_states1(
+    df, location_var=&#34;user-location&#34;, state_var=&#34;state2&#34;, coord_var=&#34;coord&#34;
+):
     &#34;&#34;&#34;
     Fonction pour ajouter une colonne contenant l&#39;état de l&#39;user à partir de &#39;user-location&#34;.
 
@@ -1065,8 +1145,8 @@ Par défaut : <code>"state"</code>.</dd>
     expr = re.compile(&#34;, .*, (.*), United States&#34;)
 
     def _reg1(row):
-        if row[&#34;user-location&#34;]:
-            places = GeoText(row[&#34;user-location&#34;])
+        if row[location_var]:
+            places = GeoText(row[location_var])
             lat_lon = []
             for city in places.cities:
                 try:
@@ -1079,48 +1159,14 @@ Par défaut : <code>"state"</code>.</dd>
                             st = np.nan
                         lat_lon.append((st, loc.latitude, loc.longitude))
                 except GeocoderTimedOut as e:
-                    print(&#34;Error: geocode failed on input %s with message %s&#34;(city, e))
+                    print(f&#34;Error: geocode failed on input {city} with message {e}&#34;)
             if lat_lon:
                 return lat_lon[int(np.random.randint(len(lat_lon)))]
         return np.nan, np.nan, np.nan
 
     new_col = df.apply(_reg1, axis=1)
-    df[&#34;state1&#34;] = [row[0] for row in new_col]
-    df[&#34;coord&#34;] = [(row[1], row[2]) for row in new_col]
-
-    return df</code></pre>
-</details>
-</dd>
-<dt id="projet.processing.get_states2"><code class="name flex">
-<span>def <span class="ident">get_states2</span></span>(<span>df)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_states2(df):
-    states = us.STATES
-    full_names = [state.name for state in states]
-    abbreviation = [state.abbr for state in states]
-    state_metaphone = [state.name_metaphone for state in states]
-    # capitals = [state.capital for state in states]
-    full_list = [full_names, abbreviation, state_metaphone]
-    n = len(full_names)
-    assert all(len(var) == n for var in full_list)
-    regs = [&#34;(&#34; + &#34;|&#34;.join(var[i] for var in full_list) + &#34;)&#34; for i in range(n)]
-
-    def _reg2(row):
-        if row[&#34;user-location&#34;]:
-            comps = [re.compile(reg) for reg in regs]
-            l = [bool(comp.search(row[&#34;user-location&#34;])) for comp in comps]
-            match = np.array(full_names)[l]  # Garde les noms où c&#39;est True
-            if len(match) &gt; 0:
-                return np.random.choice(match)  # Renvoie un des matchs aléatoirement
-        return np.nan
-
-    df[&#34;state2&#34;] = df.apply(_reg2, axis=1)
+    df[state_var] = [row[0] for row in new_col]
+    df[coord_var] = [(row[1], row[2]) for row in new_col]
 
     return df</code></pre>
 </details>
@@ -1367,8 +1413,8 @@ Par défaut : <code>False</code>.</dd>
 <li><code><a title="projet.processing.clean_df" href="#projet.processing.clean_df">clean_df</a></code></li>
 <li><code><a title="projet.processing.folder_to_path_list" href="#projet.processing.folder_to_path_list">folder_to_path_list</a></code></li>
 <li><code><a title="projet.processing.get_full_text" href="#projet.processing.get_full_text">get_full_text</a></code></li>
+<li><code><a title="projet.processing.get_states" href="#projet.processing.get_states">get_states</a></code></li>
 <li><code><a title="projet.processing.get_states1" href="#projet.processing.get_states1">get_states1</a></code></li>
-<li><code><a title="projet.processing.get_states2" href="#projet.processing.get_states2">get_states2</a></code></li>
 <li><code><a title="projet.processing.keep_states" href="#projet.processing.keep_states">keep_states</a></code></li>
 <li><code><a title="projet.processing.select_time_range" href="#projet.processing.select_time_range">select_time_range</a></code></li>
 <li><code><a title="projet.processing.sentiment_class" href="#projet.processing.sentiment_class">sentiment_class</a></code></li>
