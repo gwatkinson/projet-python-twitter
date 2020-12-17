@@ -13,7 +13,7 @@ import us
 import matplotlib.pyplot as plt
 
 
-def create_gdf():
+def create_gdf(path=""):
     states = us.STATES
     urls = [state.shapefile_urls("state") for state in states]
     gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
@@ -137,7 +137,7 @@ def plot_hist(df_state, label="kmlabel"):
     )
 
     # Save map in html
-    output_file(f"image/maps/map_{label}.html", mode="inline")
+    output_file(f"map_{label}.html", mode="inline")
 
     # Display figure inline in Jupyter Notebook.
     output_notebook()
