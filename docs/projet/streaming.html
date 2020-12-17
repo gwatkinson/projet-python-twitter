@@ -313,37 +313,34 @@ def start_stream(
 
     Args:
         liste_mots (list): 
-            Liste des mots à tracker.
-
+            Liste des mots à tracker.    
             Doit contenir des `str`.
+
         credentials: 
             Instance de `CredentialsClass` qui gère la connexion avec Twitter.
+
         nb (int, optional): 
-            Nombre de tweets à récupérer.
+            Nombre de tweets à récupérer.    
+            Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.    
+            Par défaut : `0`.
 
-                Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.
-
-                Par défaut : `0`.
         timeout (float, optional): 
-            Le temps (en heures) que le stream doit-il être lancé.
-
-            Si `timeout` est omis, le stream sera lancé indéfiniment 
-            et il faudra l&#39;arrêter manuellement.
-
+            Le temps (en heures) que le stream doit-il être lancé.    
+            Si `timeout` est omis, le stream sera lancé indéfiniment
+            et il faudra l&#39;arrêter manuellement.    
             C&#39;est le cas par défaut.
+
         fprefix (str, optional): 
-            Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.
-
+            Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.    
             Par défaut : `&#34;streamer&#34;`.
+
         path (str, optional): 
-            Chemin du doossier où enregistrer les fichiers.
-
-            Doit finir avec `/` ou `\` si différent de `&#34;&#34;`.
-
+            Chemin du doossier où enregistrer les fichiers.    
+            Doit finir avec `/` ou `\` si différent de `&#34;&#34;`.    
             Par défaut : `&#34;&#34;`.
-        verbose (bool, optional): 
-            Si `True`, affiche un point tout les 50 tweets traités ou une barre de progression si `nb&gt;0`.
 
+        verbose (bool, optional): 
+            Si `True`, affiche un point tout les 50 tweets traités ou une barre de progression si `nb&gt;0`.    
             Par défaut : `False`.
     &#34;&#34;&#34;
     wrong_words = [mot for mot in liste_mots if type(mot) is not str]
@@ -355,7 +352,8 @@ def start_stream(
 
     start = time.time()
 
-    print(&#34;Début du stream&#34;)
+    if verbose:
+        print(&#34;Début du stream&#34;)
 
     while True:
         try:
@@ -476,41 +474,38 @@ dans une instance de la classe <code><a title="projet.streaming.SListener" href=
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>liste_mots</code></strong> :&ensp;<code>list</code></dt>
-<dd>
-<p>Liste des mots à tracker.</p>
-<p>Doit contenir des <code>str</code>.</p>
-</dd>
+<dd>Liste des mots à tracker.
+<br>
+Doit contenir des <code>str</code>.</dd>
 <dt><strong><code>credentials</code></strong></dt>
 <dd>Instance de <code><a title="projet.streaming.CredentialsClass" href="#projet.streaming.CredentialsClass">CredentialsClass</a></code> qui gère la connexion avec Twitter.</dd>
 <dt><strong><code>nb</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Nombre de tweets à récupérer.<pre><code>Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.
-
-Par défaut : &lt;code&gt;0&lt;/code&gt;.
-</code></pre>
-</dd>
+<dd>Nombre de tweets à récupérer.
+<br>
+Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.
+<br>
+Par défaut : <code>0</code>.</dd>
 <dt><strong><code>timeout</code></strong> :&ensp;<code>float</code>, optional</dt>
-<dd>
-<p>Le temps (en heures) que le stream doit-il être lancé.</p>
-<p>Si <code>timeout</code> est omis, le stream sera lancé indéfiniment
-et il faudra l'arrêter manuellement.</p>
-<p>C'est le cas par défaut.</p>
-</dd>
+<dd>Le temps (en heures) que le stream doit-il être lancé.
+<br>
+Si <code>timeout</code> est omis, le stream sera lancé indéfiniment
+et il faudra l'arrêter manuellement.
+<br>
+C'est le cas par défaut.</dd>
 <dt><strong><code>fprefix</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>
-<p>Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.</p>
-<p>Par défaut : <code>"streamer"</code>.</p>
-</dd>
+<dd>Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.
+<br>
+Par défaut : <code>"streamer"</code>.</dd>
 <dt><strong><code>path</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>
-<p>Chemin du doossier où enregistrer les fichiers.</p>
-<p>Doit finir avec <code>/</code> ou <code>\</code> si différent de <code>""</code>.</p>
-<p>Par défaut : <code>""</code>.</p>
-</dd>
+<dd>Chemin du doossier où enregistrer les fichiers.
+<br>
+Doit finir avec <code>/</code> ou <code>\</code> si différent de <code>""</code>.
+<br>
+Par défaut : <code>""</code>.</dd>
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
-<dd>
-<p>Si <code>True</code>, affiche un point tout les 50 tweets traités ou une barre de progression si <code>nb&gt;0</code>.</p>
-<p>Par défaut : <code>False</code>.</p>
-</dd>
+<dd>Si <code>True</code>, affiche un point tout les 50 tweets traités ou une barre de progression si <code>nb&gt;0</code>.
+<br>
+Par défaut : <code>False</code>.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -536,37 +531,34 @@ et il faudra l'arrêter manuellement.</p>
 
     Args:
         liste_mots (list): 
-            Liste des mots à tracker.
-
+            Liste des mots à tracker.    
             Doit contenir des `str`.
+
         credentials: 
             Instance de `CredentialsClass` qui gère la connexion avec Twitter.
+
         nb (int, optional): 
-            Nombre de tweets à récupérer.
+            Nombre de tweets à récupérer.    
+            Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.    
+            Par défaut : `0`.
 
-                Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.
-
-                Par défaut : `0`.
         timeout (float, optional): 
-            Le temps (en heures) que le stream doit-il être lancé.
-
-            Si `timeout` est omis, le stream sera lancé indéfiniment 
-            et il faudra l&#39;arrêter manuellement.
-
+            Le temps (en heures) que le stream doit-il être lancé.    
+            Si `timeout` est omis, le stream sera lancé indéfiniment
+            et il faudra l&#39;arrêter manuellement.    
             C&#39;est le cas par défaut.
+
         fprefix (str, optional): 
-            Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.
-
+            Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.    
             Par défaut : `&#34;streamer&#34;`.
+
         path (str, optional): 
-            Chemin du doossier où enregistrer les fichiers.
-
-            Doit finir avec `/` ou `\` si différent de `&#34;&#34;`.
-
+            Chemin du doossier où enregistrer les fichiers.    
+            Doit finir avec `/` ou `\` si différent de `&#34;&#34;`.    
             Par défaut : `&#34;&#34;`.
-        verbose (bool, optional): 
-            Si `True`, affiche un point tout les 50 tweets traités ou une barre de progression si `nb&gt;0`.
 
+        verbose (bool, optional): 
+            Si `True`, affiche un point tout les 50 tweets traités ou une barre de progression si `nb&gt;0`.    
             Par défaut : `False`.
     &#34;&#34;&#34;
     wrong_words = [mot for mot in liste_mots if type(mot) is not str]
@@ -578,7 +570,8 @@ et il faudra l'arrêter manuellement.</p>
 
     start = time.time()
 
-    print(&#34;Début du stream&#34;)
+    if verbose:
+        print(&#34;Début du stream&#34;)
 
     while True:
         try:
