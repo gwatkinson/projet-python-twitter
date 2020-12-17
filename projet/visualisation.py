@@ -1,3 +1,5 @@
+"""Visualisation des données"""
+
 from bokeh.io import output_notebook, show, output_file, save
 from bokeh.plotting import figure
 from bokeh.models import GeoJSONDataSource, LinearColorMapper, ColorBar
