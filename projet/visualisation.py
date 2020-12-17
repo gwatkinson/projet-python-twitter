@@ -151,11 +151,13 @@ def save_hist(
         if any(df[var_state_df] == state):
             df2 = df[df[var_state_df] == state].groupby(label).describe()
             m = df2["user-id"]["count"]
+            plt.figure(figsize=(10,10))
             fig = m.plot(
                 kind="bar", title=f"Histogramme de {state}", x=label, y="Count",
             ).get_figure()
             file = f"{path}_{label}/hist_{label}_{state}.jpg"
             fig.savefig(file)
+            plt.close()
             return file
         return "No data"
 
@@ -216,7 +218,7 @@ def plot_hist(
         <div>
             <div>
                 <img
-                    src="@hist_label" alt="No image" width="300" height="300"
+                    src="@hist_label" alt="No image" width="500" height="500"
                     style="float: left; margin: 0px 0px 0px 0px;"
                     border="0"
                 ></img>
@@ -261,7 +263,6 @@ def plot_hist(
         line_color="black",
         line_width=1,
         fill_alpha=1,
-        legend=f"{fill_var}_{label}",
     )
 
     # Save map in html
