@@ -41,56 +41,183 @@ import us
 import matplotlib.pyplot as plt
 
 
-def create_gdf():
+def create_gdf(vars=[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]):
+    &#34;&#34;&#34;
+    Créée une geodataframe geopandas avec les États américains.
+
+    Args:
+        vars (list, optional): Liste des variables à garder.    
+            Par défaut : `[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]`.
+
+    Returns:
+        geopandas.geodataframe: Une gdf de 50 lignes contenant la forme des États américains.
+    &#34;&#34;&#34;
     states = us.STATES
     urls = [state.shapefile_urls(&#34;state&#34;) for state in states]
     gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
-    return gdf[[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]]
+    return gdf[vars]
 
 
-def save_hist(df, df_state, label=&#34;kmlabel&#34;):
-    def _add_image(row):
-        state = row[&#34;NAME10&#34;]
-        if any(df[&#34;state&#34;] == state):
-            df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
-            m = df2[&#34;user-id&#34;][&#34;count&#34;]
-            fig = m.plot(
-                kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;,
-            ).get_figure()
-            file = f&#34;image/hist_{label}/hist_{label}_{state}.jpg&#34;
-            fig.savefig(file)
-            return file
-        return &#34;No data&#34;
+def add_max(
+    df,
+    df_state,
+    label=&#34;kmlabel&#34;,
+    var_state_df=&#34;state&#34;,
+    var_state_gdf=&#34;NAME10&#34;,
+    new_var=&#34;cluster_max&#34;,
+):
+    &#34;&#34;&#34;
+    Ajoute le cluster majoritaire dans chaque État.
 
-    df_state[f&#34;hist_{label}&#34;] = df_state.apply(_add_image, axis=1)
+    Args:
+        df (pandas.dataframe): La dataframe pandas avec les labels.
 
-    return df_state
+        df_state (geopandas.geodataframe): La gdf des États.
 
+        label (str, optional): Le label à utiliser.    
+            Par défaut : `&#34;kmlabel&#34;`.
 
-def add_max(df, df_state, label=&#34;kmlabel&#34;):
+        var_state_df (str, optional): Nom de la variable du nom des États dans la df.    
+            Par défaut : `&#34;state&#34;`.
+
+        var_state_gdf (str, optional): Nom de la variable du nom des États dans la gdf.    
+            Par défaut : `&#34;NAME10&#34;`.
+
+        new_var (str, optional): Nom de la nouvelle variable.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;cluster_max&#34;`.
+
+    Returns:
+        geopandas.geodataframe: Modifie et renvoie la gdf des États avec le cluster majoritaire.
+    &#34;&#34;&#34;
+
     def _add_max(row):
-        state = row[&#34;NAME10&#34;]
-        if any(df[&#34;state&#34;] == state):
-            df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
+        state = row[var_state_gdf]
+        if any(df[var_state_df] == state):
+            df2 = df[df[var_state_df] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
             return m.idxmax()
         return np.nan
 
-    df_state[f&#34;cluster_max_{label}&#34;] = df_state.apply(_add_max, axis=1)
+    df_state[f&#34;{new_var}_{label}&#34;] = df_state.apply(_add_max, axis=1)
 
     return df_state
 
 
-def add_stats_sentiment(df, df_state):
-    df2 = df.groupby(&#34;state&#34;).describe()[&#34;full_text-sentiment-compound&#34;][
-        [&#34;count&#34;, &#34;mean&#34;, &#34;std&#34;]
-    ]
-    df_state = df_state.merge(df2, how=&#34;left&#34;, left_on=[&#34;NAME10&#34;], right_on=[&#34;state&#34;])
+def add_stats_sentiment(
+    df,
+    df_state,
+    sent_var=&#34;full_text-sentiment-compound&#34;,
+    var_state_df=&#34;state&#34;,
+    var_state_gdf=&#34;NAME10&#34;,
+):
+    &#34;&#34;&#34;
+    Ajoute des stats descriptive sur le compound du texte (count, mean, std).
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas avec les labels.
+
+        df_state (geopandas.geodataframe): La gdf des États.
+
+        var_state_df (str, optional): Nom de la variable du nom des États dans la df.    
+            Par défaut : `&#34;state&#34;`.
+
+        var_state_gdf (str, optional): Nom de la variable du nom des États dans la gdf.    
+            Par défaut : `&#34;NAME10&#34;`.
+
+    Returns:
+        geopandas.geodataframe: Modifie et renvoie la gdf des États avec les stats descriptive sur le compound du texte.
+    &#34;&#34;&#34;
+    df2 = df.groupby(var_state_df).describe()[sent_var][[&#34;count&#34;, &#34;mean&#34;, &#34;std&#34;]]
+    df_state = df_state.merge(
+        df2, how=&#34;left&#34;, left_on=[var_state_gdf], right_on=[var_state_df]
+    )
 
     return df_state
 
 
-def plot_hist(df_state, label=&#34;kmlabel&#34;):
+def save_hist(
+    df,
+    df_state,
+    label=&#34;kmlabel&#34;,
+    var_state_df=&#34;state&#34;,
+    var_state_gdf=&#34;NAME10&#34;,
+    path=&#34;image/hist&#34;,
+    new_var=&#34;hist&#34;,
+):
+    &#34;&#34;&#34;
+    Créée les images des histogrammes par États puis ajoute une colonne avec les chemins vers les images.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas avec les labels.
+
+        df_state (geopandas.geodataframe): La gdf des États.
+
+        label (str, optional): Le label à utiliser.    
+            Par défaut : `&#34;kmlabel&#34;`.
+
+        var_state_df (str, optional): Nom de la variable du nom des États dans la df.    
+            Par défaut : `&#34;state&#34;`.
+
+        var_state_gdf (str, optional): Nom de la variable du nom des États dans la gdf.    
+            Par défaut : `&#34;NAME10&#34;`.
+
+        path (str, optional): Chemin où mettre les images.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;image/hist&#34;`.
+
+        new_var (str, optional): Nom de la nouvelle variable.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;hist&#34;`.
+
+    Returns:
+        geopandas.geodataframe: Modifie et renvoie la gdf des États avec une colonne pour les histogrammes.
+    &#34;&#34;&#34;
+
+    def _add_image(row):
+        state = row[var_state_gdf]
+        if any(df[var_state_df] == state):
+            df2 = df[df[var_state_df] == state].groupby(label).describe()
+            m = df2[&#34;user-id&#34;][&#34;count&#34;]
+            plt.figure(figsize=(10,10))
+            fig = m.plot(
+                kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;,
+            ).get_figure()
+            file = f&#34;{path}_{label}/hist_{label}_{state}.jpg&#34;
+            fig.savefig(file)
+            plt.close()
+            return file
+        return &#34;No data&#34;
+
+    df_state[f&#34;{new_var}_{label}&#34;] = df_state.apply(_add_image, axis=1)
+
+    return df_state
+
+
+def plot_hist(
+    df_state, label=&#34;kmlabel&#34;, path=&#34;&#34;, new_var=&#34;map&#34;, fill_var=&#34;cluster_max&#34;,
+):
+    &#34;&#34;&#34;
+    Créée et affiche une carte interactive avec Bokeh.
+
+    Args:
+        df_state (geopandas.geodataframe): La gdf des États
+            qui contient les images des histogrammes.
+
+        label (str, optional): Le label à utiliser.    
+            Par défaut : `&#34;kmlabel&#34;`.
+
+        path (str, optional): Chemin où mettre les images.    
+            Par défaut : `&#34;&#34;`.
+
+        new_var (str, optional): Nom de la nouvelle variable.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;map&#34;`.
+
+        fill_var (str, optional): Nom de la variable des couleurs de la carte.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;cluster_max&#34;`.
+    &#34;&#34;&#34;
     # Fill nan
     df_state.fillna(&#34;No data&#34;, inplace=True)
 
@@ -119,7 +246,7 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         &lt;div&gt;
             &lt;div&gt;
                 &lt;img
-                    src=&#34;@hist_label&#34; alt=&#34;No image&#34; width=&#34;300&#34; height=&#34;300&#34;
+                    src=&#34;@hist_label&#34; alt=&#34;No image&#34; width=&#34;500&#34; height=&#34;500&#34;
                     style=&#34;float: left; margin: 0px 0px 0px 0px;&#34;
                     border=&#34;0&#34;
                 &gt;&lt;/img&gt;
@@ -133,7 +260,6 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 
     # Create figure object.
     p = figure(
-        title=f&#34;Histogramme de &#39;{label}&#39;&#34;,
         plot_height=600,
         plot_width=950,
         tools=[hover, &#34;pan,wheel_zoom,box_zoom,reset&#34;],
@@ -141,10 +267,13 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         x_range=(-130, -64),
         y_range=(22, 50),
     )
+    p.title.text = f&#34;Histogramme de &#39;{label}&#39;&#34;
+    p.title.align = &#34;center&#34;
+    p.title.text_font_size = &#34;25px&#34;
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
 
-    n = df_state[f&#34;cluster_max_{label}&#34;].nunique()
+    n = df_state[f&#34;{fill_var}_{label}&#34;].nunique()
     if n &gt; 10:
         pal = brewer[&#34;YlGnBu&#34;]
     else:
@@ -158,14 +287,14 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         &#34;xs&#34;,
         &#34;ys&#34;,
         source=geosource,
-        fill_color={&#34;field&#34;: f&#34;cluster_max_{label}&#34;, &#34;transform&#34;: color_mapper},
+        fill_color={&#34;field&#34;: f&#34;{fill_var}_{label}&#34;, &#34;transform&#34;: color_mapper},
         line_color=&#34;black&#34;,
         line_width=1,
         fill_alpha=1,
     )
 
     # Save map in html
-    output_file(f&#34;image/maps/map_{label}.html&#34;, mode=&#34;inline&#34;)
+    output_file(f&#34;{path}{new_var}_{label}.html&#34;, mode=&#34;inline&#34;)
 
     # Display figure inline in Jupyter Notebook.
     output_notebook()
@@ -184,72 +313,248 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="projet.visualisation.add_max"><code class="name flex">
-<span>def <span class="ident">add_max</span></span>(<span>df, df_state, label='kmlabel')</span>
+<span>def <span class="ident">add_max</span></span>(<span>df, df_state, label='kmlabel', var_state_df='state', var_state_gdf='NAME10', new_var='cluster_max')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Ajoute le cluster majoritaire dans chaque État.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>La dataframe pandas avec les labels.</dd>
+<dt><strong><code>df_state</code></strong> :&ensp;<code>geopandas.geodataframe</code></dt>
+<dd>La gdf des États.</dd>
+<dt><strong><code>label</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Le label à utiliser.
+<br>
+Par défaut : <code>"kmlabel"</code>.</dd>
+<dt><strong><code>var_state_df</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable du nom des États dans la df.
+<br>
+Par défaut : <code>"state"</code>.</dd>
+<dt><strong><code>var_state_gdf</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable du nom des États dans la gdf.
+<br>
+Par défaut : <code>"NAME10"</code>.</dd>
+<dt><strong><code>new_var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la nouvelle variable.
+<br>
+Le suffixe _{label} est ajouté.
+<br>
+Par défaut : <code>"cluster_max"</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>geopandas.geodataframe</code></dt>
+<dd>Modifie et renvoie la gdf des États avec le cluster majoritaire.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_max(df, df_state, label=&#34;kmlabel&#34;):
+<pre><code class="python">def add_max(
+    df,
+    df_state,
+    label=&#34;kmlabel&#34;,
+    var_state_df=&#34;state&#34;,
+    var_state_gdf=&#34;NAME10&#34;,
+    new_var=&#34;cluster_max&#34;,
+):
+    &#34;&#34;&#34;
+    Ajoute le cluster majoritaire dans chaque État.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas avec les labels.
+
+        df_state (geopandas.geodataframe): La gdf des États.
+
+        label (str, optional): Le label à utiliser.    
+            Par défaut : `&#34;kmlabel&#34;`.
+
+        var_state_df (str, optional): Nom de la variable du nom des États dans la df.    
+            Par défaut : `&#34;state&#34;`.
+
+        var_state_gdf (str, optional): Nom de la variable du nom des États dans la gdf.    
+            Par défaut : `&#34;NAME10&#34;`.
+
+        new_var (str, optional): Nom de la nouvelle variable.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;cluster_max&#34;`.
+
+    Returns:
+        geopandas.geodataframe: Modifie et renvoie la gdf des États avec le cluster majoritaire.
+    &#34;&#34;&#34;
+
     def _add_max(row):
-        state = row[&#34;NAME10&#34;]
-        if any(df[&#34;state&#34;] == state):
-            df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
+        state = row[var_state_gdf]
+        if any(df[var_state_df] == state):
+            df2 = df[df[var_state_df] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
             return m.idxmax()
         return np.nan
 
-    df_state[f&#34;cluster_max_{label}&#34;] = df_state.apply(_add_max, axis=1)
+    df_state[f&#34;{new_var}_{label}&#34;] = df_state.apply(_add_max, axis=1)
 
     return df_state</code></pre>
 </details>
 </dd>
 <dt id="projet.visualisation.add_stats_sentiment"><code class="name flex">
-<span>def <span class="ident">add_stats_sentiment</span></span>(<span>df, df_state)</span>
+<span>def <span class="ident">add_stats_sentiment</span></span>(<span>df, df_state, sent_var='full_text-sentiment-compound', var_state_df='state', var_state_gdf='NAME10')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Ajoute des stats descriptive sur le compound du texte (count, mean, std).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>La dataframe pandas avec les labels.</dd>
+<dt><strong><code>df_state</code></strong> :&ensp;<code>geopandas.geodataframe</code></dt>
+<dd>La gdf des États.</dd>
+<dt><strong><code>var_state_df</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable du nom des États dans la df.
+<br>
+Par défaut : <code>"state"</code>.</dd>
+<dt><strong><code>var_state_gdf</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable du nom des États dans la gdf.
+<br>
+Par défaut : <code>"NAME10"</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>geopandas.geodataframe</code></dt>
+<dd>Modifie et renvoie la gdf des États avec les stats descriptive sur le compound du texte.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_stats_sentiment(df, df_state):
-    df2 = df.groupby(&#34;state&#34;).describe()[&#34;full_text-sentiment-compound&#34;][
-        [&#34;count&#34;, &#34;mean&#34;, &#34;std&#34;]
-    ]
-    df_state = df_state.merge(df2, how=&#34;left&#34;, left_on=[&#34;NAME10&#34;], right_on=[&#34;state&#34;])
+<pre><code class="python">def add_stats_sentiment(
+    df,
+    df_state,
+    sent_var=&#34;full_text-sentiment-compound&#34;,
+    var_state_df=&#34;state&#34;,
+    var_state_gdf=&#34;NAME10&#34;,
+):
+    &#34;&#34;&#34;
+    Ajoute des stats descriptive sur le compound du texte (count, mean, std).
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas avec les labels.
+
+        df_state (geopandas.geodataframe): La gdf des États.
+
+        var_state_df (str, optional): Nom de la variable du nom des États dans la df.    
+            Par défaut : `&#34;state&#34;`.
+
+        var_state_gdf (str, optional): Nom de la variable du nom des États dans la gdf.    
+            Par défaut : `&#34;NAME10&#34;`.
+
+    Returns:
+        geopandas.geodataframe: Modifie et renvoie la gdf des États avec les stats descriptive sur le compound du texte.
+    &#34;&#34;&#34;
+    df2 = df.groupby(var_state_df).describe()[sent_var][[&#34;count&#34;, &#34;mean&#34;, &#34;std&#34;]]
+    df_state = df_state.merge(
+        df2, how=&#34;left&#34;, left_on=[var_state_gdf], right_on=[var_state_df]
+    )
 
     return df_state</code></pre>
 </details>
 </dd>
 <dt id="projet.visualisation.create_gdf"><code class="name flex">
-<span>def <span class="ident">create_gdf</span></span>(<span>)</span>
+<span>def <span class="ident">create_gdf</span></span>(<span>vars=['STUSPS10', 'NAME10', 'geometry'])</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Créée une geodataframe geopandas avec les États américains.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>vars</code></strong> :&ensp;<code>list</code>, optional</dt>
+<dd>Liste des variables à garder.
+<br>
+Par défaut : <code>["STUSPS10", "NAME10", "geometry"]</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>geopandas.geodataframe</code></dt>
+<dd>Une gdf de 50 lignes contenant la forme des États américains.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_gdf():
+<pre><code class="python">def create_gdf(vars=[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]):
+    &#34;&#34;&#34;
+    Créée une geodataframe geopandas avec les États américains.
+
+    Args:
+        vars (list, optional): Liste des variables à garder.    
+            Par défaut : `[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]`.
+
+    Returns:
+        geopandas.geodataframe: Une gdf de 50 lignes contenant la forme des États américains.
+    &#34;&#34;&#34;
     states = us.STATES
     urls = [state.shapefile_urls(&#34;state&#34;) for state in states]
     gdf = pd.concat([gpd.read_file(url) for url in urls]).pipe(gpd.GeoDataFrame)
-    return gdf[[&#34;STUSPS10&#34;, &#34;NAME10&#34;, &#34;geometry&#34;]]</code></pre>
+    return gdf[vars]</code></pre>
 </details>
 </dd>
 <dt id="projet.visualisation.plot_hist"><code class="name flex">
-<span>def <span class="ident">plot_hist</span></span>(<span>df_state, label='kmlabel')</span>
+<span>def <span class="ident">plot_hist</span></span>(<span>df_state, label='kmlabel', path='', new_var='map', fill_var='cluster_max')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Créée et affiche une carte interactive avec Bokeh.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df_state</code></strong> :&ensp;<code>geopandas.geodataframe</code></dt>
+<dd>La gdf des États
+qui contient les images des histogrammes.</dd>
+<dt><strong><code>label</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Le label à utiliser.
+<br>
+Par défaut : <code>"kmlabel"</code>.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Chemin où mettre les images.
+<br>
+Par défaut : <code>""</code>.</dd>
+<dt><strong><code>new_var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la nouvelle variable.
+<br>
+Le suffixe _{label} est ajouté.
+<br>
+Par défaut : <code>"map"</code>.</dd>
+<dt><strong><code>fill_var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable des couleurs de la carte.
+<br>
+Le suffixe _{label} est ajouté.
+<br>
+Par défaut : <code>"cluster_max"</code>.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def plot_hist(df_state, label=&#34;kmlabel&#34;):
+<pre><code class="python">def plot_hist(
+    df_state, label=&#34;kmlabel&#34;, path=&#34;&#34;, new_var=&#34;map&#34;, fill_var=&#34;cluster_max&#34;,
+):
+    &#34;&#34;&#34;
+    Créée et affiche une carte interactive avec Bokeh.
+
+    Args:
+        df_state (geopandas.geodataframe): La gdf des États
+            qui contient les images des histogrammes.
+
+        label (str, optional): Le label à utiliser.    
+            Par défaut : `&#34;kmlabel&#34;`.
+
+        path (str, optional): Chemin où mettre les images.    
+            Par défaut : `&#34;&#34;`.
+
+        new_var (str, optional): Nom de la nouvelle variable.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;map&#34;`.
+
+        fill_var (str, optional): Nom de la variable des couleurs de la carte.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;cluster_max&#34;`.
+    &#34;&#34;&#34;
     # Fill nan
     df_state.fillna(&#34;No data&#34;, inplace=True)
 
@@ -278,7 +583,7 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         &lt;div&gt;
             &lt;div&gt;
                 &lt;img
-                    src=&#34;@hist_label&#34; alt=&#34;No image&#34; width=&#34;300&#34; height=&#34;300&#34;
+                    src=&#34;@hist_label&#34; alt=&#34;No image&#34; width=&#34;500&#34; height=&#34;500&#34;
                     style=&#34;float: left; margin: 0px 0px 0px 0px;&#34;
                     border=&#34;0&#34;
                 &gt;&lt;/img&gt;
@@ -292,7 +597,6 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 
     # Create figure object.
     p = figure(
-        title=f&#34;Histogramme de &#39;{label}&#39;&#34;,
         plot_height=600,
         plot_width=950,
         tools=[hover, &#34;pan,wheel_zoom,box_zoom,reset&#34;],
@@ -300,10 +604,13 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         x_range=(-130, -64),
         y_range=(22, 50),
     )
+    p.title.text = f&#34;Histogramme de &#39;{label}&#39;&#34;
+    p.title.align = &#34;center&#34;
+    p.title.text_font_size = &#34;25px&#34;
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
 
-    n = df_state[f&#34;cluster_max_{label}&#34;].nunique()
+    n = df_state[f&#34;{fill_var}_{label}&#34;].nunique()
     if n &gt; 10:
         pal = brewer[&#34;YlGnBu&#34;]
     else:
@@ -317,14 +624,14 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
         &#34;xs&#34;,
         &#34;ys&#34;,
         source=geosource,
-        fill_color={&#34;field&#34;: f&#34;cluster_max_{label}&#34;, &#34;transform&#34;: color_mapper},
+        fill_color={&#34;field&#34;: f&#34;{fill_var}_{label}&#34;, &#34;transform&#34;: color_mapper},
         line_color=&#34;black&#34;,
         line_width=1,
         fill_alpha=1,
     )
 
     # Save map in html
-    output_file(f&#34;image/maps/map_{label}.html&#34;, mode=&#34;inline&#34;)
+    output_file(f&#34;{path}{new_var}_{label}.html&#34;, mode=&#34;inline&#34;)
 
     # Display figure inline in Jupyter Notebook.
     output_notebook()
@@ -336,29 +643,104 @@ def plot_hist(df_state, label=&#34;kmlabel&#34;):
 </details>
 </dd>
 <dt id="projet.visualisation.save_hist"><code class="name flex">
-<span>def <span class="ident">save_hist</span></span>(<span>df, df_state, label='kmlabel')</span>
+<span>def <span class="ident">save_hist</span></span>(<span>df, df_state, label='kmlabel', var_state_df='state', var_state_gdf='NAME10', path='image/hist', new_var='hist')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Créée les images des histogrammes par États puis ajoute une colonne avec les chemins vers les images.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas.dataframe</code></dt>
+<dd>La dataframe pandas avec les labels.</dd>
+<dt><strong><code>df_state</code></strong> :&ensp;<code>geopandas.geodataframe</code></dt>
+<dd>La gdf des États.</dd>
+<dt><strong><code>label</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Le label à utiliser.
+<br>
+Par défaut : <code>"kmlabel"</code>.</dd>
+<dt><strong><code>var_state_df</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable du nom des États dans la df.
+<br>
+Par défaut : <code>"state"</code>.</dd>
+<dt><strong><code>var_state_gdf</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la variable du nom des États dans la gdf.
+<br>
+Par défaut : <code>"NAME10"</code>.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Chemin où mettre les images.
+<br>
+Le suffixe _{label} est ajouté.
+<br>
+Par défaut : <code>"image/hist"</code>.</dd>
+<dt><strong><code>new_var</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Nom de la nouvelle variable.
+<br>
+Le suffixe _{label} est ajouté.
+<br>
+Par défaut : <code>"hist"</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>geopandas.geodataframe</code></dt>
+<dd>Modifie et renvoie la gdf des États avec une colonne pour les histogrammes.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def save_hist(df, df_state, label=&#34;kmlabel&#34;):
+<pre><code class="python">def save_hist(
+    df,
+    df_state,
+    label=&#34;kmlabel&#34;,
+    var_state_df=&#34;state&#34;,
+    var_state_gdf=&#34;NAME10&#34;,
+    path=&#34;image/hist&#34;,
+    new_var=&#34;hist&#34;,
+):
+    &#34;&#34;&#34;
+    Créée les images des histogrammes par États puis ajoute une colonne avec les chemins vers les images.
+
+    Args:
+        df (pandas.dataframe): La dataframe pandas avec les labels.
+
+        df_state (geopandas.geodataframe): La gdf des États.
+
+        label (str, optional): Le label à utiliser.    
+            Par défaut : `&#34;kmlabel&#34;`.
+
+        var_state_df (str, optional): Nom de la variable du nom des États dans la df.    
+            Par défaut : `&#34;state&#34;`.
+
+        var_state_gdf (str, optional): Nom de la variable du nom des États dans la gdf.    
+            Par défaut : `&#34;NAME10&#34;`.
+
+        path (str, optional): Chemin où mettre les images.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;image/hist&#34;`.
+
+        new_var (str, optional): Nom de la nouvelle variable.    
+            Le suffixe _{label} est ajouté.    
+            Par défaut : `&#34;hist&#34;`.
+
+    Returns:
+        geopandas.geodataframe: Modifie et renvoie la gdf des États avec une colonne pour les histogrammes.
+    &#34;&#34;&#34;
+
     def _add_image(row):
-        state = row[&#34;NAME10&#34;]
-        if any(df[&#34;state&#34;] == state):
-            df2 = df[df[&#34;state&#34;] == state].groupby(label).describe()
+        state = row[var_state_gdf]
+        if any(df[var_state_df] == state):
+            df2 = df[df[var_state_df] == state].groupby(label).describe()
             m = df2[&#34;user-id&#34;][&#34;count&#34;]
+            plt.figure(figsize=(10,10))
             fig = m.plot(
                 kind=&#34;bar&#34;, title=f&#34;Histogramme de {state}&#34;, x=label, y=&#34;Count&#34;,
             ).get_figure()
-            file = f&#34;image/hist_{label}/hist_{label}_{state}.jpg&#34;
+            file = f&#34;{path}_{label}/hist_{label}_{state}.jpg&#34;
             fig.savefig(file)
+            plt.close()
             return file
         return &#34;No data&#34;
 
-    df_state[f&#34;hist_{label}&#34;] = df_state.apply(_add_image, axis=1)
+    df_state[f&#34;{new_var}_{label}&#34;] = df_state.apply(_add_image, axis=1)
 
     return df_state</code></pre>
 </details>
