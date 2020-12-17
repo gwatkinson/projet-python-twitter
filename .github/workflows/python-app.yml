@@ -97,7 +97,7 @@ jobs:
           git commit -m "Automatic commit : Update documentation"
 
       - name: E)(5/5) Push changes
-        if: steps.check_files_docs.outputs.run_doc == 'true' && steps.branch_name.outputs.branch != 'refs/heads/master'
+        if: steps.check_files_docs.outputs.run_doc == 'true'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
