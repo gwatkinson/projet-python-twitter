@@ -284,37 +284,34 @@ def start_stream(
 
     Args:
         liste_mots (list): 
-            Liste des mots à tracker.
-
+            Liste des mots à tracker.    
             Doit contenir des `str`.
+
         credentials: 
             Instance de `CredentialsClass` qui gère la connexion avec Twitter.
+
         nb (int, optional): 
-            Nombre de tweets à récupérer.
+            Nombre de tweets à récupérer.    
+            Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.    
+            Par défaut : `0`.
 
-                Mettre 0 (ou un nombre négatif) pour ne pas avoir de limite.
-
-                Par défaut : `0`.
         timeout (float, optional): 
-            Le temps (en heures) que le stream doit-il être lancé.
-
-            Si `timeout` est omis, le stream sera lancé indéfiniment 
-            et il faudra l'arrêter manuellement.
-
+            Le temps (en heures) que le stream doit-il être lancé.    
+            Si `timeout` est omis, le stream sera lancé indéfiniment
+            et il faudra l'arrêter manuellement.    
             C'est le cas par défaut.
+
         fprefix (str, optional): 
-            Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.
-
+            Préfixe à mettre dans le fichier où les tweets sont enregistrés devant la date.    
             Par défaut : `"streamer"`.
+
         path (str, optional): 
-            Chemin du doossier où enregistrer les fichiers.
-
-            Doit finir avec `/` ou `\` si différent de `""`.
-
+            Chemin du doossier où enregistrer les fichiers.    
+            Doit finir avec `/` ou `\` si différent de `""`.    
             Par défaut : `""`.
-        verbose (bool, optional): 
-            Si `True`, affiche un point tout les 50 tweets traités ou une barre de progression si `nb>0`.
 
+        verbose (bool, optional): 
+            Si `True`, affiche un point tout les 50 tweets traités ou une barre de progression si `nb>0`.    
             Par défaut : `False`.
     """
     wrong_words = [mot for mot in liste_mots if type(mot) is not str]
@@ -326,7 +323,8 @@ def start_stream(
 
     start = time.time()
 
-    print("Début du stream")
+    if verbose:
+        print("Début du stream")
 
     while True:
         try:
