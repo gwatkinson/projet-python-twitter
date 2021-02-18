@@ -1,5 +1,7 @@
 # Projet python twitter
 
+[![Python application](https://github.com/gwatkinson/projet-python-twitter/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/gwatkinson/projet-python-twitter/actions/workflows/python-app.yml)
+
 Ceci est notre projet d'informatique de 2<sup>ème</sup> année de l'ENSAE pour le cours *Python pour un data scientist* où nous avons choisis d'utiliser l'**API de Twitter** et du **sentimental analysis**.
 
 **Problématique** : $\underline{​​\text{​​ En quoi Twitter reflète-t-il la polarisation aux États-Unis, autour des élections présidentielles Américaines ?}​​}​​$
